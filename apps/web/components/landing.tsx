@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { CursorCard, FlashcardDemo, ShortcutsDemo } from "./landing-demos";
 import { Brand, PearlObject, PearlScene } from "./pearl";
 import { Evidence } from "./preview/shared";
 import { ThemeToggle } from "./theme-toggle";
@@ -83,20 +84,6 @@ const roles = [
     ],
   },
 ];
-const cards = [
-  [
-    "What is the difference between mass and weight?",
-    "Mass is measured in kilograms. Weight is a force, measured in newtons: W = mg.",
-  ],
-  [
-    "Which force belongs in F = ma?",
-    "The net force: add forces with their directions, including friction.",
-  ],
-  [
-    "What happens when mass doubles under the same net force?",
-    "Acceleration halves, because a = F / m.",
-  ],
-];
 const questions = [
   [
     "Does the assistant do students’ homework?",
@@ -148,9 +135,6 @@ function SectionHeading({
 
 export function Landing() {
   const [question, setQuestion] = useState(0);
-  const [flip, setFlip] = useState(false);
-  const [card, setCard] = useState(0);
-  const [pinned, setPinned] = useState(false);
   const [highlight, setHighlight] = useState(false);
   const [step, setStep] = useState(0);
   const [message, setMessage] = useState("");
@@ -383,22 +367,24 @@ export function Landing() {
                 <p className="text-sm text-muted-foreground">
                   “Where do I submit my batch?”
                 </p>
-                <div
-                  className={cn(
-                    "flex min-h-44 items-center justify-center rounded-xl bg-secondary p-5",
-                    highlight && "bg-foreground/15",
-                  )}
-                >
-                  <span
+                <CursorCard>
+                  <div
                     className={cn(
-                      "rounded-full bg-foreground px-4 py-2 text-xs text-background",
-                      highlight &&
-                        "ring-2 ring-cobalt ring-offset-8 ring-offset-background",
+                      "landing-highlight flex min-h-60 items-center justify-center rounded-xl bg-secondary p-5",
+                      highlight && "bg-foreground/15",
                     )}
                   >
-                    Submit the whole batch
-                  </span>
-                </div>
+                    <span
+                      className={cn(
+                        "landing-highlight-target rounded-full bg-foreground px-4 py-2 text-xs text-background",
+                        highlight &&
+                          "ring-2 ring-cobalt ring-offset-8 ring-offset-background",
+                      )}
+                    >
+                      Submit the whole batch
+                    </span>
+                  </div>
+                </CursorCard>
                 <h3 className="text-xl">Highlights</h3>
                 <p className="text-sm text-muted-foreground">
                   A short tip, right where you need it. No hunting through
@@ -411,75 +397,8 @@ export function Landing() {
                   {highlight ? "Clear highlight" : "Show me"}
                 </Button>
               </Card>
-              <Card className="p-6">
-                <p className="text-sm text-muted-foreground">
-                  “Make flashcards from my mistakes”
-                </p>
-                <button
-                  type="button"
-                  aria-label="Flashcard, tap to flip"
-                  aria-pressed={flip}
-                  onClick={() => setFlip(!flip)}
-                  className={cn(
-                    "min-h-44 rounded-xl p-5 text-center shadow-pearl",
-                    flip ? "bg-[#2a44d6] text-white" : "pearl-panel",
-                  )}
-                >
-                  <span className="mb-3 block text-[10px] uppercase tracking-widest">
-                    {flip ? "Answer" : "Question"}
-                  </span>
-                  {cards[card][flip ? 1 : 0]}
-                </button>
-                <h3 className="text-xl">Study cards</h3>
-                <p className="text-sm text-muted-foreground">
-                  Quick checks from a sample lesson. Tap the card to turn it
-                  over.
-                </p>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setCard((card + 1) % cards.length);
-                    setFlip(false);
-                  }}
-                >
-                  Next card
-                </Button>
-              </Card>
-              <Card className="p-6">
-                <p className="text-sm text-muted-foreground">
-                  “Pin the mass vs weight part”
-                </p>
-                <div className="flex min-h-44 flex-col items-start justify-center gap-3 rounded-xl bg-secondary p-5">
-                  <span className="rounded-full border bg-surface px-3 py-1 text-xs">
-                    Practice batch
-                  </span>
-                  {pinned ? (
-                    <button
-                      type="button"
-                      onClick={() => setPinned(false)}
-                      className="rounded-full border border-cobalt bg-accent px-3 py-1 text-xs text-cobalt"
-                      aria-label="Remove Mass vs weight shortcut"
-                    >
-                      Mass vs weight · 6:10 ×
-                    </button>
-                  ) : (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setPinned(true)}
-                    >
-                      Pin chapter
-                    </Button>
-                  )}
-                </div>
-                <h3 className="text-xl">Your own shortcuts</h3>
-                <p className="text-sm text-muted-foreground">
-                  Everything the assistant adds can be undone or removed.
-                </p>
-                <Button variant="outline" onClick={() => setPinned(false)}>
-                  Reset
-                </Button>
-              </Card>
+              <FlashcardDemo />
+              <ShortcutsDemo />
             </div>
           </section>
           <section className="grid gap-6 md:grid-cols-2">

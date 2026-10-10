@@ -1,0 +1,129 @@
+.landing-cursor-area {
+  min-width: 0;
+  perspective: 1200px;
+}
+
+.landing-cursor-card {
+  position: relative;
+  display: grid;
+  border-radius: var(--radius-xl);
+}
+
+.landing-flashcard {
+  display: grid;
+  min-height: 15rem;
+  border-radius: var(--radius-xl);
+  perspective: 1000px;
+  text-align: center;
+}
+
+.landing-flashcard-turn {
+  display: grid;
+  transform-style: preserve-3d;
+  transform: rotateY(0deg);
+}
+
+.landing-flashcard-turn[data-flipped="true"] {
+  transform: rotateY(180deg);
+}
+
+.landing-flashcard-face {
+  grid-area: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 15rem;
+  padding: 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  background: var(--pearl);
+  backface-visibility: hidden;
+  box-shadow: var(--shadow-pearl);
+}
+
+.landing-flashcard-face[data-answer="true"] {
+  transform: rotateY(180deg);
+  background:
+    radial-gradient(ellipse at 85% 15%, var(--glass), transparent 65%),
+    linear-gradient(145deg, var(--surface), var(--secondary));
+}
+
+.landing-shortcuts {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .landing-cursor-card {
+    transform: rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+    transition: transform 180ms ease-out;
+  }
+
+  .landing-flashcard-turn {
+    transition: transform 650ms cubic-bezier(0.22, 0.75, 0.2, 1);
+    /* Opacity on this 3D container would flatten its two faces. */
+    animation: landing-flashcard-arrive 350ms ease-out;
+  }
+
+  .landing-cursor-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    border-radius: inherit;
+    pointer-events: none;
+    background: radial-gradient(
+      circle at var(--shine-x, 50%) var(--shine-y, 50%),
+      var(--glass),
+      transparent 65%
+    );
+    opacity: 0;
+    transition: opacity 250ms ease;
+  }
+
+  .landing-cursor-area:hover .landing-cursor-card::after {
+    opacity: 0.3;
+  }
+
+  .landing-shortcut-content,
+  .landing-shortcut-chip {
+    animation: landing-card-arrive 400ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+
+  .landing-shortcut-chip {
+    transition:
+      box-shadow 200ms ease,
+      translate 200ms ease;
+  }
+
+  .landing-shortcut-chip:hover {
+    translate: 0 -2px;
+    box-shadow: var(--shadow-pearl);
+  }
+
+  .landing-highlight,
+  .landing-highlight-target {
+    transition:
+      background-color 300ms ease,
+      box-shadow 450ms ease;
+  }
+}
+
+@keyframes landing-flashcard-arrive {
+  from {
+    translate: 0 8px;
+  }
+  to {
+    translate: 0 0;
+  }
+}
+
+@keyframes landing-card-arrive {
+  from {
+    opacity: 0;
+    translate: 0 8px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
