@@ -1,6 +1,48 @@
 # Verification — October 10, 2026
 
-## Atlas Pearl frontend
+## Private transcript study and priority home
+
+- `make check`: passed. JavaScript/TypeScript lint, generated API contract checks,
+  53 Bun tests, Python lint/format, and 89 Python tests passed. One optional live
+  ClamAV case was skipped because the scanner was not enabled for this run.
+- `PLAYWRIGHT_CHROME_PATH=/opt/google/chrome/chrome make browser-test`: **51 passed**.
+  Includes real API/database transcript import, saved/cited answers through a
+  deterministic provider, sharing/revocation, cancellation/retry, account switching,
+  hidden-tab polling, starter drafts without premature requests, and desktop
+  light/dark plus mobile accessibility. Existing files and role-preview flows pass.
+- `make build`: passed, including `/study`. The first restricted attempt could not
+  bind Turbopack's local worker socket; moving its cached failure aside and building
+  with local socket permission succeeded. No source workaround or check suppression.
+- The vendored Python 3.12 retrieval service: **116 tests passed**, including an
+  actual Milvus Lite close/reopen test. A live restart exposed an unloaded persisted
+  collection during ingestion; explicit collection loading fixes the failure and
+  preserves previously indexed sources. This regression is now covered.
+- `make audit`: the application JavaScript and Python locks passed. The **separate
+  vendored RAG audit fails** with 21 distinct advisory IDs in four packages; see
+  [SECURITY.md](SECURITY.md). No advisories were suppressed. The upstream Next.js
+  October 14 security release notice was rechecked; public deployment stays blocked.
+- A real Gemini/RAG smoke test indexed a synthetic Newton transcript and generated
+  a correct cited answer in 8.57 seconds using an isolated schema. Authorization
+  after source deletion and logout was also checked. This paid check is not CI.
+- The running local stack was also verified through Next.js → API → Redis/Celery →
+  persisted RAG → Gemini after a service restart: a clearly labeled synthetic
+  example indexed successfully and its cited answer was saved and reopened in
+  Chrome. A generated local account is provisioned; its credentials are ignored
+  and are not part of the repository.
+- Visually reviewed the priority home and authenticated study layouts. The home
+  retains glass material but groups tasks by required action and uses consistent
+  task objects. The study composer occupies its own layout area; it does not cover
+  the conversation. During browser checks, faded-in small text failed contrast;
+  keeping transform motion without fading message opacity resolved it. The extra
+  files-navigation link also exposed mobile overflow, fixed with wrapping controls.
+
+The automated study browser harness injects a deterministic provider only in its
+isolated test server. Running `/study` uses real configured providers and explicit
+failure states. School-role pages under `/preview` still use fictional fixtures.
+Full audio transcription, autonomous execution tools and school workflows are not
+implemented by this study feature. Production deployment is not approved.
+
+## Earlier Atlas Pearl frontend
 
 - `SCHOOL_TEST_SCANNER=1 make check`: passed; repository lint, TypeScript, contract drift checks, Python lint/format and all 26 backend tests.
 - `make build`: passed after the final accessibility fixes, using Bun 1.4.2 / Next.js 16.4.0. Routes: `/`, `/login`, `/files`, `/preview/[account]/[[...section]]` and not-found.

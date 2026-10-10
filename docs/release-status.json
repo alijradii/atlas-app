@@ -1,7 +1,7 @@
 {
   "productionApproved": false,
-  "reason": "Infrastructure reset: basic login and private personal files remain. Product features were removed for a rebuild. The recorded Next.js notice, live R2 verification, container scans, production recovery and new release acceptance remain unresolved.",
+  "reason": "Authenticated transcript study is verified locally. The recorded upcoming Next.js security update, live R2 verification, container scans, production recovery, vendored RAG dependency advisories, RAG retention and deployment acceptance remain unresolved.",
   "source": "https://nextjs.org/blog/upcoming-nextjs-security-update-october-2026",
-  "scope": "infrastructure, basic login, private uploads and Atlas Pearl frontend previews",
-  "ai": "health-only placeholder; inference disabled"
+  "scope": "login, private files, authenticated transcript library and cited study conversations, plus Atlas Pearl role previews",
+  "ai": "Gemini-backed tutoring over explicitly authorized transcripts through the isolated RAG service; bounded retrieval and generation, no autonomous execution tools"
 }

@@ -19,7 +19,11 @@ const mediaTypes: MediaType[] = [
   "image/jpeg",
 ];
 
-export default function FilesApp() {
+export default function FilesApp({
+  afterLogin = "/files",
+}: {
+  afterLogin?: "/files" | "/study";
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const [session, setSession] = useState<Session | null>(null);
@@ -113,10 +117,10 @@ export default function FilesApp() {
 
   useEffect(() => {
     if (!loading && !sessionCheckFailed) {
-      if (session && pathname === "/login") router.replace("/files");
+      if (session && pathname === "/login") router.replace(afterLogin);
       if (!session && pathname === "/files") router.replace("/login");
     }
-  }, [session, loading, sessionCheckFailed, pathname, router]);
+  }, [session, loading, sessionCheckFailed, pathname, router, afterLogin]);
 
   async function run(action: () => Promise<void>) {
     setBusy(true);
@@ -220,9 +224,12 @@ export default function FilesApp() {
     <div className="min-h-screen p-5 sm:p-8">
       <header className="mx-auto flex max-w-6xl flex-wrap items-center gap-4">
         <Brand />
-        <div className="ml-auto flex items-center gap-3">
+        <div className="ml-auto flex max-w-full flex-wrap items-center justify-end gap-3">
           <Button asChild variant="ghost">
             <Link href="/preview/lina/home">Explore preview</Link>
+          </Button>
+          <Button asChild variant="ghost">
+            <Link href="/study">Study workspace</Link>
           </Button>
           <ThemeToggle />
           <Button

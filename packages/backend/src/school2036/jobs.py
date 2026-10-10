@@ -48,9 +48,14 @@ def drain_one(sessions, config=None):
             return False
         job.state = "running"
         job.attempts += 1
-        job.available = now + 300  # Recover a crashed worker after the lease expires.
+        job.available = now + (600 if job.kind.startswith("study.") else 300)
         job_id = job.id
         lease_attempt = job.attempts
+        study_job = job.kind.startswith("study.")
+    if study_job and config:
+        from school2036.study_jobs import process_study_job
+
+        return process_study_job(sessions, config, job_id, lease_attempt)
     with sessions.begin() as db:
         job = db.scalar(select(OutboxJob).where(OutboxJob.id == job_id).with_for_update())
         if job.state != "running" or job.attempts != lease_attempt:

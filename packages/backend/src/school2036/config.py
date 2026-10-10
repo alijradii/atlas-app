@@ -27,6 +27,12 @@ class Settings(BaseSettings):
     r2_access_key_id: SecretStr = SecretStr("")
     r2_secret_access_key: SecretStr = SecretStr("")
 
+    rag_url: str = "http://127.0.0.1:8081"
+    rag_api_key: SecretStr = SecretStr("")
+    gemini_api_key: SecretStr = SecretStr("")
+    study_model: str = "gemini-2.5-flash"
+    study_daily_requests: int = 50
+
     @property
     def session_cookie(self) -> str:
         return "__Host-school_session" if self.environment == "production" else "school_session"

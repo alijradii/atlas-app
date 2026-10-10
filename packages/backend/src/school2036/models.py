@@ -1,6 +1,16 @@
 """Identity infrastructure. Legacy columns remain compatible with existing databases."""
 
-from sqlalchemy import JSON, Boolean, CheckConstraint, Float, ForeignKey, Integer, String, Text
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    CheckConstraint,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from school2036.database import Base
@@ -106,3 +116,62 @@ class FileObject(Base):
     state: Mapped[str] = mapped_column(String(20), default="pending")
     error: Mapped[str] = mapped_column(String(200), default="")
     expires: Mapped[float] = mapped_column(Float)
+
+
+class StudyLesson(Base):
+    """An immutable transcript; source identifiers never leave the backend."""
+
+    __tablename__ = "study_lesson"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    owner: Mapped[str] = mapped_column(ForeignKey("account.id"), index=True)
+    title: Mapped[str] = mapped_column(String(160))
+    subject: Mapped[str] = mapped_column(String(80))
+    transcript: Mapped[str] = mapped_column(Text)
+    state: Mapped[str] = mapped_column(String(20), default="queued")
+    source_id: Mapped[str | None] = mapped_column(String(128), unique=True)
+    error: Mapped[str] = mapped_column(String(200), default="")
+    created: Mapped[float] = mapped_column(Float)
+
+
+class StudyAccess(Base):
+    __tablename__ = "study_access"
+    lesson_id: Mapped[str] = mapped_column(ForeignKey("study_lesson.id"), primary_key=True)
+    account_id: Mapped[str] = mapped_column(ForeignKey("account.id"), primary_key=True)
+
+
+class StudyConversation(Base):
+    __tablename__ = "study_conversation"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    owner: Mapped[str] = mapped_column(ForeignKey("account.id"), index=True)
+    title: Mapped[str] = mapped_column(String(160))
+    lesson_ids: Mapped[list] = mapped_column(JSON)
+    created: Mapped[float] = mapped_column(Float)
+    updated: Mapped[float] = mapped_column(Float)
+    deleted: Mapped[bool] = mapped_column(Boolean, default=False)
+
+
+class StudyMessage(Base):
+    __tablename__ = "study_message"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    conversation_id: Mapped[str] = mapped_column(ForeignKey("study_conversation.id"), index=True)
+    role: Mapped[str] = mapped_column(String(16))
+    content: Mapped[str] = mapped_column(Text)
+    citations: Mapped[list] = mapped_column(JSON, default=list)
+    created: Mapped[float] = mapped_column(Float)
+
+
+class StudyRun(Base):
+    __tablename__ = "study_run"
+    __table_args__ = (
+        # The request key represents one logical send, including a network retry.
+        UniqueConstraint("conversation_id", "request_id"),
+    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    conversation_id: Mapped[str] = mapped_column(ForeignKey("study_conversation.id"), index=True)
+    message_id: Mapped[str] = mapped_column(ForeignKey("study_message.id"))
+    request_id: Mapped[str] = mapped_column(String(36))
+    session_hash: Mapped[str] = mapped_column(String(64))
+    state: Mapped[str] = mapped_column(String(20), default="queued")
+    error: Mapped[str] = mapped_column(String(200), default="")
+    created: Mapped[float] = mapped_column(Float)
+    updated: Mapped[float] = mapped_column(Float)

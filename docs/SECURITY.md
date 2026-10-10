@@ -2,7 +2,7 @@
 
 ## October 10, 2026 foundation reset
 
-The active application now exposes basic password login, session lookup/logout, health/status, and owner-only personal files. Public setup, default setup passwords, demo login, registration, school workflows and AI inference have been removed. Accounts are provisioned locally by an operator. Existing database records and migration history remain intact.
+The active application exposes password login, session lookup/logout, health/status, owner-only personal files and authenticated transcript-based study. Public setup, default passwords, demo login and public registration remain unavailable. School domain previews do not authorize real study access. Accounts are provisioned locally by an operator. Existing database records and migration history remain intact.
 
 Retained controls: scrypt passwords, hashed session tokens, HttpOnly/SameSite cookies (Secure in production), explicit installation markers, database-backed login throttling, Origin and CSRF validation, request-size limits, owner-only file access, bounded quarantine capture, checksums and scanner checks. Public R2 buckets are prohibited. No scanner means only plain-text development uploads can complete; production requires ClamAV and private R2. No browser storage credential is exposed.
 
@@ -18,6 +18,86 @@ Live R2 permissions/CORS/expiration, production privilege separation, container 
 
 ## Atlas Pearl frontend — October 10, 2026
 
-The new public landing and `/preview/*` pages contain fictional kit data and local interactions only. Preview personas never authenticate against the API. Browser storage holds only theme preferences and sample workspace state; real session credentials remain in HttpOnly cookies. Only `/login` and `/files` use the retained application API. Scenario and school-policy switches do not authorize backend access.
+The new public landing and `/preview/*` pages contain fictional kit data and local interactions only. Preview personas never authenticate against the API. Browser storage holds only theme preferences and sample workspace state; real session credentials remain in HttpOnly cookies. `/login`, `/files` and `/study` use the authenticated application API. Scenario and school-policy switches do not authorize backend access.
 
 After adding Tailwind and shadcn/Radix, `make audit` checked 249 JavaScript packages and the Python lock export without reported vulnerabilities. The upstream [Tailwind](https://github.com/tailwindlabs/tailwindcss/security/advisories), [Radix](https://github.com/radix-ui/primitives/security/advisories) and [shadcn](https://github.com/shadcn-ui/ui/security/advisories) advisory pages showed no published advisories when reviewed. The Next.js advisory index was also rechecked. This does not resolve the existing release blocker or establish production readiness.
+
+## Authenticated study — October 10, 2026
+
+A real session is required for every `/api/v1/study/*` route. Mutations use the same
+Origin/CSRF protections as personal files. Transcript owners can grant read/study
+access to an explicitly named active account. Readers cannot grant access, retry
+ingestion or delete somebody else's lesson. Conversation history belongs to its
+creator, even when its lessons are shared. There is no role-derived access and no
+public access to a library catalog.
+
+The browser submits application lesson IDs, never raw RAG source IDs. The backend
+checks ownership or an explicit grant and sends an exact source list on every hybrid
+search. Empty selection never expands to all documents. Provider response scope and
+every evidence source are verified; partial retrieval and invalid citations fail
+closed. Source text/history are bounded and treated as untrusted model input. The
+model has no executable tools and cannot grant permissions or change app state.
+Prompting does not establish factual correctness; users can inspect literal citations.
+
+Workers recheck session validity, active account, selected-source authorization,
+run cancellation and job lease before generation and before committing an answer.
+Revocation hides affected conversation history and citations on subsequent reads;
+a result generated after revocation is discarded. Content already read or copied
+by a recipient cannot be withdrawn. Cancellation prevents subsequent publication;
+it does not guarantee cancellation of an already dispatched provider request or
+refund its cost. Lost provider work is not automatically replayed.
+
+Keys remain server-side. Neither provider raw errors nor RAG service credentials
+are sent to the client. The RAG bearer key grants library-wide access: keep the
+listener private and never distribute it to users, browser code or public MCP
+clients. The local runner binds loopback. Gemini receives selected source text,
+questions and bounded conversation context; institutional consent, provider data
+terms and retention must be reviewed before real school deployment.
+
+Deletion currently revokes application access but does not physically erase saved
+transcripts, messages or RAG indexes. The upstream service has no deletion route.
+A retention/erasure implementation and recovery rehearsal covering `.data/rag` are
+production requirements. The default $1 RAG spend ledger excludes answer-model
+charges; per-account daily request limits do not replace provider account budgets.
+
+The vendored parser stack retains its own dependency lock and licenses; it must be
+audited separately from `uv.lock`. [MinerU's license](../services/rag-anything/licenses/mineru-LICENSE.md)
+requires attribution and has separate commercial-use conditions. Production approval
+remains false. See [study operations and tests](STUDY.md).
+
+## Vendored RAG dependency audit — October 10, 2026
+
+A separate metadata-only audit of `services/rag-anything/requirements.lock` checked
+142 package entries and returned **33 advisory records across four packages**
+(21 distinct advisory IDs; the feed includes duplicates). This is a failing audit
+and an additional production blocker; no findings were suppressed:
+
+| Locked package | Findings and remediation status |
+| --- | --- |
+| `gradio==6.8.0` | Three distinct IDs covering session handling/cache/file access; published fixes include 6.15.0–6.16.0. |
+| `lightrag-hku==1.4.16` | Seven distinct IDs covering its server/WebUI/authentication and parser behavior; published fixes include 1.5.4–1.5.5. The supplied RAG-Anything dependency constrains LightRAG below 1.5, so upgrading requires a compatibility change. |
+| `starlette==0.52.1` | Five distinct IDs covering URL handling, endpoint dispatch, static files and form parsing; published fixes span 1.0.1–1.3.1. |
+| `transformers==4.57.6` | Six distinct IDs covering unsafe model/checkpoint/loading or file-writing paths; some fixes require 5.x, and some records list no fix. |
+
+The runner does not start Gradio or LightRAG's own API/WebUI; the current app accepts
+plain transcripts rather than arbitrary model files. These facts narrow exposure
+but are not a complete per-advisory applicability review. The parser dependency
+chain and private service still need compatible upgrades, regression testing and
+an explicit deployment review. Do not mark the vendored stack clean because the
+application's separate `uv.lock` audit passes.
+
+Reproduce without downloading/installing packages:
+
+```sh
+uv run --frozen pip-audit --disable-pip --no-deps \
+  -r services/rag-anything/requirements.lock
+```
+
+The review also checked upstream
+[PyMilvus security](https://github.com/milvus-io/pymilvus/security),
+[MinerU advisories](https://github.com/opendatalab/MinerU/security/advisories) and
+[RAG-Anything advisories](https://github.com/HKUDS/RAG-Anything/security/advisories).
+The first two showed no published advisories; that does not clear their dependencies.
+Reviewed primary examples include
+[Starlette's form-parsing advisory](https://github.com/Kludex/starlette/security/advisories/GHSA-82w8-qh3p-5jfq)
+and [LightRAG's CORS advisory](https://github.com/HKUDS/LightRAG/security/advisories/GHSA-6x6h-qqr7-855w).

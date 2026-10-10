@@ -9,6 +9,7 @@ The supplied `../atlas-pearl-kit/atlas-pearl` landing and workspace prototypes h
 | `/` | Pearl landing page, interactive assistant examples, flashcards, role tabs, FAQ and explicitly local pilot-form preview |
 | `/login` | Real backend sign-in and links to six fictional preview accounts |
 | `/files` | Authenticated personal upload, verification, download and deletion |
+| `/study` | Authenticated transcript library and Gemini-backed conversations with source passages |
 | `/preview/lina/home` | Returning student: subjects, lessons/chapters, study, practice, human adviser, activities |
 | `/preview/sami/home` | New student onboarding, interests, adviser-matching empty state, independent practice |
 | `/preview/daher/home` | Teacher lessons, publishing form preview, class evidence, misconceptions, teaching flags and follow-ups |
@@ -20,11 +21,11 @@ Invalid accounts, sections and detail IDs render the framework not-found screen.
 
 ## Working services versus samples
 
-Only login, sessions and private files connect to the Python API. Preview accounts do not create sessions or grant file access. API authorization and private R2 controls are unchanged.
+Login, sessions, private files and the separate `/study` workspace connect to the Python API. Preview accounts do not create sessions or grant access to files or transcripts. See [Study workspace](STUDY.md) for the real inference path and authorization boundaries.
 
 School records come from the kit's fictional fixtures. Preview actions persist in **sessionStorage for the current tab**, so a proposal can move from student/adviser to parent to staff by switching sample accounts. Practice answers, working and completion survive navigation. Help is paused during an active sample batch. Teacher analytics can be explored with the “At school” scenario. Settings only change preview behavior, never API policy. Reset everything in the scenario dialog.
 
-Assistant responses and flashcards are scripted. Feedback uses the kit's fixed example answers. No inference, adviser notification, email, pilot signup, video playback, real assessment, or school-record mutation occurs. The lesson-publishing form saves local metadata only; it never sends the selected video. The real private-file service remains limited to TXT/PDF/PNG/JPEG. The sample parent progress policy is still exploratory. Additional student caseload profiles contain summaries, while Lina has the complete guidance example.
+Within `/preview`, assistant responses and flashcards are scripted. Feedback uses the kit's fixed example answers. No inference, adviser notification, email, pilot signup, video playback, real assessment, or school-record mutation occurs. The lesson-publishing form saves local metadata only; it never sends the selected video. The real private-file service remains limited to TXT/PDF/PNG/JPEG. The sample parent progress policy is still exploratory. Additional student caseload profiles contain summaries, while Lina has the complete guidance example.
 
 ## Ownership
 

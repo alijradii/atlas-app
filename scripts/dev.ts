@@ -79,6 +79,8 @@ const commands = [
     "general",
   ],
 ];
+if (process.env.SCHOOL_RAG_API_KEY && process.env.SCHOOL_GEMINI_API_KEY)
+  commands.push([process.execPath, "run", "scripts/rag-dev.ts"]);
 if (full)
   commands.push([
     "uv",

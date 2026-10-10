@@ -174,7 +174,7 @@ export function Landing() {
                 things are, and practice you do on your own stays your own.
               </p>
               <Button asChild size="lg" className="mt-8">
-                <Link href="/login">
+                <Link href="/login?next=study">
                   Explore Atlas <ArrowRight />
                 </Link>
               </Button>
@@ -199,7 +199,7 @@ export function Landing() {
               <div className="flex items-center gap-3">
                 <ThemeToggle />
                 <Button asChild variant="outline">
-                  <Link href="/login">Sign in</Link>
+                  <Link href="/login?next=study">Sign in</Link>
                 </Button>
               </div>
             </nav>
@@ -717,7 +717,7 @@ export function Landing() {
                 {message}
               </p>
               <Link
-                href="/login"
+                href="/login?next=study"
                 className="mt-3 inline-flex items-center gap-2 text-sm text-cobalt"
               >
                 Open the app <ArrowRight className="size-4" />

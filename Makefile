@@ -44,3 +44,8 @@ restore:
 	uv run --frozen python -m school2036.backup restore --key-file "$(KEY_FILE)" --file "$(BACKUP_FILE)" --database "$(RESTORE_DATABASE)" --output "$(RESTORE_DIR)" --compose infra/compose.dev.yaml
 deploy:
 	$(BUN) scripts/deploy.ts "$(RELEASE)"
+
+rag-install:
+	$(BUN) run scripts/rag-dev.ts --install
+rag-dev:
+	$(BUN) run scripts/rag-dev.ts
