@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import "./styles.css";
 import { AssistantProvider } from "@/components/assistant/provider";
+import { WorkspacePreferencesProvider } from "@/components/workspace-preferences";
 
 export const metadata: Metadata = {
   title: {
@@ -29,7 +30,9 @@ export default function RootLayout({
         >
           Skip to content
         </a>
-        <AssistantProvider>{children}</AssistantProvider>
+        <WorkspacePreferencesProvider>
+          <AssistantProvider>{children}</AssistantProvider>
+        </WorkspacePreferencesProvider>
       </body>
     </html>
   );

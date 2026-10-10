@@ -236,3 +236,9 @@ Pearl motion tokens. Its content keeps a stable width during motion, avoiding te
 rewrapping. Hidden controls are inert; reduced-motion users get immediate changes.
 Both layouts reuse the existing Pearl components. Empty-state hobby and research
 actions align with the centered upload actions.
+
+The main navigation preference lives in the root `WorkspacePreferencesProvider`,
+not the route-owned `PearlFrame`. Client navigation between Home, Study, Files and
+other screens preserves both collapsed and expanded choices. A full page reload
+starts with the default expanded navigation; no account data or persistent browser
+storage is involved.

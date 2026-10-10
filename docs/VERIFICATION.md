@@ -1,5 +1,16 @@
 # Verification — October 10, 2026
 
+## Sidebar state across Study navigation
+
+Moved the navigation collapse preference above route-owned frames into the root
+workspace preferences provider. Navigating into or out of Study and Files preserves
+the chosen state; a full reload still defaults to expanded. No backend or dependency
+changes. Frontend lint/typecheck/contract checks and all 64 Bun tests passed, along
+with the production build and 18 compiled browser scenarios. The new regression
+switches Home → Study → Home → Study → Files → Study → Home, checks the collapsed
+rail and sphere throughout, then verifies an explicit expansion survives Study.
+The preceding backend and dependency audit results remain the unchanged baseline.
+
 ## Study viewport, panel collapse and alignment
 
 Study now reserves a bottom row for the shared assistant inside its conversation

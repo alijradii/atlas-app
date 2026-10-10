@@ -12,6 +12,7 @@ import {
 import { Menu, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { type ReactNode, useState } from "react";
 import { ThemeToggle } from "./theme-toggle";
+import { useWorkspacePreferences } from "./workspace-preferences";
 import "./preview/workspace.css";
 
 export const pearlNavLinkClass =
@@ -34,7 +35,10 @@ export function PearlFrame({
   children: ReactNode;
 }) {
   const [menu, setMenu] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
+  const {
+    navigationCollapsed: collapsed,
+    setNavigationCollapsed: setCollapsed,
+  } = useWorkspacePreferences();
   const nav = navigation(() => setMenu(false));
 
   return (
