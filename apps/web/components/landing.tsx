@@ -31,7 +31,7 @@ const roles = [
     id: "lina",
     name: "Students",
     title: "Your learning, with people in your corner.",
-    text: "Revisit a lesson, work through a problem, or talk through a big subject choice. Your adviser and teachers are part of the picture.",
+    text: "Revisit a lesson, work through a problem, or talk through a big subject choice. Your advisor and teachers are part of the picture.",
     points: [
       "Lessons you can return to",
       "Practice with and without help",
@@ -42,7 +42,7 @@ const roles = [
     id: "karim",
     name: "Parents",
     title: "Be part of the big choices.",
-    text: "See your child’s interests, the subjects they’re considering, and the guidance their adviser shares with you.",
+    text: "See your child’s interests, the subjects they’re considering, and the guidance their advisor shares with you.",
     points: [
       "Review subject choices",
       "Read shared human guidance",
@@ -62,7 +62,7 @@ const roles = [
   },
   {
     id: "nassar",
-    name: "Advisers",
+    name: "Advisors",
     title: "Know the person behind the pathway.",
     text: "Follow interests, questions and choices over time. Keep your own advice distinct from anything the assistant prepares.",
     points: [
@@ -103,7 +103,7 @@ const questions = [
     "The design separates studying with help from practice done independently. During a practice batch, the preview pauses the study assistant until the whole set is submitted.",
   ],
   [
-    "Who are the advisers?",
+    "Who are the advisors?",
     "The kit proposes qualified human specialists matched by interests and field. Their background and qualifications are visible to the student and family.",
   ],
   [
@@ -169,7 +169,7 @@ export function Landing() {
                 Study at home. Choose with people who know you.
               </h1>
               <p className="mt-7 max-w-md text-base leading-relaxed text-muted-foreground">
-                Atlas connects everyday home learning with a real human adviser,
+                Atlas connects everyday home learning with a real human advisor,
                 your teachers and your family. An assistant shows you where
                 things are, and practice you do on your own stays your own.
               </p>
@@ -179,7 +179,7 @@ export function Landing() {
                 </Link>
               </Button>
               <p className="mt-5 max-w-xs text-xs text-muted-foreground">
-                For students in grades 10–12, their families, advisers and
+                For students in grades 10–12, their families, advisors and
                 schools.
               </p>
             </div>
@@ -234,11 +234,11 @@ export function Landing() {
                 {
                   kind: "bubble" as const,
                   title: "Human guidance",
-                  text: "A qualified adviser who follows a student’s interests and choices over the years.",
+                  text: "A qualified advisor who follows a student’s interests and choices over the years.",
                   items: [
-                    "Subject choices with an adviser and parent",
+                    "Subject choices with an advisor and parent",
                     "Questions and next steps in one place",
-                    "The adviser’s words are their own",
+                    "The advisor’s words are their own",
                   ],
                 },
                 {
@@ -254,7 +254,7 @@ export function Landing() {
                 {
                   kind: "lens" as const,
                   title: "Evidence for adults",
-                  text: "Teachers, advisers and families see what helps them support a student.",
+                  text: "Teachers, advisors and families see what helps them support a student.",
                   items: [
                     "Help received and own work, kept apart",
                     "Misconceptions with student reasoning",
@@ -330,7 +330,7 @@ export function Landing() {
                   {[
                     "Finish your batch",
                     "Resume lesson",
-                    "Adviser replied",
+                    "Advisor replied",
                     "CS proposal",
                   ].map((title, i) => (
                     <div
@@ -363,7 +363,7 @@ export function Landing() {
                     [
                       "Open Practice batch, answer each problem, then choose ‘Submit the whole batch’.",
                       "Try the Mass vs weight chapter at 6:10. Keep kilograms and newtons separate.",
-                      "Open Subjects & path. Your Computer Science proposal is with your adviser.",
+                      "Open Subjects & path. Your Computer Science proposal is with your advisor.",
                     ][question]
                   }
                 </div>
@@ -647,7 +647,7 @@ export function Landing() {
                 ],
                 [
                   "Run one unit",
-                  "Teachers record lessons, advisers meet students, and independent practice runs alongside.",
+                  "Teachers record lessons, advisors meet students, and independent practice runs alongside.",
                 ],
                 [
                   "Compare fairly",

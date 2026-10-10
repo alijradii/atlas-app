@@ -35,7 +35,7 @@ const copy: Record<
         "People",
         "adviser",
       ],
-      ["Computer Science proposal", "With adviser", "Choices", "subjects"],
+      ["Computer Science proposal", "With advisor", "Choices", "subjects"],
     ],
   },
   sami: {
@@ -62,7 +62,7 @@ const copy: Record<
         "People",
         "activities",
       ],
-      ["Meet your adviser", "Matching in progress", "Choices", "adviser"],
+      ["Meet your advisor", "Matching in progress", "Choices", "adviser"],
     ],
   },
   daher: {
@@ -177,7 +177,7 @@ const helpers: Record<Role, string[]> = {
   ],
   parent: [
     "Choices that need my review",
-    "New guidance from the adviser",
+    "New guidance from the advisor",
     "Activity updates",
   ],
   staff: ["New activity proposals", "Activities filling up", "Access requests"],
@@ -194,14 +194,14 @@ function WelcomeWizard() {
           [
             "Your school, from home too",
             "What are you curious about?",
-            "Your adviser is being matched",
+            "Your advisor is being matched",
           ][step]
         }
       </h1>
       <p className="text-muted-foreground">
         {
           [
-            "Rewatch lessons, practise on your own and work with a human adviser on what to study next.",
+            "Rewatch lessons, practise on your own and work with a human advisor on what to study next.",
             "Pick a few interests. You can change them whenever you like.",
             "You can start with lessons and practice while the school matches you with a specialist.",
           ][step]
@@ -306,7 +306,7 @@ export function WorkspaceHome({ accountId }: { accountId: AccountId }) {
                     ? "Independent work, with next steps"
                     : "Five problems, on your own"
                 : href === "subjects" && accountId === "lina"
-                  ? `Status: ${state.proposals.find((p) => p.subject === "cs")?.status ?? "Not proposed"}`
+                  ? `Status: ${(state.proposals.find((p) => p.subject === "cs")?.status ?? "Not proposed").replace("adviser", "advisor")}`
                   : sub
             }
             label={label}
@@ -391,7 +391,7 @@ export function WorkspaceHome({ accountId }: { accountId: AccountId }) {
               >
                 <p>{advice.txt}</p>
                 <footer className="mt-2 text-xs text-muted-foreground">
-                  Dr. Maya Nassar · human adviser
+                  Dr. Maya Nassar · human advisor
                 </footer>
               </blockquote>
             ))}

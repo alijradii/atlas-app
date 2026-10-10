@@ -264,7 +264,7 @@ export function Pipeline({ status }: { status: string }) {
   const current = stages.indexOf(status);
   return (
     <ol className="grid gap-3 sm:grid-cols-4">
-      {["Adviser review", "Parent review", "School confirms", "Confirmed"].map(
+      {["Advisor review", "Parent review", "School confirms", "Confirmed"].map(
         (stage, i) => (
           <li key={stage} className="flex items-center gap-2 text-xs">
             <span

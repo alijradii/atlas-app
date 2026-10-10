@@ -96,7 +96,7 @@
           "k": "math75"
         },
         {
-          "t": "Adviser conversation",
+          "t": "Advisor conversation",
           "k": "adv"
         }
       ],
@@ -312,7 +312,7 @@
       "role": "adviser",
       "name": "Dr. Maya Nassar",
       "email": "m.nassar@advisers.demo",
-      "meta": "Engineering & sciences adviser"
+      "meta": "Engineering & sciences advisor"
     },
     "daher": {
       "id": "daher",

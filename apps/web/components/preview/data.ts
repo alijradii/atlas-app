@@ -8,7 +8,7 @@ export const accounts = Object.values(fixture.accounts);
 export const roleNames: Record<Role, string> = {
   student: "Student",
   teacher: "Teacher",
-  adviser: "Adviser",
+  adviser: "Advisor",
   parent: "Parent",
   staff: "School staff",
 };
@@ -19,7 +19,7 @@ export const navigation: Record<Role, [string, string, string][]> = {
     ["lessons", "Lessons", "video"],
     ["study", "Study with agent", "chat"],
     ["practice", "Practice batch", "pen"],
-    ["adviser", "My adviser", "user"],
+    ["adviser", "My advisor", "user"],
     ["activities", "Interests & activities", "heart"],
   ],
   teacher: [

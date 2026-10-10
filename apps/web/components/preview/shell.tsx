@@ -50,10 +50,12 @@ export function WorkspaceShell({
   accountId,
   section,
   children,
+  onNewChat,
 }: {
   accountId: AccountId;
   section: string;
   children: React.ReactNode;
+  onNewChat: () => void;
 }) {
   const account = fixture.accounts[accountId];
   const role = account.role as Role;
@@ -62,6 +64,12 @@ export function WorkspaceShell({
   const [menu, setMenu] = useState(false);
   const [prompt, setPrompt] = useState("");
   const base = `/preview/${accountId}/`;
+  const pins =
+    accountId === "lina" || accountId === "sami"
+      ? fixture.lessons.filter((lesson) =>
+          state.lessonPins[accountId].includes(lesson.id),
+        )
+      : [];
   const nav = (
     <>
       <Brand className="px-3 py-7" />
@@ -96,21 +104,31 @@ export function WorkspaceShell({
         })}
       </nav>
       <Button asChild variant="outline" className="mt-7 w-full bg-transparent">
-        <Link href={`${base}chat`} onClick={() => setMenu(false)}>
+        <Link
+          href={`${base}chat`}
+          onClick={() => {
+            setMenu(false);
+            onNewChat();
+          }}
+        >
           <SquarePen />
           New chat
         </Link>
       </Button>
-      {state.pinned && role === "student" && (
-        <div className="mt-6 px-3">
-          <p className="eyebrow mb-3">Pinned</p>
-          <Link
-            href={`${base}lesson/L1`}
-            className="text-xs text-muted-foreground"
-          >
-            Mass vs weight · 6:10
-          </Link>
-        </div>
+      {pins.length > 0 && (
+        <nav aria-label="Pinned lessons" className="mt-6 grid gap-3 px-3">
+          <p className="eyebrow">Pinned</p>
+          {pins.map((lesson) => (
+            <Link
+              key={lesson.id}
+              href={`${base}lesson/${lesson.id}`}
+              className="text-xs text-muted-foreground"
+              onClick={() => setMenu(false)}
+            >
+              {lesson.title}
+            </Link>
+          ))}
+        </nav>
       )}
       <div className="mt-auto pt-10">
         <DropdownMenu>

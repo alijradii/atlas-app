@@ -150,6 +150,9 @@ export function Lesson({
   const { state, setState } = usePreview();
   const [chapter, setChapter] = useState(0);
   const lesson = fixture.lessons.find((l) => l.id === id);
+  const student =
+    accountId === "lina" || accountId === "sami" ? accountId : null;
+  const pinned = student ? state.lessonPins[student].includes(id) : false;
   if (!state.school && !state.settings.recHome && accountId !== "daher")
     return <Restricted title="Recordings are available at school" />;
   if (!lesson)
@@ -201,18 +204,33 @@ export function Lesson({
             </div>
             <div className="flex flex-wrap gap-3">
               <Button asChild>
-                <Link href={`/preview/${accountId}/study`}>
-                  Study this lesson <ArrowRight />
+                <Link
+                  href={`/preview/${accountId}/${student ? "study" : "chat"}`}
+                >
+                  {student ? "Study this lesson" : "Open workspace assistant"}{" "}
+                  <ArrowRight />
                 </Link>
               </Button>
-              <Button
-                variant="outline"
-                aria-pressed={state.pinned}
-                onClick={() => setState((s) => ({ ...s, pinned: !s.pinned }))}
-              >
-                <Pin />
-                {state.pinned ? "Remove shortcut" : "Pin to my home"}
-              </Button>
+              {student && (
+                <Button
+                  variant="outline"
+                  aria-pressed={pinned}
+                  onClick={() =>
+                    setState((s) => ({
+                      ...s,
+                      lessonPins: {
+                        ...s.lessonPins,
+                        [student]: s.lessonPins[student].includes(id)
+                          ? s.lessonPins[student].filter((pin) => pin !== id)
+                          : [...s.lessonPins[student], id],
+                      },
+                    }))
+                  }
+                >
+                  <Pin />
+                  {pinned ? "Remove shortcut" : "Pin to my home"}
+                </Button>
+              )}
             </div>
           </Panel>
         </div>

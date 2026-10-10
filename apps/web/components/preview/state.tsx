@@ -8,6 +8,8 @@ import {
   useState,
 } from "react";
 
+import { restorePreviewState } from "./persistence";
+
 export type Proposal = {
   subject: string;
   reason: string;
@@ -41,7 +43,7 @@ export type PreviewState = {
   activityDrafts: { title: string; when: string; description: string }[];
   lessonDrafts: { title: string; filename: string; audience: string }[];
   settings: Record<string, boolean>;
-  pinned: boolean;
+  lessonPins: Record<"lina" | "sami", string[]>;
   followups: string[];
 };
 export function initialState(): PreviewState {
@@ -93,7 +95,7 @@ export function initialState(): PreviewState {
     activityDrafts: [],
     lessonDrafts: [],
     settings: { recHome: true, advisersRemote: true, studentProposals: true },
-    pinned: false,
+    lessonPins: { lina: [], sami: [] },
     followups: [],
   };
 }
@@ -108,7 +110,7 @@ export function PreviewProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     try {
       const saved = sessionStorage.getItem("atlas-pearl-preview-v1");
-      if (saved) setState({ ...initialState(), ...JSON.parse(saved) });
+      if (saved) setState(restorePreviewState(saved, initialState()));
     } catch {
       /* An unavailable preview store starts a fresh session. */
     }

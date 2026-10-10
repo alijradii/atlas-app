@@ -48,7 +48,7 @@ export function Proposals({ accountId }: { accountId: AccountId }) {
     <>
       <PageHeading
         title={parent ? "Subject choices" : "Subject proposals"}
-        description="A choice made together. Student proposes, adviser recommends, family reviews, school confirms."
+        description="A choice made together. Student proposes, advisor recommends, family reviews, school confirms."
       />
       <Notice>
         These decisions update the sample workflow in this browser session only.
@@ -63,7 +63,7 @@ export function Proposals({ accountId }: { accountId: AccountId }) {
                 ? "Changes requested"
                 : p.status === "agreed"
                   ? "Confirmed"
-                  : `With ${p.status}`}
+                  : `With ${p.status === "adviser" ? "advisor" : p.status}`}
             </Status>
           }
         >
@@ -123,7 +123,7 @@ export function Proposals({ accountId }: { accountId: AccountId }) {
                     update(
                       p.subject,
                       "changes",
-                      "Please discuss the subject load with your adviser before resubmitting.",
+                      "Please discuss the subject load with your advisor before resubmitting.",
                     )
                   }
                 >
@@ -221,7 +221,7 @@ export function StudentDetail({ id }: { id: string }) {
   return (
     <>
       <PageHeading
-        eyebrow={`Grade ${student.grade} · adviser workspace`}
+        eyebrow={`Grade ${student.grade} · advisor workspace`}
         title={student.name}
         description={student.interests.join(" · ")}
       />
@@ -713,7 +713,7 @@ export function Access() {
                 ["Recorded lessons", "Available", "School decides"],
                 ["Study assistant", "Available", "Available"],
                 ["Independent practice", "Available", "Available"],
-                ["Human adviser", "Available", "School decides"],
+                ["Human advisor", "Available", "School decides"],
                 ["Teacher analytics", "Available", "School network only"],
                 ["Parent progress", "School decides", "School decides"],
               ].map((row) => (
@@ -762,7 +762,7 @@ export function Settings() {
           ],
           [
             "advisersRemote",
-            "Remote adviser conversations",
+            "Remote advisor conversations",
             "Make space for guidance beyond the school day.",
           ],
           [

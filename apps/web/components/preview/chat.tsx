@@ -28,8 +28,8 @@ function reply(text: string, student: boolean) {
   if (/mass|weight|gravity/i.test(text)) return cards[0].a;
   if (/friction|net|force/i.test(text))
     return "Start by identifying all the forces and their directions. Subtract friction from the applied force to get the net force. Then use a = F / m. Try describing a free-body diagram in your own words.";
-  if (/subject|adviser|choice/i.test(text))
-    return "Subject choices deserve a conversation. Explore the course requirements in Subjects & path, then bring your goals and questions to your human adviser. This sample assistant does not make that decision for you.";
+  if (/subject|advis[eo]r|choice/i.test(text))
+    return "Subject choices deserve a conversation. Explore the course requirements in Subjects & path, then bring your goals and questions to your human advisor. This sample assistant does not make that decision for you.";
   return "Let’s start with Newton’s second law. What is the unknown: force, mass or acceleration? Identify that first, then write F = ma. This is a scripted example; try asking about mass and weight, net force, or subject choices.";
 }
 export function Chat({
@@ -91,7 +91,7 @@ export function Chat({
         <Panel title="Assistant unavailable">
           <p>
             You can still watch lessons, work through practice and talk to your
-            adviser.
+            advisor.
           </p>
           <Button asChild variant="outline">
             <Link href={`/preview/${accountId}/lessons`}>Browse lessons</Link>

@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import {
   Access,
   Analytics,
@@ -26,6 +27,7 @@ export function Workspace({
   item?: string;
   prompt?: string;
 }) {
+  const [chatRevision, setChatRevision] = useState(0);
   let content: React.ReactNode;
   switch (section) {
     case "subjects":
@@ -80,7 +82,7 @@ export function Workspace({
     case "chat":
       content = (
         <Chat
-          key={`${accountId}-${prompt}`}
+          key={`${accountId}-${prompt}-${chatRevision}`}
           accountId={accountId}
           study={section === "study"}
           prompt={prompt}
@@ -91,7 +93,11 @@ export function Workspace({
       content = <WorkspaceHome accountId={accountId} />;
   }
   return (
-    <WorkspaceShell accountId={accountId} section={section}>
+    <WorkspaceShell
+      accountId={accountId}
+      section={section}
+      onNewChat={() => setChatRevision((revision) => revision + 1)}
+    >
       {content}
     </WorkspaceShell>
   );
