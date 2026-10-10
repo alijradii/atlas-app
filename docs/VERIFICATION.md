@@ -42,6 +42,11 @@ was reproduced. This is a focused rerun after the earlier 69-test full run; the
 suite now contains 70 scenarios. Real local desktop/mobile Files screenshots were
 recaptured and inspected after sign-in, alongside the role-workflow screenshots.
 
+Before publication, upstream `main` advanced to `81af81e` with interactive landing
+demo cards. Those changes were merged without overwriting them. The combined tree
+passed frontend lint/types/contracts and all 55 unit tests, then **11/11 compiled
+production landing, Pearl accessibility, navigation and motion scenarios**.
+
 A separate real Gemini transcription check used a short synthetic spoken physics
 clip, exercising local ffmpeg conversion and the configured transcription provider.
 No personal or classroom recording was sent. Native PDF extraction and live ClamAV
