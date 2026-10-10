@@ -119,37 +119,29 @@ test("helper state changes preserve animation identity and use bare line icons",
   ).toBeVisible();
 });
 
-test("home reference proportions and student work sections survive narrow layouts", async ({
+test("priority home keeps compact artwork and accessible work sections on narrow layouts", async ({
   page,
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/preview/lina/home");
-  const bounds = await page.locator(".pearl-home").evaluate((home) => {
-    const rect = (selector: string) => {
-      const element = home.querySelector(selector);
-      if (!element) throw new Error(`Missing home element: ${selector}`);
-      return element.getBoundingClientRect();
-    };
-    return {
-      hero: rect(".pearl-home-hero").width,
-      copy: rect(".pearl-home-hero-copy").width,
-      tile: rect(".pearl-home-action").height,
-      helper: rect(".pearl-home-more").width,
-    };
-  });
-  expect(bounds.copy / bounds.hero).toBeCloseTo(0.575, 2);
-  expect(bounds.tile).toBeGreaterThanOrEqual(270);
-  expect(bounds.tile).toBeLessThan(360);
-  expect(bounds.helper).toBe(720);
+  const hero = page.locator(".pearl-home-hero");
+  const height = (await hero.boundingBox())?.height ?? 0;
+  expect(height).toBeGreaterThanOrEqual(140);
+  expect(height).toBeLessThan(250);
+  for (const name of ["Needs you", "Continue", "Waiting on others"]) {
+    await expect(
+      page.getByRole("heading", { name, exact: true }),
+    ).toBeVisible();
+  }
+  await page.getByText("Your week & subjects", { exact: true }).click();
   await expect(
     page.getByRole("heading", { name: "Needs your attention" }),
   ).toBeVisible();
-  await expect(
-    page.getByRole("heading", { name: "Unfinished work" }),
-  ).toBeVisible();
   await expect(page.getByRole("heading", { name: "Coming up" })).toBeVisible();
   await page.setViewportSize({ width: 390, height: 844 });
-  await expect(page.locator(".pearl-home-date")).toBeVisible();
+  await expect(
+    hero.getByRole("heading", { name: "Welcome back, Lina" }),
+  ).toBeVisible();
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,

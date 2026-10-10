@@ -11,7 +11,7 @@ test("home cards expose a task, current state and one matching destination", asy
   const practice = cards.filter({ hasText: "Continue practice" });
   await expect(practice).toHaveAttribute("data-task-kind", "practice");
   await expect(practice).toContainText("2 of 5 ready");
-  await expect(practice.locator("svg.atlas-task-art")).toHaveAttribute(
+  await expect(practice.locator(".atlas-task-art")).toHaveAttribute(
     "aria-hidden",
     "true",
   );
@@ -45,6 +45,10 @@ test("a submitted batch changes the call to action, keeping its practice identit
   await page.goto("/preview/lina/home");
   const practice = page.locator('a[data-task-id="practice"]');
   await expect(practice).toHaveAttribute("data-task-kind", "practice");
+  await expect(practice).toHaveAttribute("data-task-group", "done");
+  await expect(practice).not.toBeVisible();
+  await page.locator(".pearl-home-completed > summary").click();
+  await expect(practice).toBeVisible();
   await expect(practice).toContainText("Your feedback is ready");
   await expect(practice).toContainText("Review feedback");
   await expect(practice).not.toContainText("Continue practice");
@@ -123,4 +127,37 @@ test("task cards remain legible and usable in dark and narrow layouts", async ({
     path: ".cache/pearl/meaning-mobile.png",
     fullPage: true,
   });
+});
+
+test("home puts current actions before continuation and waiting, without losing work sections", async ({
+  page,
+}) => {
+  await page.goto("/preview/lina/home");
+  await expect(page.locator(".pearl-home-summary-line")).toHaveText(
+    "2 things need you · 1 to continue · 1 waiting",
+  );
+  await expect(page.locator(".pearl-home-group-heading h2")).toHaveText([
+    "Needs you",
+    "Continue",
+    "Waiting on others",
+  ]);
+  await expect(
+    page.locator('.pearl-home-group-needs [data-task-id="practice"]'),
+  ).toBeVisible();
+  await expect(
+    page.locator('.pearl-home-group-needs [data-task-id="advisor"]'),
+  ).toBeVisible();
+  await expect(
+    page.locator('.pearl-home-group-continue [data-task-id="lesson-L1"]'),
+  ).toBeVisible();
+  await expect(
+    page.locator('.pearl-home-group-waiting [data-task-id="proposal-cs"]'),
+  ).toContainText("Waiting for Dr. Nassar");
+  await page.locator(".pearl-home-overview > summary").click();
+  await expect(
+    page.getByRole("heading", { name: "My subjects", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Agreed next steps", exact: true }),
+  ).toBeVisible();
 });

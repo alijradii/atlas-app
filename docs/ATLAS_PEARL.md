@@ -37,3 +37,25 @@ Assistant responses and flashcards are scripted. Feedback uses the kit's fixed e
 - `components.json` in web/UI: shadcn monorepo aliases.
 
 Hanken Grotesk is self-hosted from its pinned Fontsource package. No production deployment or release approval is implied by this frontend implementation. See SECURITY.md and VERIFICATION.md.
+
+## Priority home and glass vocabulary — October 10, 2026
+
+The home layout now follows the supplied Iteration 2 priority hierarchy while
+retaining Atlas glass. A compact greeting keeps the ambient sphere scene as brand
+atmosphere. Tasks follow **Needs you → Continue → Waiting → Done**; a changed task
+state changes its group and action, not its identity. Waiting items do not imply a
+user action. Completed work is collapsed by default, with the earlier week and
+subject details still available under “Your week & subjects”.
+
+Glass artwork depicts its task: a worksheet stack for practice, a play screen for
+lessons, an initials medallion for a person, branching nodes for a choice and a fan
+of cards for study cards. Practice fill reflects answered fraction. Semantic text
+and actions carry all meaning; decorative artwork is hidden from assistive
+technology. The person treatment is consistently reused rather than assigning an
+unexplained bubble to people. Cobalt remains the action accent and rainbow edges
+remain material highlights.
+
+Ambient motion uses continuous compositor transforms, pauses outside the viewport
+and honors reduced motion. The helper icons remain unboxed. The assistant dock,
+recommendations, rich messages, spotlight guidance and persistent sample pins are
+preserved in the preview; these sample school actions are not real AI tools.

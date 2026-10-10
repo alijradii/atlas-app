@@ -156,21 +156,28 @@ export function ActionCard({
   label,
   href,
   kind,
-  locked,
   initials,
   progress,
   action,
-}: HomeCard) {
+  status,
+  group,
+  compact = false,
+}: HomeCard & { compact?: boolean }) {
   return (
     <Link
       href={href}
-      className="pearl-home-action"
+      className={`pearl-home-action${compact ? " pearl-home-action-compact" : ""}`}
       data-task-kind={kind}
       data-task-id={id}
+      data-task-group={group}
     >
       <div className="pearl-home-action-art">
         <TaskArt kind={kind} initials={initials} progress={progress} />
       </div>
+      <span className="pearl-home-action-status">
+        <i className="pearl-home-state-dot" aria-hidden="true" />
+        {status}
+      </span>
       <span className="pearl-home-action-copy">
         <span className="pearl-home-action-kicker">{label}</span>
         <strong>{title}</strong>
@@ -180,11 +187,6 @@ export function ActionCard({
         {action}
         <ArrowUpRight size={15} aria-hidden="true" />
       </span>
-      {locked && (
-        <span className="pearl-home-action-lock">
-          <LockKeyhole /> At school
-        </span>
-      )}
     </Link>
   );
 }

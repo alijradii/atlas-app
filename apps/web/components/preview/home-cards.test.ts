@@ -172,3 +172,61 @@ test("missing subject proposal offers exploration instead of a nonexistent revie
     });
   }
 });
+
+test("priority follows the current reviewer instead of making every proposal urgent", () => {
+  const state = initialState();
+  for (const [status, reviewer] of [
+    ["adviser", "nassar"],
+    ["parent", "karim"],
+    ["school", "hajj"],
+    ["changes", "lina"],
+  ] as const) {
+    state.proposals[0].status = status;
+    for (const account of ["lina", "nassar", "karim", "hajj"] as const) {
+      expect(findCard(account, "proposal-cs", state).group).toBe(
+        account === reviewer ? "needs" : "waiting",
+      );
+    }
+  }
+  state.proposals[0].status = "agreed";
+  expect(findCard("lina", "proposal-cs", state).group).toBe("done");
+  state.proposals = [];
+  expect(findCard("lina", "proposal-cs", state).group).toBe("continue");
+});
+
+test("practice fills use the student's real ready count and move submitted work out of attention", () => {
+  const state = initialState();
+  state.answers = ["4", "", "", "", ""];
+  state.stuck = [false, true, false, false, false];
+  expect(findCard("lina", "practice", state)).toMatchObject({
+    group: "needs",
+    progress: 0.4,
+  });
+  state.batch = "feedback";
+  expect(findCard("lina", "practice", state)).toMatchObject({
+    group: "done",
+    progress: 1,
+    status: "Submitted",
+  });
+  expect(findCard("sami", "practice", state)).toMatchObject({
+    group: "needs",
+    progress: 0,
+  });
+});
+
+test("human matching and unanswered questions go to the actor who can act", () => {
+  const state = initialState();
+  expect(findCard("sami", "advisor", state)).toMatchObject({
+    group: "waiting",
+    status: "Being matched",
+  });
+  state.questions = [{ text: "How do I choose?", reply: "" }];
+  expect(findCard("nassar", "student-question", state).group).toBe("needs");
+  expect(findCard("lina", "advisor", state).group).toBe("continue");
+  state.questions[0].reply = "Let's discuss it.";
+  expect(findCard("nassar", "student-question", state).group).toBe("continue");
+  expect(findCard("lina", "advisor", state)).toMatchObject({
+    group: "needs",
+    status: "Reply available",
+  });
+});

@@ -17,57 +17,13 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { PearlScene } from "../pearl";
 import { type AccountId, fixture, type Role, roleNames } from "./data";
-import { homeCards } from "./home-cards";
+import { type HomeGroup, homeCards } from "./home-cards";
 import { ParentOverview, StudentWeek } from "./home-sections";
-import { ActionCard, Hero, Panel } from "./shared";
+import { ActionCard, Panel } from "./shared";
 import { usePreview } from "./state";
 
-const copy: Record<
-  AccountId,
-  {
-    title: string;
-    action: string;
-    route: string;
-  }
-> = {
-  lina: {
-    title:
-      "Hi Lina, I’m your study assistant. Pick up where you left off, or ask me anything from your lessons.",
-    action: "Continue practice batch",
-    route: "practice",
-  },
-  sami: {
-    title:
-      "Hi Sami, let’s set up your first week. Start with a lesson, a little practice, and what interests you.",
-    action: "Watch your first lesson",
-    route: "lessons",
-  },
-  daher: {
-    title:
-      "Good morning, Elie. Here’s what your Grade 10 physics classes need this week, and what’s worth revisiting in your teaching.",
-    action: "Open class analytics",
-    route: "analytics",
-  },
-  nassar: {
-    title:
-      "Welcome back, Maya. Review your students’ questions, subject proposals and agreed next steps. Your advice stays your own.",
-    action: "Open Lina’s workspace",
-    route: "student/lina",
-  },
-  karim: {
-    title:
-      "Hello Karim. Here’s what’s happening around Lina’s subject choices, guidance and activities.",
-    action: "Review subject choices",
-    route: "choices",
-  },
-  hajj: {
-    title:
-      "Good morning, Rita. Review student activities, confirm subject choices and manage school access.",
-    action: "Review activities",
-    route: "activities",
-  },
-};
 const helpers: Record<Role, { label: string; icon: LucideIcon }[]> = {
   student: [
     { label: "New lessons in my subjects", icon: Bell },
@@ -170,7 +126,6 @@ export function WorkspaceHome({ accountId }: { accountId: AccountId }) {
   const { state, setState } = usePreview();
   const account = fixture.accounts[accountId];
   const role = account.role as Role;
-  const content = copy[accountId];
   const firstName = {
     lina: "Lina",
     sami: "Sami",
@@ -179,7 +134,6 @@ export function WorkspaceHome({ accountId }: { accountId: AccountId }) {
     karim: "Karim",
     hajj: "Rita",
   }[accountId];
-  const greeting = content.title.split(firstName);
   const base = `/preview/${accountId}/`;
   const [date, setDate] = useState<Date | null>(null);
   useEffect(() => setDate(new Date()), []);
@@ -192,44 +146,108 @@ export function WorkspaceHome({ accountId }: { accountId: AccountId }) {
           state.lessonPins[accountId].includes(lesson.id),
         )
       : [];
+  const cards = homeCards(accountId, state);
+  const groups: { id: HomeGroup; title: string; empty: string }[] = [
+    {
+      id: "needs",
+      title: "Needs you",
+      empty: "Nothing needs your attention right now.",
+    },
+    {
+      id: "continue",
+      title: "Continue",
+      empty:
+        "Nothing to pick up yet. Your lessons and other tools are in the sidebar.",
+    },
+    {
+      id: "waiting",
+      title: "Waiting on others",
+      empty: "Nothing is waiting on someone else.",
+    },
+  ];
+  const done = cards.filter((card) => card.group === "done");
+  const needs = cards.filter((card) => card.group === "needs").length;
+  const continuing = cards.filter((card) => card.group === "continue").length;
+  const waiting = cards.filter((card) => card.group === "waiting").length;
   if (accountId === "sami" && !state.onboarded) return <WelcomeWizard />;
   return (
     <div className="pearl-home">
-      <Hero
-        date={date}
-        eyebrow={`${roleNames[role]}${date ? ` · ${date.toLocaleDateString("en", { weekday: "long" })}` : ""}`}
-        title={
-          accountId === "lina" && state.batch === "active" ? (
-            <>
-              Hi <span className="text-cobalt">Lina</span>, I’m your study
-              assistant. You have a practice batch waiting, and I’m paused until
-              you submit it.
-            </>
-          ) : (
-            <>
-              {greeting[0]}
-              <span className="text-cobalt">{firstName}</span>
-              {greeting.slice(1).join(firstName)}
-            </>
-          )
-        }
-        action={
-          <Button asChild size="lg" className="pearl-home-primary">
-            <Link href={base + content.route}>
-              {accountId === "lina" && state.batch === "feedback"
-                ? "See your batch feedback"
-                : accountId === "lina" && state.batch === "none"
-                  ? "Start a practice batch"
-                  : content.action}
-            </Link>
-          </Button>
-        }
-      />
-      <div className="pearl-home-cards">
-        {homeCards(accountId, state).map((card) => (
-          <ActionCard key={card.id} {...card} />
-        ))}
-      </div>
+      <header className="pearl-home-hero pearl-home-greeting">
+        <div className="pearl-home-hero-copy">
+          <p className="eyebrow">
+            {roleNames[role]} ·{" "}
+            {date
+              ? date.toLocaleDateString("en", {
+                  weekday: "long",
+                  day: "numeric",
+                  month: "long",
+                })
+              : "Your workspace"}
+          </p>
+          <h1>
+            Welcome back, <span className="text-cobalt">{firstName}</span>
+          </h1>
+          <p className="pearl-home-summary-line">
+            {needs
+              ? `${needs} ${needs === 1 ? "thing needs" : "things need"} you`
+              : "You’re all caught up"}{" "}
+            · {continuing} to continue · {waiting} waiting
+          </p>
+        </div>
+        <PearlScene
+          className="pearl-home-hero-stage pearl-home-greeting-scene"
+          compact
+        />
+      </header>
+      {groups.map(({ id, title, empty }) => {
+        const items = cards.filter((card) => card.group === id);
+        return (
+          <section
+            className={`pearl-home-group pearl-home-group-${id}`}
+            aria-labelledby={`home-${id}-title`}
+            key={id}
+          >
+            <div className="pearl-home-group-heading">
+              <h2 id={`home-${id}-title`}>{title}</h2>
+              <span>{items.length}</span>
+            </div>
+            {items.length ? (
+              <div
+                className={
+                  id === "needs" ? "pearl-home-cards" : "pearl-home-task-list"
+                }
+              >
+                {items.map((card) => (
+                  <ActionCard
+                    key={card.id}
+                    {...card}
+                    compact={id !== "needs"}
+                  />
+                ))}
+              </div>
+            ) : (
+              <p className="pearl-home-group-empty">{empty}</p>
+            )}
+          </section>
+        );
+      })}
+      <details className="pearl-home-completed">
+        <summary>
+          <span>Done</span>
+          <span>{done.length} completed</span>
+        </summary>
+        {done.length ? (
+          <div className="pearl-home-task-list">
+            {done.map((card) => (
+              <ActionCard key={card.id} {...card} compact />
+            ))}
+          </div>
+        ) : (
+          <p className="pearl-home-group-empty">
+            Completed practice and confirmed choices will stay here.
+          </p>
+        )}
+      </details>
       {pins.length > 0 && (accountId === "lina" || accountId === "sami") && (
         <section className="pearl-home-pins" aria-label="My shortcuts">
           <span className="eyebrow">My shortcuts</span>
@@ -322,7 +340,12 @@ export function WorkspaceHome({ accountId }: { accountId: AccountId }) {
         </div>
       </Card>
       {(accountId === "lina" || accountId === "sami") && (
-        <StudentWeek accountId={accountId} date={date} />
+        <details className="pearl-home-overview">
+          <summary>Your week &amp; subjects</summary>
+          <div className="pearl-home-overview-content">
+            <StudentWeek accountId={accountId} date={date} />
+          </div>
+        </details>
       )}
       {role === "parent" && <ParentOverview date={date} />}
       {role === "adviser" && (

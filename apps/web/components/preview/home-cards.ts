@@ -2,7 +2,11 @@ import { type AccountId, duration, fixture } from "./data";
 import type { PreviewState, Proposal } from "./state";
 import type { TaskKind } from "./task-art";
 
+export type HomeGroup = "needs" | "continue" | "waiting" | "done";
+
 export type HomeCard = {
+  group: HomeGroup;
+  status: string;
   id: string;
   kind: TaskKind;
   label: string;
@@ -15,6 +19,7 @@ export type HomeCard = {
   locked?: boolean;
 };
 const labels: Record<TaskKind, string> = {
+  cards: "Study cards",
   practice: "Practice",
   lesson: "Lesson",
   advisor: "Human advisor",
@@ -44,10 +49,7 @@ export function proposalSummary(status?: Proposal["status"]) {
       return "Explore whether this subject fits your plans";
   }
 }
-export function homeCards(
-  accountId: AccountId,
-  state: PreviewState,
-): HomeCard[] {
+function buildHomeCards(accountId: AccountId, state: PreviewState): HomeCard[] {
   const base = `/preview/${accountId}/`;
   const card = (
     id: string,
@@ -58,6 +60,8 @@ export function homeCards(
     href: string,
     extra: Partial<HomeCard> = {},
   ): HomeCard => ({
+    group: "continue",
+    status: "Available",
     id,
     kind,
     label: labels[kind],
@@ -106,6 +110,9 @@ export function homeCards(
           ? "Review feedback"
           : "Start practice",
       "practice",
+      {
+        progress: batch === "feedback" ? 1 : batch === "active" ? ready / 5 : 0,
+      },
     );
     if (fresh)
       return [
@@ -306,4 +313,104 @@ export function homeCards(
       "settings",
     ),
   ];
+}
+
+/** Priority is derived from the current actor and workflow, never card position. */
+export function homeCards(
+  accountId: AccountId,
+  state: PreviewState,
+): HomeCard[] {
+  const cs = state.proposals.find((proposal) => proposal.subject === "cs");
+  return buildHomeCards(accountId, state).map((card): HomeCard => {
+    if (card.id === "practice") {
+      const batch = accountId === "sami" ? state.samiBatch : state.batch;
+      return {
+        ...card,
+        group: batch === "feedback" ? "done" : "needs",
+        status:
+          batch === "feedback"
+            ? "Submitted"
+            : batch === "active"
+              ? "Your turn"
+              : "Ready to start",
+      };
+    }
+    if (card.id === "proposal-cs") {
+      const mine =
+        (accountId === "lina" && cs?.status === "changes") ||
+        (accountId === "nassar" && cs?.status === "adviser") ||
+        (accountId === "karim" && cs?.status === "parent") ||
+        (accountId === "hajj" && cs?.status === "school");
+      return {
+        ...card,
+        group: !cs
+          ? "continue"
+          : cs.status === "agreed"
+            ? "done"
+            : mine
+              ? "needs"
+              : "waiting",
+        status: !cs
+          ? "Not proposed"
+          : cs.status === "agreed"
+            ? "Confirmed"
+            : mine
+              ? "Your review"
+              : "Waiting",
+      };
+    }
+    if (card.id === "advisor") {
+      const matched = accountId !== "sami";
+      const reply =
+        matched && state.questions.some((question) => question.reply);
+      return {
+        ...card,
+        group: !matched ? "waiting" : reply ? "needs" : "continue",
+        status: !matched
+          ? "Being matched"
+          : reply
+            ? "Reply available"
+            : "Human guidance",
+      };
+    }
+    if (card.id === "student-question") {
+      const unanswered = state.questions.some((question) => !question.reply);
+      return {
+        ...card,
+        group: unanswered ? "needs" : "continue",
+        status: unanswered ? "Needs a reply" : "Guidance up to date",
+      };
+    }
+    if (card.id === "activities") {
+      const pending = [
+        ...fixture.activities,
+        ...state.activityDrafts.map((draft, i) => ({
+          ...draft,
+          id: `draft-${i}`,
+          status: "proposed",
+        })),
+      ].some(
+        (activity) =>
+          (state.activityReviews[activity.id] || activity.status) ===
+          "proposed",
+      );
+      return {
+        ...card,
+        group: pending ? "needs" : "done",
+        status: pending ? "Your review" : "Reviewed",
+      };
+    }
+    if (card.locked)
+      return { ...card, group: "waiting", status: "School network only" };
+    if (card.kind === "lesson")
+      return {
+        ...card,
+        status: !state.video
+          ? "Playback unavailable"
+          : card.progress
+            ? `${Math.round(card.progress * 100)}% watched`
+            : "Ready to open",
+      };
+    return card;
+  });
 }
