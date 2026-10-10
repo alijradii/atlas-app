@@ -4,6 +4,13 @@
 workspace. Preview identities do not grant real access. Teacher-published lessons
 require an explicit, currently valid student relationship; see [SCHOOL.md](SCHOOL.md).
 
+Study uses the same Pearl sidebar, message renderer, composer and collapsible
+assistant dock as the main interface. The source library stays next to the
+conversation (above it on narrow screens). Home questions transfer as private
+in-memory drafts: choose sources, create a conversation and send explicitly.
+Nothing is automatically submitted or indexed by opening the screen. The sidebar's
+New chat action returns to source selection without deleting saved conversations.
+
 ## Use it
 
 1. Provision an account with `make create-user`, then sign in at `/login`.

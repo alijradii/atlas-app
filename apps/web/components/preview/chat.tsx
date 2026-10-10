@@ -4,11 +4,16 @@ import { LockKeyhole } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { PageHeading, PearlObject } from "../pearl";
+import { PageHeading } from "../pearl";
+import {
+  PearlChatEmpty,
+  PearlChatLayout,
+  PearlChatMessage,
+} from "../pearl-chat";
 import { Composer } from "./composer";
 import { type AccountId, fixture } from "./data";
 import { resolveGuide } from "./guidance";
-import { CopyText, RichMessage, recallCards, StudyDeck } from "./rich-message";
+import { recallCards, StudyDeck } from "./rich-message";
 import { Panel } from "./shared";
 import { usePreview } from "./state";
 
@@ -81,6 +86,24 @@ export function Chat({
     setInput("");
   };
   const hasDeck = messages.some((message) => message.deck);
+  const tools = (
+    <>
+      {!hasDeck && <StudyDeck />}
+      <Panel title="Ready to try on your own?">
+        <p className="text-sm text-muted-foreground">
+          Your practice evidence stays separate from work with help.
+        </p>
+        <Button asChild variant="outline">
+          <Link href={`/preview/${accountId}/${student ? "practice" : "home"}`}>
+            {student ? "Open practice" : "Back to overview"}
+          </Link>
+        </Button>
+      </Panel>
+      <p className="atlas-chat-boundary">
+        Scripted examples · a live AI service is not connected.
+      </p>
+    </>
+  );
   return (
     <>
       <PageHeading
@@ -112,99 +135,51 @@ export function Chat({
           </Button>
         </Panel>
       ) : (
-        <div className="atlas-chat-layout">
-          <div className="atlas-chat-conversation">
-            <div
-              className="min-h-64 space-y-6"
-              role="log"
-              aria-label="Sample conversation"
-              aria-live="polite"
-            >
-              {!messages.length && (
-                <div className="py-10 text-center">
-                  <PearlObject className="w-20" />
-                  <h2 className="mt-5 text-2xl">
-                    What would you like to work through?
-                  </h2>
-                  <p className="mx-auto mt-3 max-w-sm text-sm text-muted-foreground">
-                    Try a concept from your lesson. We’ll take it one step at a
-                    time.
-                  </p>
-                </div>
-              )}
-              {messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`atlas-message ${message.who === "You" ? "atlas-message-user" : "atlas-message-assistant"}`}
-                >
-                  <div className="atlas-message-label">
-                    <span>{message.who}</span>
-                    {message.who === "Atlas" && (
-                      <CopyText text={message.text} label="Copy response" />
-                    )}
-                  </div>
-                  {message.who === "You" ? (
-                    <p className="whitespace-pre-wrap text-sm leading-relaxed">
-                      {message.text}
-                    </p>
-                  ) : (
-                    <>
-                      <RichMessage text={message.text} />
-                      {message.deck && <StudyDeck />}
-                    </>
-                  )}
-                </div>
-              ))}
-            </div>
-            <div className="atlas-chat-suggestions">
-              {[
-                "Mass vs weight",
-                "Net force",
-                "Subject choices",
-                "Make flashcards",
-              ].map((suggestion) => (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  key={suggestion}
-                  onClick={() => send(suggestion)}
-                >
-                  {suggestion}
-                </Button>
-              ))}
-            </div>
-            <Composer
-              inline
-              value={input}
-              onChange={setInput}
-              onSubmit={send}
-              label="Message the assistant"
-              placeholder="Ask about a concept…"
-              hint="Sample responses · messages stay on this page"
-            />
-          </div>
-          <aside
-            className="atlas-chat-sidebar space-y-6"
-            aria-label="Study tools"
+        <PearlChatLayout tools={tools}>
+          <div
+            className="min-h-64 space-y-6"
+            role="log"
+            aria-label="Sample conversation"
+            aria-live="polite"
           >
-            {!hasDeck && <StudyDeck />}
-            <Panel title="Ready to try on your own?">
-              <p className="text-sm text-muted-foreground">
-                Your practice evidence stays separate from work with help.
-              </p>
-              <Button asChild variant="outline">
-                <Link
-                  href={`/preview/${accountId}/${student ? "practice" : "home"}`}
-                >
-                  {student ? "Open practice" : "Back to overview"}
-                </Link>
+            {!messages.length && <PearlChatEmpty />}
+            {messages.map((message) => (
+              <PearlChatMessage
+                key={message.id}
+                role={message.who === "You" ? "user" : "assistant"}
+                text={message.text}
+              >
+                {message.deck && <StudyDeck />}
+              </PearlChatMessage>
+            ))}
+          </div>
+          <div className="atlas-chat-suggestions">
+            {[
+              "Mass vs weight",
+              "Net force",
+              "Subject choices",
+              "Make flashcards",
+            ].map((suggestion) => (
+              <Button
+                variant="outline"
+                size="sm"
+                key={suggestion}
+                onClick={() => send(suggestion)}
+              >
+                {suggestion}
               </Button>
-            </Panel>
-            <p className="atlas-chat-boundary">
-              Scripted examples · a live AI service is not connected.
-            </p>
-          </aside>
-        </div>
+            ))}
+          </div>
+          <Composer
+            inline
+            value={input}
+            onChange={setInput}
+            onSubmit={send}
+            label="Message the assistant"
+            placeholder="Ask about a concept…"
+            hint="Sample responses · messages stay on this page"
+          />
+        </PearlChatLayout>
       )}
     </>
   );

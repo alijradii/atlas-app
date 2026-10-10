@@ -4,12 +4,18 @@ import { expect, test } from "@playwright/test";
 test("private document upload becomes a reviewed study source", async ({
   page,
 }) => {
-  await page.goto("/login?next=files");
+  await page.goto("/login?next=workspace");
   await page.getByLabel("Login", { exact: true }).fill("study-peer");
   await page
     .getByLabel("Password", { exact: true })
     .fill("synthetic browser password 2036");
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
+  await expect(page.locator(".pearl-home-hero")).toBeVisible();
+  await page
+    .getByRole("link", { name: "Upload materials", exact: true })
+    .click();
+  await expect(page).toHaveURL("/files");
+  await expect(page.locator(".atlas-workspace")).toBeVisible();
   const filename = `forces-${Date.now()}.md`;
   const transcript =
     "The net force on an object equals its mass times its acceleration. A mass of four kilograms under ten newtons accelerates at 2.5 metres per second squared.";

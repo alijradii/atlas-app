@@ -2,13 +2,11 @@
 
 import { ApiError, api, type components } from "@school2036/api-client";
 import { Button, Card, Input } from "@school2036/ui";
-import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AuthFrame } from "./auth-frame";
+import { ConnectedShell } from "./connected-shell";
 import { FileLibrary } from "./file-library";
-import { Brand } from "./pearl";
-import { ThemeToggle } from "./theme-toggle";
 
 type Session = components["schemas"]["SessionView"];
 type FileRecord = components["schemas"]["UploadView"];
@@ -283,36 +281,18 @@ export default function FilesApp({
       </AuthFrame>
     );
   return (
-    <div className="min-h-screen p-5 sm:p-8">
-      <header className="mx-auto flex max-w-6xl flex-wrap items-center gap-4">
-        <Brand />
-        <div className="ml-auto flex max-w-full flex-wrap items-center justify-end gap-3">
-          <Button asChild variant="ghost">
-            <Link href="/workspace">Workspace</Link>
-          </Button>
-          <Button asChild variant="ghost">
-            <Link href="/study">Study workspace</Link>
-          </Button>
-          <Button asChild variant="ghost">
-            <Link href="/account">Account</Link>
-          </Button>
-          <ThemeToggle />
-          <Button
-            variant="outline"
-            disabled={busy}
-            onClick={() =>
-              void run(async () => {
-                await api("/auth/logout", "POST", undefined, session.csrf);
-                setSession(null);
-                setFiles([]);
-              })
-            }
-          >
-            Sign out
-          </Button>
-        </div>
-      </header>
-      <main id="main-content" className="mx-auto grid max-w-4xl gap-6 py-12">
+    <ConnectedShell
+      session={session}
+      section="files"
+      onSignOut={() =>
+        void run(async () => {
+          await api("/auth/logout", "POST", undefined, session.csrf);
+          setSession(null);
+          setFiles([]);
+        })
+      }
+    >
+      <div className="grid w-full gap-6">
         <div>
           <p className="eyebrow mb-4">Your private workspace</p>
           <h1 className="text-4xl">Your files</h1>
@@ -328,7 +308,7 @@ export default function FilesApp({
           busy={busy}
           run={run}
         />
-      </main>
-    </div>
+      </div>
+    </ConnectedShell>
   );
 }

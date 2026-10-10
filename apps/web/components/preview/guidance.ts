@@ -133,7 +133,7 @@ export function resolveGuide(
       return guide(
         "lessons.upload",
         "upload",
-        "Choose a recording here, then add its title and audience. This preview stores sample draft metadata only; private file uploads live in Your files.",
+        "Open files & recordings here to upload with your own account. Review the extracted transcript, then prepare a lesson for the study agent. Sign in if needed.",
       );
     if (/misconcep|why.*(students|class)/.test(text))
       return guide(

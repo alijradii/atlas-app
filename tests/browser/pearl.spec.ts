@@ -89,6 +89,12 @@ test("preview navigation renders all roles and rejects invalid routes", async ({
     fullPage: false,
   });
   await page.getByRole("button", { name: "Open navigation" }).click();
+  await expect(
+    page.getByRole("dialog").getByRole("link", { name: "Files & recordings" }),
+  ).toHaveAttribute("href", "/files");
+  await expect(
+    page.getByRole("dialog").getByRole("link", { name: "Use your account" }),
+  ).toHaveAttribute("href", "/workspace");
   await page
     .getByRole("dialog")
     .getByRole("link", { name: "Lessons", exact: true })
@@ -101,6 +107,11 @@ test("preview navigation renders all roles and rejects invalid routes", async ({
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto("/preview/lina/home");
   await expect(page.locator("main h1")).toBeVisible();
+  await expect(
+    page
+      .getByRole("complementary", { name: "Main navigation" })
+      .getByRole("link", { name: "Files & recordings" }),
+  ).toBeVisible();
   await page.screenshot({
     path: ".cache/pearl/workspace-desktop.png",
     fullPage: true,

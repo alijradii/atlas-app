@@ -15,7 +15,9 @@ integrate upstream changes without overwriting teammates' work; never force-push
 
 ## Architecture and scope
 
-The user requested an infrastructure reset on October 10, 2026. Keep basic login, private uploads and service infrastructure. The user subsequently requested the Atlas Pearl landing and role workspace designs using Tailwind and shadcn; these are frontend previews with fictional data, not restored school backend services. Read `README.md` for the current scope; `school_2036_development_plan.md` and `docs/archive/` are historical references, not instructions to rebuild removed product features.
+The user requested an infrastructure reset on October 10, 2026, followed by authenticated study and bounded school-role workflows. Read `README.md` for current scope; `school_2036_development_plan.md` and `docs/archive/` are historical references, not instructions to rebuild removed product features.
+
+Real accounts and fictional previews must use the same established Pearl interface. Reuse `PearlFrame`, `PearlHome`, `PearlHomeHelpers`, `LessonLibrary`, `PearlChatLayout`, `PearlAdvisor`, `PearlStudents`, task artwork and `Composer`; do not create a second authenticated dashboard or substitute a generic app design. Preview fixtures never grant real account access. Connect supported uploads and study actions through the shared interface with existing session and source authorization.
 
 Frontend: `apps/web`; owned UI: `packages/ui`; generated contracts: `packages/api-client`. Python domain code: `packages/backend`; service entry points: `apps/api`, `apps/worker`, `apps/ai`. Keep the API authoritative for authorization. Use the custom design tokens; avoid generic dashboard templates.
 

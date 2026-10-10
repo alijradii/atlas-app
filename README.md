@@ -1,8 +1,16 @@
 # Atlas Pearl · study workspace
 
-Atlas is a Bun/Next.js frontend with a Python/FastAPI backend, using the supplied Pearl design. The working app includes private study, files, account controls and connected teacher/student/advisor/parent workflows. Sign in to `/workspace`, open `/files` to upload materials, or `/study` to learn from approved transcripts with cited Gemini answers. The richer `/preview/*` screens remain explicitly fictional design examples; they do not grant permissions or write real school records.
+Atlas is a Bun/Next.js frontend with a Python/FastAPI backend, using the supplied Pearl design. The working app includes private study, files, account controls and connected teacher/student/advisor/parent workflows. Sign in to `/workspace`, open `/files` to upload materials, or `/study` to learn from approved transcripts with cited Gemini answers. The fixture-backed `/preview/*` screens remain explicitly fictional design examples; they do not grant permissions or write real school records.
 
 See [school workflows and provisioning](docs/SCHOOL.md), [study and imports](docs/STUDY.md), [private files](docs/MEDIA.md), and [account controls](docs/ACCOUNT.md). Access depends on accounts, roles and explicit sharing, never being on a school network.
+
+Real accounts and preview personas use the same Pearl sidebar, home layout, task
+cards and prompt dock. Sign-in opens the real Home; **Files & recordings** and
+**Study with agent** stay in that sidebar throughout uploads, transcript review and
+cited conversations. Examples use fixtures; authenticated screens use permitted API
+records. Lesson cards, chat and advisor screens also reuse the original screen
+components. Local demo accounts can be populated with persisted examples using
+[the guarded demo tool](docs/DEMO_ACCOUNTS.md).
 
 ## Retained infrastructure
 

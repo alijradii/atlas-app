@@ -8,110 +8,55 @@ import {
   DialogTitle,
   DialogTrigger,
   Input,
-  Label,
-  Textarea,
 } from "@school2036/ui";
-import {
-  ArrowLeft,
-  ArrowRight,
-  LockKeyhole,
-  Pin,
-  Play,
-  Search,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, LockKeyhole, Pin } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { LessonLibrary } from "../lesson-library";
 import { PageHeading, PearlScene } from "../pearl";
 import { type AccountId, duration, fixture, subjectName } from "./data";
 import { Empty, Notice, Panel, Status } from "./shared";
 import { usePreview } from "./state";
 
 export function Lessons({ accountId }: { accountId: AccountId }) {
-  const [search, setSearch] = useState("");
-  const [subject, setSubject] = useState("all");
   const teacher = accountId === "daher";
   const { state } = usePreview();
-  const lessons = fixture.lessons.filter(
-    (l) =>
-      (teacher ? l.by === "Mr. Elie Daher" : l.grades.includes(10)) &&
-      (subject === "all" || l.subj === subject) &&
-      `${l.title} ${l.unit}`.toLowerCase().includes(search.toLowerCase()),
+  const lessons = fixture.lessons.filter((lesson) =>
+    teacher ? lesson.by === "Mr. Elie Daher" : lesson.grades.includes(10),
   );
   return (
     <>
-      <PageHeading
+      <LessonLibrary
         title={teacher ? "My lessons" : "Lessons"}
         description="Recorded by your teachers. Revisit a chapter, pause, and make time to understand."
-      >
-        {teacher && (
-          <Button asChild>
-            <Link href={`/preview/${accountId}/upload`}>Upload a session</Link>
-          </Button>
-        )}
-      </PageHeading>
-      <div className="flex flex-wrap gap-3">
-        <div className="relative min-w-0 flex-1 basis-60">
-          <Search className="absolute top-3 left-3 size-4 text-muted-foreground" />
-          <Input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            data-guide-anchor="lessons.search"
-            aria-label="Search lessons"
-            placeholder="Search lessons or units"
-            className="pl-10"
-          />
-        </div>
-        <select
-          aria-label="Filter lessons by subject"
-          value={subject}
-          onChange={(e) => setSubject(e.target.value)}
-          className="h-11 rounded-xl border border-input bg-surface px-4"
-        >
-          <option value="all">All subjects</option>
-          {["physics", "math", "cs", "english"].map((s) => (
-            <option key={s} value={s}>
-              {subjectName(s)}
-            </option>
-          ))}
-        </select>
-      </div>
-      {!lessons.length ? (
-        <Empty
-          title="No lessons found"
-          text="Try another subject or search term."
-        />
-      ) : (
-        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-          {lessons.map((l) => (
-            <Link
-              key={l.id}
-              href={`/preview/${accountId}/lesson/${l.id}`}
-              className="glass-panel group overflow-hidden"
-            >
-              <div className="relative">
-                <PearlScene className="min-h-44" compact />
-                <span className="absolute bottom-3 right-3 rounded-full bg-slate-950/80 px-2.5 py-1 text-xs text-white">
-                  {duration(l.dur)}
-                </span>
-                <span className="absolute inset-0 flex items-center justify-center">
-                  <span className="flex size-11 items-center justify-center rounded-full bg-surface/90 transition-transform group-hover:scale-110">
-                    <Play className="size-4" />
-                  </span>
-                </span>
-              </div>
-              <div className="space-y-3 p-5">
-                <p className="eyebrow">{subjectName(l.subj)}</p>
-                <h2 className="text-xl leading-snug">{l.title}</h2>
-                <p className="text-xs text-muted-foreground">
-                  {l.unit}
-                  <br />
-                  {l.by}
-                </p>
-              </div>
-            </Link>
-          ))}
-        </div>
-      )}
+        action={
+          teacher ? (
+            <Button asChild>
+              <Link href="/files">Upload a session</Link>
+            </Button>
+          ) : undefined
+        }
+        subjects={["physics", "math", "cs", "english"].map((subject) => ({
+          value: subject,
+          label: subjectName(subject),
+        }))}
+        lessons={lessons.map((lesson) => ({
+          id: lesson.id,
+          title: lesson.title,
+          subject: lesson.subj,
+          subjectLabel: subjectName(lesson.subj),
+          searchText: lesson.unit,
+          badge: duration(lesson.dur),
+          href: `/preview/${accountId}/lesson/${lesson.id}`,
+          detail: (
+            <>
+              {lesson.unit}
+              <br />
+              {lesson.by}
+            </>
+          ),
+        }))}
+      />
       {teacher && state.lessonDrafts.length > 0 && (
         <Panel title="Preview drafts">
           {state.lessonDrafts.map((l) => (
@@ -459,94 +404,29 @@ export function Practice({ accountId }: { accountId: AccountId }) {
 }
 
 export function UploadLesson() {
-  const { setState } = usePreview();
-  const [message, setMessage] = useState("");
   return (
     <>
       <PageHeading
         title="Upload a session"
-        description="A lesson, its chapters, and who it’s for."
+        description="Bring a document or recording into your private study library."
       />
-      <Notice>
-        This is a lesson-publishing preview. The selected video is not uploaded.
-        Use{" "}
-        <Link href="/files" className="text-cobalt underline">
-          Your private files
-        </Link>{" "}
-        for the working file service.
-      </Notice>
-      <Panel title="Session details">
-        <form
-          className="grid gap-5"
-          onSubmit={(e) => {
-            e.preventDefault();
-            const form = e.currentTarget;
-            const data = new FormData(form);
-            const file = data.get("video");
-            setState((s) => ({
-              ...s,
-              lessonDrafts: [
-                ...s.lessonDrafts,
-                {
-                  title: String(data.get("title")),
-                  filename: file instanceof File ? file.name : "No file",
-                  audience: String(data.get("audience")),
-                },
-              ],
-            }));
-            setMessage(
-              "Draft added to the preview lesson list. No video was uploaded or published.",
-            );
-            form.reset();
-          }}
-        >
-          <div className="grid gap-2">
-            <Label htmlFor="lesson-video">Session recording</Label>
-            <Input
-              data-guide-anchor="lessons.upload"
-              id="lesson-video"
-              name="video"
-              type="file"
-              accept="video/*"
-              required
-            />
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="lesson-title">Lesson title</Label>
-            <Input
-              id="lesson-title"
-              name="title"
-              placeholder="Momentum: an introduction"
-              required
-            />
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="lesson-audience">Audience</Label>
-            <select
-              id="lesson-audience"
-              name="audience"
-              className="h-11 rounded-xl border bg-surface px-4"
-            >
-              <option>Grade 10 · 10A and 10B</option>
-              <option>Grade 10 · 10A</option>
-              <option>Grade 10 · 10B</option>
-            </select>
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="lesson-notes">Chapters and notes</Label>
-            <Textarea id="lesson-notes" placeholder="0:00 Introduction" />
-          </div>
+      <Panel title="Your materials, ready to learn from">
+        <div className="grid gap-5">
           <p className="text-sm text-muted-foreground">
-            Available to the selected audience wherever they study. This draft
-            stays in the preview.
+            Upload with your own account. Review the extracted text before
+            preparing a lesson for the study agent. You can share a prepared
+            lesson with connected students from your workspace.
           </p>
-          <Button type="submit" className="justify-self-start">
-            Save preview draft
+          <Button asChild className="justify-self-start">
+            <Link href="/files" data-guide-anchor="lessons.upload">
+              Open files &amp; recordings <ArrowRight />
+            </Link>
           </Button>
-          <p role="status" className="text-sm text-cobalt">
-            {message}
+          <p className="text-sm text-muted-foreground">
+            Sign in if needed. This example teacher does not own or receive your
+            files.
           </p>
-        </form>
+        </div>
       </Panel>
     </>
   );

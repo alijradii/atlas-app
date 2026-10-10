@@ -8,21 +8,27 @@ import {
   ChevronRight,
   FileText,
   LoaderCircle,
-  LogOut,
   MessageSquare,
   Plus,
-  Send,
   Square,
   Trash2,
-  Users,
+  Upload,
   X,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { Brand } from "../pearl";
-import { RichMessage } from "../preview/rich-message";
-import { TaskArt } from "../preview/task-art";
-import { ThemeToggle } from "../theme-toggle";
+import { ConnectedShell } from "../connected-shell";
+import { Brand, PageHeading } from "../pearl";
+import {
+  PearlChatEmpty,
+  PearlChatLayout,
+  PearlChatMessage,
+} from "../pearl-chat";
+import { AssistantDock } from "../preview/assistant-dock";
+import { Composer } from "../preview/composer";
+import { Panel } from "../preview/shared";
+import { consumeStudyDraft } from "./draft-handoff";
 import { ImportLesson, LessonDialog } from "./lesson-dialog";
 import {
   activeRun,
@@ -55,8 +61,23 @@ const runState = {
   cancelled: "Response stopped",
 };
 
-export default function StudyApp() {
+export default function StudyApp({
+  embedded = false,
+  newConversation = false,
+  initialLessonId,
+}: {
+  embedded?: boolean;
+  newConversation?: boolean;
+  initialLessonId?: string;
+}) {
   const study = useStudy();
+  const router = useRouter();
+  const selectThread = study.selectThread;
+  useEffect(() => {
+    if (!newConversation) return;
+    selectThread(null);
+    router.replace("/study", { scroll: false });
+  }, [newConversation, router, selectThread]);
   if (study.signedOut)
     return (
       <main id="main-content" className="study-gate">
@@ -84,15 +105,43 @@ export default function StudyApp() {
         <Button onClick={study.refresh}>Try again</Button>
       </main>
     );
-  return <StudyWorkspace key={study.session.account_id} study={study} />;
+  return (
+    <StudyWorkspace
+      key={study.session.account_id}
+      study={study}
+      embedded={embedded}
+      initialLessonId={initialLessonId}
+    />
+  );
 }
 
-function StudyWorkspace({ study }: { study: Study }) {
+function StudyWorkspace({
+  study,
+  embedded,
+  initialLessonId,
+}: {
+  study: Study;
+  embedded: boolean;
+  initialLessonId?: string;
+}) {
+  const [pendingDraft, setPendingDraft] = useState("");
+  const draftRead = useRef(false);
+  useEffect(() => {
+    if (draftRead.current || !study.session) return;
+    draftRead.current = true;
+    setPendingDraft(consumeStudyDraft(study.session.account_id));
+  }, [study.session]);
   const [importing, setImporting] = useState(false);
   const [inspecting, setInspecting] = useState<{
     id: string;
     citation?: Citation;
   } | null>(null);
+  const sourceRouter = useRouter();
+  useEffect(() => {
+    if (!initialLessonId) return;
+    setInspecting({ id: initialLessonId });
+    sourceRouter.replace("/study", { scroll: false });
+  }, [initialLessonId, sourceRouter]);
   const [selected, setSelected] = useState<string[]>([]);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "own" | "shared">("all");
@@ -120,266 +169,239 @@ function StudyWorkspace({ study }: { study: Study }) {
     );
     if (result.ok && result.value) study.selectThread(result.value.id);
   };
-  return (
-    <div className="study-app">
-      <header className="study-header">
-        <Brand />
-        <span className="study-header-title">Your study workspace</span>
-        <nav aria-label="Account">
-          <Link href="/workspace">Workspace</Link>
-          <Link href="/files">Your files</Link>
-          <Link href="/account">Account</Link>
-          <ThemeToggle />
+  const tools = (
+    <Panel className="study-sidebar" title="Your learning space">
+      <div className="study-sidebar-intro">
+        <p className="eyebrow">{study.session?.name}</p>
+        <p>
+          Choose the lessons you want to work with. Every answer can lead back
+          to its source.
+        </p>
+      </div>
+      <section className="study-library" aria-labelledby="study-library-title">
+        <div className="study-section-heading">
+          <h2 id="study-library-title">Lesson library</h2>
           <Button
-            size="sm"
             variant="ghost"
-            aria-label="Sign out"
-            disabled={study.busy}
-            onClick={() => void study.signOut()}
+            size="sm"
+            onClick={() => {
+              study.setError("");
+              setImporting(true);
+            }}
           >
-            <LogOut />
-            <span>Sign out</span>
+            <Plus />
+            Add lesson
           </Button>
-        </nav>
-      </header>
-      <div className="study-layout">
-        <aside className="study-sidebar" aria-label="Lessons and conversations">
-          <div className="study-sidebar-intro">
-            <p className="eyebrow">{study.session?.name}</p>
-            <h2>Your learning space</h2>
-            <p>
-              Choose the lessons you want to work with. Every answer can lead
-              back to its source.
-            </p>
-          </div>
-          <section
-            className="study-library"
-            aria-labelledby="study-library-title"
-          >
-            <div className="study-section-heading">
-              <h2 id="study-library-title">Lesson library</h2>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  study.setError("");
-                  setImporting(true);
-                }}
-              >
-                <Plus />
-                Add lesson
-              </Button>
-            </div>
-            <fieldset
-              className="study-library-filters"
-              aria-label="Filter lessons"
+        </div>
+        <fieldset className="study-library-filters" aria-label="Filter lessons">
+          {(["all", "own", "shared"] as const).map((value) => (
+            <button
+              type="button"
+              key={value}
+              aria-pressed={filter === value}
+              onClick={() => setFilter(value)}
             >
-              {(["all", "own", "shared"] as const).map((value) => (
-                <button
-                  type="button"
-                  key={value}
-                  aria-pressed={filter === value}
-                  onClick={() => setFilter(value)}
-                >
-                  {value === "all"
-                    ? "All"
-                    : value === "own"
-                      ? "Your lessons"
-                      : "Shared with you"}
-                </button>
-              ))}
-            </fieldset>
-            <p className="study-small">
-              {selectedReady.length === maxConversationLessons
-                ? "8 of 8 lessons selected. Uncheck one to choose another."
-                : "Select up to 8 ready lessons for a new conversation."}
-            </p>
-            <div className="study-lesson-list">
-              {lessons.map((lesson) => (
-                <div
-                  key={lesson.id}
-                  className={`study-lesson-row ${selectedReady.includes(lesson.id) ? "selected" : ""}`}
-                >
-                  <label className="study-lesson-select">
-                    <input
-                      type="checkbox"
-                      aria-label={`Use ${lesson.title}`}
-                      disabled={
-                        lesson.state !== "ready" ||
-                        (selectedReady.length >= maxConversationLessons &&
-                          !selectedReady.includes(lesson.id))
-                      }
-                      checked={selectedReady.includes(lesson.id)}
-                      onChange={(event) =>
-                        setSelected((ids) =>
-                          event.target.checked
-                            ? [
-                                ...new Set([
-                                  ...ids.filter((id) =>
-                                    ready.some((item) => item.id === id),
-                                  ),
-                                  lesson.id,
-                                ]),
-                              ].slice(0, maxConversationLessons)
-                            : ids.filter((id) => id !== lesson.id),
-                        )
-                      }
-                    />
-                    <span>
-                      <strong>{lesson.title}</strong>
-                      <small>
-                        {lesson.owned ? "Your lesson" : "Shared with you"}
-                        {lesson.subject ? ` · ${lesson.subject}` : ""}
-                      </small>
-                      <span className={`study-lesson-state ${lesson.state}`}>
-                        <span aria-hidden="true">
-                          {lesson.state === "ready" ? (
-                            <Check />
-                          ) : lesson.state === "failed" ? (
-                            <X />
-                          ) : (
-                            <LoaderCircle className="study-spinner" />
-                          )}
-                        </span>
-                        {lessonState[lesson.state]}
-                      </span>
-                    </span>
-                  </label>
-                  <button
-                    type="button"
-                    className="study-icon-button"
-                    aria-label={`Open ${lesson.title}`}
-                    onClick={() => openLesson(lesson)}
-                  >
-                    <ChevronRight />
-                  </button>
-                  {lesson.state === "failed" && (
-                    <div className="study-lesson-failure">
-                      <p>
-                        {lesson.error ||
-                          "We could not prepare this transcript."}
-                      </p>
-                      {lesson.owned && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          disabled={study.busy}
-                          onClick={() =>
-                            void study.mutate(
-                              `/study/lessons/${lesson.id}/retry`,
-                            )
-                          }
-                        >
-                          Retry preparation
-                        </Button>
+              {value === "all"
+                ? "All"
+                : value === "own"
+                  ? "Your lessons"
+                  : "Shared with you"}
+            </button>
+          ))}
+        </fieldset>
+        <p className="study-small">
+          {selectedReady.length === maxConversationLessons
+            ? "8 of 8 lessons selected. Uncheck one to choose another."
+            : "Select up to 8 ready lessons for a new conversation."}
+        </p>
+        <div className="study-lesson-list">
+          {lessons.map((lesson) => (
+            <div
+              key={lesson.id}
+              className={`study-lesson-row ${selectedReady.includes(lesson.id) ? "selected" : ""}`}
+            >
+              <label className="study-lesson-select">
+                <input
+                  type="checkbox"
+                  aria-label={`Use ${lesson.title}`}
+                  disabled={
+                    lesson.state !== "ready" ||
+                    (selectedReady.length >= maxConversationLessons &&
+                      !selectedReady.includes(lesson.id))
+                  }
+                  checked={selectedReady.includes(lesson.id)}
+                  onChange={(event) =>
+                    setSelected((ids) =>
+                      event.target.checked
+                        ? [
+                            ...new Set([
+                              ...ids.filter((id) =>
+                                ready.some((item) => item.id === id),
+                              ),
+                              lesson.id,
+                            ]),
+                          ].slice(0, maxConversationLessons)
+                        : ids.filter((id) => id !== lesson.id),
+                    )
+                  }
+                />
+                <span>
+                  <strong>{lesson.title}</strong>
+                  <small>
+                    {lesson.owned ? "Your lesson" : "Shared with you"}
+                    {lesson.subject ? ` · ${lesson.subject}` : ""}
+                  </small>
+                  <span className={`study-lesson-state ${lesson.state}`}>
+                    <span aria-hidden="true">
+                      {lesson.state === "ready" ? (
+                        <Check />
+                      ) : lesson.state === "failed" ? (
+                        <X />
+                      ) : (
+                        <LoaderCircle className="study-spinner" />
                       )}
-                    </div>
-                  )}
-                </div>
-              ))}
-              {!lessons.length && (
-                <div className="study-library-empty">
-                  <BookOpen />
-                  <p>
-                    {filter === "shared"
-                      ? "Lessons shared with your account will appear here."
-                      : filter === "own"
-                        ? "You haven’t added a lesson yet."
-                        : "Add your first transcript to begin."}
-                  </p>
-                </div>
-              )}
-            </div>
-            <Button
-              className="study-new-chat"
-              disabled={study.busy || !selectedReady.length}
-              onClick={() => void start()}
-            >
-              <Plus />
-              New conversation
-              {selectedReady.length
-                ? ` · ${selectedReady.length} lesson${selectedReady.length === 1 ? "" : "s"}`
-                : ""}
-            </Button>
-          </section>
-          <section
-            className="study-history"
-            aria-labelledby="study-history-title"
-          >
-            <div className="study-section-heading">
-              <h2 id="study-history-title">Conversations</h2>
+                    </span>
+                    {lessonState[lesson.state]}
+                  </span>
+                </span>
+              </label>
               <button
                 type="button"
                 className="study-icon-button"
-                aria-label="Back to study overview"
-                onClick={() => study.selectThread(null)}
+                aria-label={`Open ${lesson.title}`}
+                onClick={() => openLesson(lesson)}
               >
-                <BookOpen />
+                <ChevronRight />
               </button>
+              {lesson.state === "failed" && (
+                <div className="study-lesson-failure">
+                  <p>
+                    {lesson.error || "We could not prepare this transcript."}
+                  </p>
+                  {lesson.owned && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={study.busy}
+                      onClick={() =>
+                        void study.mutate(`/study/lessons/${lesson.id}/retry`)
+                      }
+                    >
+                      Retry preparation
+                    </Button>
+                  )}
+                </div>
+              )}
             </div>
-            {!study.conversations.length && (
-              <p className="study-small">
-                Your saved conversations will appear here.
+          ))}
+          {!lessons.length && (
+            <div className="study-library-empty">
+              <BookOpen />
+              <p>
+                {filter === "shared"
+                  ? "Lessons shared with your account will appear here."
+                  : filter === "own"
+                    ? "You haven’t added a lesson yet."
+                    : "Add your first transcript to begin."}
               </p>
-            )}
-            {study.conversations.map((conversation) => (
-              <div key={conversation.id} className="study-history-row">
-                <button
-                  type="button"
-                  aria-current={
-                    study.selectedId === conversation.id ? "page" : undefined
-                  }
-                  onClick={() => {
-                    setDeleting(null);
-                    study.selectThread(conversation.id);
+            </div>
+          )}
+        </div>
+        <Button
+          className="study-new-chat"
+          disabled={study.busy || !selectedReady.length}
+          onClick={() => void start()}
+        >
+          <Plus />
+          New conversation
+          {selectedReady.length
+            ? ` · ${selectedReady.length} lesson${selectedReady.length === 1 ? "" : "s"}`
+            : ""}
+        </Button>
+      </section>
+      <section className="study-history" aria-labelledby="study-history-title">
+        <div className="study-section-heading">
+          <h2 id="study-history-title">Conversations</h2>
+          <button
+            type="button"
+            className="study-icon-button"
+            aria-label="Back to study overview"
+            onClick={() => study.selectThread(null)}
+          >
+            <BookOpen />
+          </button>
+        </div>
+        {!study.conversations.length && (
+          <p className="study-small">
+            Your saved conversations will appear here.
+          </p>
+        )}
+        {study.conversations.map((conversation) => (
+          <div key={conversation.id} className="study-history-row">
+            <button
+              type="button"
+              aria-current={
+                study.selectedId === conversation.id ? "page" : undefined
+              }
+              onClick={() => {
+                setDeleting(null);
+                study.selectThread(conversation.id);
+              }}
+            >
+              <MessageSquare />
+              <span>{conversation.title || "New conversation"}</span>
+            </button>
+            <button
+              type="button"
+              className="study-icon-button"
+              aria-label={`Delete conversation ${conversation.title || "New conversation"}`}
+              onClick={() => setDeleting(conversation.id)}
+            >
+              <Trash2 />
+            </button>
+            {deleting === conversation.id && (
+              <div className="study-history-confirm">
+                <p>Delete this conversation?</p>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  disabled={study.busy}
+                  onClick={async () => {
+                    const result = await study.mutate(
+                      `/study/conversations/${conversation.id}`,
+                      "DELETE",
+                    );
+                    if (result.ok) {
+                      setDeleting(null);
+                      if (study.selectedId === conversation.id)
+                        study.selectThread(null);
+                    }
                   }}
                 >
-                  <MessageSquare />
-                  <span>{conversation.title || "New conversation"}</span>
-                </button>
-                <button
-                  type="button"
-                  className="study-icon-button"
-                  aria-label={`Delete conversation ${conversation.title || "New conversation"}`}
-                  onClick={() => setDeleting(conversation.id)}
+                  Delete conversation
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setDeleting(null)}
                 >
-                  <Trash2 />
-                </button>
-                {deleting === conversation.id && (
-                  <div className="study-history-confirm">
-                    <p>Delete this conversation?</p>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      disabled={study.busy}
-                      onClick={async () => {
-                        const result = await study.mutate(
-                          `/study/conversations/${conversation.id}`,
-                          "DELETE",
-                        );
-                        if (result.ok) {
-                          setDeleting(null);
-                          if (study.selectedId === conversation.id)
-                            study.selectThread(null);
-                        }
-                      }}
-                    >
-                      Delete conversation
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setDeleting(null)}
-                    >
-                      Keep
-                    </Button>
-                  </div>
-                )}
+                  Keep
+                </Button>
               </div>
-            ))}
-          </section>
-        </aside>
-        <main id="main-content" className="study-main">
+            )}
+          </div>
+        ))}
+      </section>
+    </Panel>
+  );
+  const content = (
+    <div className="study-app study-app-embedded">
+      <PageHeading
+        title="Study with your agent"
+        description="A little direction when you need it. Space to think for yourself."
+      />
+      <PearlChatLayout className="study-layout" tools={tools}>
+        <section className="study-main" aria-label="Study workspace">
           {study.error && (
             <div className="study-error-banner" role="alert">
               <p>{study.error}</p>
@@ -412,6 +434,8 @@ function StudyWorkspace({ study }: { study: Study }) {
               key={study.selectedId}
               study={study}
               thread={study.thread}
+              initialDraft={pendingDraft}
+              onDraftConsumed={() => setPendingDraft("")}
               configured={Boolean(configured)}
               onCitation={(citation) =>
                 setInspecting({ id: citation.lesson_id, citation })
@@ -419,19 +443,28 @@ function StudyWorkspace({ study }: { study: Study }) {
               onLesson={(id) => setInspecting({ id })}
             />
           ) : (
-            <div className="study-welcome">
-              <div className="study-welcome-art">
-                <TaskArt kind="lesson" />
-              </div>
-              <p className="eyebrow">Your lessons, with a little direction</p>
-              <h1>Make room for understanding.</h1>
-              <p>
-                Bring a transcript, choose your lessons and ask a question.
-                Explore an explanation, then open its sources to see where it
-                came from.
-              </p>
+            <PearlChatEmpty description="Choose the lessons you want to work through, or add a document or recording. We’ll take it one step at a time.">
+              {pendingDraft && (
+                <div className="study-draft-notice">
+                  <strong>Your question is ready</strong>
+                  <p>{pendingDraft}</p>
+                  <span>
+                    Choose ready lessons, then start a conversation to review
+                    and send it.
+                  </span>
+                  <button type="button" onClick={() => setPendingDraft("")}>
+                    Discard question
+                  </button>
+                </div>
+              )}
               <div className="study-welcome-actions">
-                <Button onClick={() => setImporting(true)}>
+                <Button asChild>
+                  <Link href="/files">
+                    <Upload />
+                    Upload documents or recordings
+                  </Link>
+                </Button>
+                <Button variant="outline" onClick={() => setImporting(true)}>
                   <FileText />
                   Add a transcript
                 </Button>
@@ -446,24 +479,10 @@ function StudyWorkspace({ study }: { study: Study }) {
                   </Button>
                 )}
               </div>
-              <div className="study-welcome-principles">
-                <span>
-                  <BookOpen />
-                  Answers grounded in your selected lessons
-                </span>
-                <span>
-                  <Users />
-                  Sharing is your choice
-                </span>
-                <span>
-                  <MessageSquare />
-                  Conversations saved to your account
-                </span>
-              </div>
-            </div>
+            </PearlChatEmpty>
           )}
-        </main>
-      </div>
+        </section>
+      </PearlChatLayout>
       <ImportLesson
         open={importing}
         onClose={() => setImporting(false)}
@@ -487,26 +506,44 @@ function StudyWorkspace({ study }: { study: Study }) {
       )}
     </div>
   );
+  return embedded || !study.session ? (
+    content
+  ) : (
+    <ConnectedShell
+      session={study.session}
+      section="study"
+      onSignOut={() => void study.signOut()}
+    >
+      {content}
+    </ConnectedShell>
+  );
 }
 
 function ConversationPane({
   study,
   thread,
   configured,
+  initialDraft,
+  onDraftConsumed,
   onCitation,
   onLesson,
 }: {
   study: Study;
   thread: Thread | null;
   configured: boolean;
+  initialDraft: string;
+  onDraftConsumed: () => void;
   onCitation: (citation: Citation) => void;
   onLesson: (id: string) => void;
 }) {
-  const [draft, setDraft] = useState("");
+  const [draft, setDraft] = useState(initialDraft);
+  useEffect(() => {
+    if (initialDraft) onDraftConsumed();
+  }, [initialDraft, onDraftConsumed]);
   const questionTooLong = questionBytes(draft) > 2000;
   const attempt = useRef<{ content: string; id: string } | null>(null);
   const scroll = useRef<HTMLDivElement>(null);
-  const composer = useRef<HTMLTextAreaElement>(null);
+  const composer = useRef<HTMLDivElement>(null);
   const nearEnd = useRef(true);
   const running = activeRun(thread?.run);
   const contentVersion = `${thread?.messages.map((message) => message.id).join("-")}-${thread?.run?.state}`;
@@ -550,7 +587,7 @@ function ConversationPane({
     <section className="study-conversation" aria-label="Study conversation">
       <header className="study-conversation-header">
         <p className="eyebrow">Saved to your account</p>
-        <h1>{thread.title || "New conversation"}</h1>
+        <h2>{thread.title || "New conversation"}</h2>
         <section
           className="study-source-chips"
           aria-label="Conversation lessons"
@@ -574,65 +611,22 @@ function ConversationPane({
             90;
         }}
       >
-        {!thread.messages.length && (
-          <div className="study-chat-empty">
-            <TaskArt kind="cards" />
-            <h2>What would you like to understand?</h2>
-            <p>
-              Ask about a concept, compare ideas or work through an example from
-              your selected lessons.
-            </p>
-            <fieldset className="study-starters">
-              <legend className="sr-only">Suggested questions</legend>
-              {[
-                [
-                  "Explain the key ideas",
-                  "Explain the key ideas in these lessons.",
-                ],
-                [
-                  "Walk me through an example",
-                  "Walk me through an example from these lessons, one step at a time.",
-                ],
-                [
-                  "Ask me a practice question",
-                  "Ask me a practice question based on these lessons. Let me try before showing the answer.",
-                ],
-              ].map(([label, question]) => (
-                <Button
-                  type="button"
-                  key={label}
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setDraft(question);
-                    composer.current?.focus();
-                  }}
-                >
-                  {label}
-                </Button>
-              ))}
-            </fieldset>
-          </div>
-        )}
+        {!thread.messages.length && <PearlChatEmpty />}
+
         <div
+          className="space-y-6"
           role="log"
           aria-label="Study messages"
           aria-live="polite"
           aria-relevant="additions text"
         >
           {thread.messages.map((message) => (
-            <article
+            <PearlChatMessage
               key={message.id}
-              className={`study-message study-message-${message.role}`}
+              className={`study-message-${message.role}`}
+              role={message.role}
+              text={message.content}
             >
-              <p className="study-message-author">
-                {message.role === "user" ? "You" : "Atlas"}
-              </p>
-              {message.role === "assistant" ? (
-                <RichMessage text={message.content} />
-              ) : (
-                <p className="study-user-text">{message.content}</p>
-              )}
               {message.citations?.length > 0 && (
                 <section
                   className="study-citations"
@@ -656,7 +650,7 @@ function ConversationPane({
                   ))}
                 </section>
               )}
-            </article>
+            </PearlChatMessage>
           ))}
         </div>
         {thread.run &&
@@ -686,44 +680,40 @@ function ConversationPane({
             </div>
           )}
       </div>
-      <form
-        className="study-composer"
-        onSubmit={(event) => {
-          event.preventDefault();
-          void send(draft);
-        }}
-      >
-        <label className="sr-only" htmlFor="study-message">
-          Ask about your lessons
-        </label>
-        <textarea
-          ref={composer}
-          aria-invalid={questionTooLong || undefined}
-          aria-describedby={
-            questionTooLong ? "study-question-length" : undefined
-          }
-          id="study-message"
-          rows={2}
-          maxLength={2000}
-          value={draft}
-          disabled={!configured}
-          placeholder={
-            configured
-              ? "Ask about your selected lessons…"
-              : "Responses will be available when the services are connected"
-          }
-          onChange={(event) => setDraft(event.target.value)}
-          onKeyDown={(event) => {
-            if (
-              event.key === "Enter" &&
-              !event.shiftKey &&
-              !event.nativeEvent.isComposing
-            ) {
-              event.preventDefault();
-              void send(draft);
-            }
-          }}
-        />
+      <fieldset className="atlas-chat-suggestions">
+        <legend className="sr-only">Suggested questions</legend>
+        {[
+          ["Explain the key ideas", "Explain the key ideas in these lessons."],
+          [
+            "Walk me through an example",
+            "Walk me through an example from these lessons, one step at a time.",
+          ],
+          [
+            "Ask me a practice question",
+            "Ask me a practice question based on these lessons. Let me try before showing the answer.",
+          ],
+        ].map(([label, question]) => (
+          <Button
+            type="button"
+            key={label}
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setDraft(question);
+              const launcher =
+                composer.current?.querySelector<HTMLButtonElement>(
+                  ".atlas-dock-launcher",
+                );
+              if (launcher?.getAttribute("aria-expanded") === "false")
+                launcher.click();
+              else composer.current?.querySelector("textarea")?.focus();
+            }}
+          >
+            {label}
+          </Button>
+        ))}
+      </fieldset>
+      <div className="study-composer-slot" ref={composer}>
         {questionTooLong && (
           <p
             className="study-input-hint"
@@ -733,33 +723,51 @@ function ConversationPane({
             This question is too long. Shorten it before sending.
           </p>
         )}
-        <div className="study-composer-footer">
-          <span>Check the sources. AI explanations can make mistakes.</span>
-          {running ? (
-            <Button
-              type="button"
-              variant="outline"
-              disabled={study.busy}
-              onClick={() =>
-                void study.mutate(`/study/conversations/${thread.id}/cancel`)
+        <AssistantDock>
+          {(minimize) => (
+            <Composer
+              inline
+              value={draft}
+              onChange={setDraft}
+              onSubmit={(text) => void send(text)}
+              label="Ask about your lessons"
+              sendLabel="Send study message"
+              disabled={!configured}
+              sendDisabled={study.busy || running || questionTooLong}
+              inputInvalid={questionTooLong}
+              inputDescription={
+                questionTooLong ? "study-question-length" : undefined
               }
-            >
-              <Square />
-              Stop response
-            </Button>
-          ) : (
-            <Button
-              type="submit"
-              disabled={
-                study.busy || !configured || !draft.trim() || questionTooLong
+              placeholder={
+                configured
+                  ? "Ask about your selected lessons…"
+                  : "Responses will be available when the services are connected"
               }
-              aria-label="Send study message"
-            >
-              <Send />
-            </Button>
+              hint="Check the sources. AI explanations can make mistakes."
+              moreOptions={[
+                { label: "Upload documents or recordings", href: "/files" },
+              ]}
+              onMinimize={minimize}
+              action={
+                running ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={study.busy}
+                    onClick={() =>
+                      void study.mutate(
+                        `/study/conversations/${thread.id}/cancel`,
+                      )
+                    }
+                  >
+                    <Square /> Stop response
+                  </Button>
+                ) : undefined
+              }
+            />
           )}
-        </div>
-      </form>
+        </AssistantDock>
+      </div>
     </section>
   );
 }

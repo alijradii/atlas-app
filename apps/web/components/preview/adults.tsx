@@ -16,10 +16,11 @@ import {
   TabsTrigger,
   Textarea,
 } from "@school2036/ui";
-import { ArrowRight, Check, Search } from "lucide-react";
+import { ArrowRight, Check } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { PageHeading } from "../pearl";
+import { PearlAdvisorStudentSections, PearlStudents } from "../pearl-advisor";
 import { type AccountId, fixture, subjectName } from "./data";
 import {
   Empty,
@@ -177,65 +178,18 @@ export function Proposals({ accountId }: { accountId: AccountId }) {
   );
 }
 export function Students() {
-  const [query, setQuery] = useState("");
   return (
-    <>
-      <PageHeading
-        title="My students"
-        description="Different interests, different pathways. Keep the next conversation in sight."
-      />
-      <div className="relative">
-        <Search className="absolute top-3 left-3 size-4" />
-        <Input
-          aria-label="Search students"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search by name or interest"
-          className="pl-10"
-        />
-      </div>
-      <div className="grid gap-5 lg:grid-cols-2">
-        {fixture.caseload
-          .filter((s) =>
-            `${s.name} ${s.interests.join(" ")}`
-              .toLowerCase()
-              .includes(query.toLowerCase()),
-          )
-          .map((s) => (
-            <Panel
-              key={s.id}
-              title={`Grade ${s.grade}`}
-              action={s.pending ? <Status>Choice to review</Status> : undefined}
-            >
-              <h2 className="text-2xl">{s.name}</h2>
-              <div className="flex flex-wrap gap-2">
-                {s.interests.map((i) => (
-                  <Status key={i}>{i}</Status>
-                ))}
-              </div>
-              <p className="text-sm text-muted-foreground">
-                {s.due || "No follow-up due"}
-              </p>
-              <Button asChild variant="outline">
-                <Link href={`/preview/nassar/student/${s.id}`}>
-                  Open workspace
-                  <ArrowRight />
-                </Link>
-              </Button>
-            </Panel>
-          ))}
-      </div>
-      {!fixture.caseload.some((s) =>
-        `${s.name} ${s.interests.join(" ")}`
-          .toLowerCase()
-          .includes(query.toLowerCase()),
-      ) && (
-        <Empty
-          title="No matching students"
-          text="Try another name or interest."
-        />
-      )}
-    </>
+    <PearlStudents
+      students={fixture.caseload.map((student) => ({
+        id: student.id,
+        name: student.name,
+        context: `Grade ${student.grade}`,
+        interests: student.interests,
+        pending: Boolean(student.pending),
+        followUp: student.due || "No follow-up due",
+        href: `/preview/nassar/student/${student.id}`,
+      }))}
+    />
   );
 }
 export function StudentDetail({ id }: { id: string }) {
@@ -270,12 +224,12 @@ export function StudentDetail({ id }: { id: string }) {
           </Button>
         </>
       ) : (
-        <>
-          <div className="grid gap-6 xl:grid-cols-2">
-            <Panel title="Independent & assisted evidence">
-              <Evidence />
-            </Panel>
-            <Panel title="Agreed next steps">
+        <PearlAdvisorStudentSections
+          pathwayTitle="Independent & assisted evidence"
+          adviceTitle="Guidance shared with the family"
+          pathway={<Evidence />}
+          steps={
+            <>
               <Steps />
               <h3 className="eyebrow pt-4">Goals</h3>
               {state.goals.map((g) => (
@@ -288,59 +242,52 @@ export function StudentDetail({ id }: { id: string }) {
                   Review subject proposals
                 </Link>
               </Button>
-            </Panel>
-          </div>
-          <Panel title="Student questions">
-            {state.questions.map((q, i) => (
-              <div
-                key={q.text}
-                className="space-y-3 border-b pb-5 last:border-0"
-              >
-                <h3 className="text-lg">{q.text}</h3>
-                {q.reply ? (
-                  <blockquote className="border-l-2 border-cobalt pl-4 text-sm text-muted-foreground">
-                    {q.reply}
-                  </blockquote>
-                ) : (
-                  <form
-                    className="grid gap-3"
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      const reply = String(
-                        new FormData(e.currentTarget).get("reply"),
-                      ).trim();
-                      if (reply)
-                        setState((s) => ({
-                          ...s,
-                          questions: s.questions.map((v, k) =>
-                            i === k ? { ...v, reply } : v,
-                          ),
-                        }));
-                    }}
-                  >
-                    <Textarea
-                      name="reply"
-                      aria-label={`Reply to ${q.text}`}
-                      required
-                      maxLength={2000}
-                      placeholder="Your advice, in your words"
-                    />
-                    <Button type="submit" className="justify-self-start">
-                      Save sample reply
-                    </Button>
-                  </form>
-                )}
-              </div>
-            ))}
-          </Panel>
-          <Panel title="Guidance shared with the family">
-            {fixture.students.lina.advice.map((a) => (
-              <p key={a.id} className="border-l-2 border-cobalt pl-4">
-                {a.txt}
-              </p>
-            ))}
-          </Panel>
-        </>
+            </>
+          }
+          questions={state.questions.map((q, i) => (
+            <div key={q.text} className="space-y-3 border-b pb-5 last:border-0">
+              <h3 className="text-lg">{q.text}</h3>
+              {q.reply ? (
+                <blockquote className="border-l-2 border-cobalt pl-4 text-sm text-muted-foreground">
+                  {q.reply}
+                </blockquote>
+              ) : (
+                <form
+                  className="grid gap-3"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    const reply = String(
+                      new FormData(e.currentTarget).get("reply"),
+                    ).trim();
+                    if (reply)
+                      setState((s) => ({
+                        ...s,
+                        questions: s.questions.map((v, k) =>
+                          i === k ? { ...v, reply } : v,
+                        ),
+                      }));
+                  }}
+                >
+                  <Textarea
+                    name="reply"
+                    aria-label={`Reply to ${q.text}`}
+                    required
+                    maxLength={2000}
+                    placeholder="Your advice, in your words"
+                  />
+                  <Button type="submit" className="justify-self-start">
+                    Save sample reply
+                  </Button>
+                </form>
+              )}
+            </div>
+          ))}
+          advice={fixture.students.lina.advice.map((a) => (
+            <p key={a.id} className="border-l-2 border-cobalt pl-4">
+              {a.txt}
+            </p>
+          ))}
+        />
       )}
     </>
   );

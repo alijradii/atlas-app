@@ -15,9 +15,10 @@ import {
   TabsTrigger,
   Textarea,
 } from "@school2036/ui";
-import { GraduationCap, Heart } from "lucide-react";
+import { Heart } from "lucide-react";
 import { useState } from "react";
 import { PageHeading } from "../pearl";
+import { PearlAdvisor, PearlAdvisorProfile } from "../pearl-advisor";
 import { type AccountId, fixture, type SubjectId } from "./data";
 import { Empty, Notice, Panel, Pipeline, Status, Steps } from "./shared";
 import { usePreview } from "./state";
@@ -248,37 +249,18 @@ export function Adviser({ accountId }: { accountId: AccountId }) {
       </>
     );
   return (
-    <>
-      <PageHeading
-        title="My advisor"
-        description="A human specialist who follows your interests, goals and choices over the years."
-      />
-      <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-        <Panel title="Your advisor">
-          <div className="flex items-start gap-5">
-            <span className="flex size-16 shrink-0 items-center justify-center rounded-full border bg-surface text-xl">
-              MN
-            </span>
-            <div>
-              <h2 className="text-2xl">Dr. Maya Nassar</h2>
-              <p className="mt-2 text-muted-foreground">
-                {fixture.adviserProfile.field}
-              </p>
-              <div className="mt-5 space-y-3">
-                {fixture.adviserProfile.quals.map((q) => (
-                  <p key={q} className="flex gap-3 text-sm">
-                    <GraduationCap className="size-4 shrink-0 text-cobalt" />
-                    {q}
-                  </p>
-                ))}
-              </div>
-              <p className="mt-5 text-xs text-muted-foreground">
-                Speaks {fixture.adviserProfile.langs}
-              </p>
-            </div>
-          </div>
-        </Panel>
-        <Panel title="Meetings">
+    <PearlAdvisor
+      profile={
+        <PearlAdvisorProfile
+          initials="MN"
+          name="Dr. Maya Nassar"
+          description={fixture.adviserProfile.field}
+          qualifications={fixture.adviserProfile.quals}
+          languages={fixture.adviserProfile.langs}
+        />
+      }
+      meetings={
+        <>
           <Status tone="warning">Arrangement to be defined</Status>
           <p className="text-muted-foreground">
             How you meet is still being decided with the school.
@@ -292,10 +274,10 @@ export function Adviser({ accountId }: { accountId: AccountId }) {
               ? "Conversation requested in preview"
               : "Request a conversation"}
           </Button>
-        </Panel>
-      </div>
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Panel title="My interests & goals">
+        </>
+      }
+      interests={
+        <>
           <div className="flex flex-wrap gap-2">
             {state.interests.map((i) => (
               <Status key={i}>{i}</Status>
@@ -333,11 +315,11 @@ export function Adviser({ accountId }: { accountId: AccountId }) {
               Add
             </Button>
           </form>
-        </Panel>
-        <Panel title="Agreed next steps">
-          <Steps />
-        </Panel>
-        <Panel title="Questions">
+        </>
+      }
+      steps={<Steps />}
+      questions={
+        <>
           {state.questions.map((q) => (
             <div key={q.text} className="space-y-3 border-b pb-4">
               <p className="text-sm">{q.text}</p>
@@ -385,19 +367,15 @@ export function Adviser({ accountId }: { accountId: AccountId }) {
           <p role="status" className="text-xs text-muted-foreground">
             {message}
           </p>
-        </Panel>
-        <Panel title="Advice received">
-          {fixture.students.lina.advice.map((a) => (
-            <blockquote key={a.id} className="space-y-2 border-b pb-4 text-sm">
-              <p className="text-xs text-cobalt">
-                Dr. Nassar · shared with family
-              </p>
-              {a.txt}
-            </blockquote>
-          ))}
-        </Panel>
-      </div>
-    </>
+        </>
+      }
+      advice={fixture.students.lina.advice.map((a) => (
+        <blockquote key={a.id} className="space-y-2 border-b pb-4 text-sm">
+          <p className="text-xs text-cobalt">Dr. Nassar · shared with family</p>
+          {a.txt}
+        </blockquote>
+      ))}
+    />
   );
 }
 

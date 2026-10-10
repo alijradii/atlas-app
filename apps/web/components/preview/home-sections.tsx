@@ -28,7 +28,7 @@ function day(date: Date | null, offset: number) {
     day: "numeric",
   });
 }
-function HomePanel({
+export function HomePanel({
   title,
   children,
   action,
@@ -56,7 +56,7 @@ type WorkItem = {
   href: string;
   action?: string;
 };
-function WorkRows({
+export function WorkRows({
   rows,
   neutral = false,
 }: {

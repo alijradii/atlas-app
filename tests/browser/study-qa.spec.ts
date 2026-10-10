@@ -202,10 +202,8 @@ test("returning to an open shared source rechecks access and removes revoked tra
           json: { ...lesson(1), owned: false, transcript: sourceText },
         });
   });
-  await page.goto("/study");
-  await page
-    .getByRole("button", { name: "Open Lesson 1", exact: true })
-    .click();
+  await page.goto("/study?lesson=lesson-1");
+  await expect(page).toHaveURL(/\/study$/);
   await expect(
     page.getByRole("region", { name: "Full transcript" }),
   ).toHaveText(sourceText);
@@ -226,6 +224,14 @@ test("a long conversation keeps the composer and send control reachable in lands
     .click();
   for (const height of [390, 260]) {
     await page.setViewportSize({ width: 844, height });
+    const launcher = page.getByRole("button", {
+      name: "Open Atlas assistant",
+      exact: true,
+    });
+    if (await launcher.isVisible()) {
+      await launcher.scrollIntoViewIfNeeded();
+      await launcher.click();
+    }
     const input = page.getByRole("textbox", {
       name: "Ask about your lessons",
       exact: true,
@@ -245,4 +251,74 @@ test("a long conversation keeps the composer and send control reachable in lands
       ),
     ).toBe(true);
   }
+});
+
+test("the shared New chat navigation resets an open conversation repeatedly without posting", async ({
+  page,
+}) => {
+  const requests = await workspace(page);
+  for (let attempt = 0; attempt < 2; attempt++) {
+    await page
+      .getByRole("button", { name: conversation.title, exact: true })
+      .click();
+    await page
+      .getByRole("textbox", { name: "Ask about your lessons", exact: true })
+      .fill("An unsent question");
+    await page.getByRole("link", { name: "New chat", exact: true }).click();
+    await expect(
+      page.getByRole("heading", { name: "Study with your agent", exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("textbox", {
+        name: "Ask about your lessons",
+        exact: true,
+      }),
+    ).toHaveCount(0);
+    await expect(page).toHaveURL(/\/study$/);
+  }
+  expect(requests.posts()).toBe(0);
+});
+
+test("a suggested study question reopens the minimized Pearl dock without sending", async ({
+  page,
+}) => {
+  const requests = await workspace(page);
+  await page
+    .getByRole("button", { name: conversation.title, exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Minimize assistant", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "Open Atlas assistant", exact: true }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: "Explain the key ideas", exact: true })
+    .click();
+  const input = page.getByRole("textbox", {
+    name: "Ask about your lessons",
+    exact: true,
+  });
+  await expect(input).toHaveValue("Explain the key ideas in these lessons.");
+  await expect(input).toBeFocused();
+  expect(requests.posts()).toBe(0);
+});
+
+test("a direct lesson card URL still rejects unavailable source access", async ({
+  page,
+}) => {
+  await workspace(page);
+  await page.route("**/api/v1/study/lessons/unavailable", (route) =>
+    route.fulfill({
+      status: 404,
+      json: { detail: "Lesson not found or access has changed" },
+    }),
+  );
+  await page.goto("/study?lesson=unavailable");
+  await expect(page.getByRole("dialog")).toContainText(
+    "Lesson not found or access has changed",
+  );
+  await expect(
+    page.getByRole("region", { name: "Full transcript" }),
+  ).toHaveCount(0);
 });

@@ -2,6 +2,21 @@ import StudyApp from "@/components/study/study-app";
 
 export const metadata = { title: "Your study workspace" };
 
-export default function StudyPage() {
-  return <StudyApp />;
+export default async function StudyPage({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    new?: string | string[];
+    lesson?: string | string[];
+  }>;
+}) {
+  const params = await searchParams;
+  return (
+    <StudyApp
+      newConversation={params.new === "1"}
+      initialLessonId={
+        typeof params.lesson === "string" ? params.lesson : undefined
+      }
+    />
+  );
 }

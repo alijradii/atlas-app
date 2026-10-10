@@ -11,9 +11,41 @@ async function login(page: Page, role: string) {
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await expect(page).toHaveURL(/\/workspace$/);
   await expect(
-    page.getByRole("heading", { name: "Good to see you, School." }),
+    page.getByRole("heading", { name: "Welcome back, School", exact: true }),
   ).toBeVisible();
 }
+async function openSection(page: Page, section: string) {
+  const href = `/workspace?section=${section}`;
+  let navigation = page
+    .getByRole("complementary", { name: "Main navigation" })
+    .getByRole("navigation", { name: "Workspace", exact: true });
+  if ((page.viewportSize()?.width ?? 1280) < 1024) {
+    await page.getByRole("button", { name: "Open navigation" }).click();
+    navigation = page
+      .getByRole("dialog")
+      .getByRole("navigation", { name: "Workspace", exact: true });
+  }
+  await expect(navigation).toBeVisible();
+  await navigation.locator(`a[href="${href}"]`).click();
+  await expect(page).toHaveURL(href);
+  await expect(page.getByRole("dialog")).toBeHidden();
+}
+async function expectRoleSections(page: Page, sections: string[]) {
+  const navigation = page
+    .getByRole("complementary", { name: "Main navigation" })
+    .getByRole("navigation", { name: "Workspace", exact: true });
+  const links = navigation.locator('a[href^="/workspace?section="]');
+  await expect(links).toHaveCount(sections.length);
+  expect(
+    await links.evaluateAll((items) =>
+      items.map((item) => item.getAttribute("href")),
+    ),
+  ).toEqual(sections.map((section) => `/workspace?section=${section}`));
+  await expect(
+    navigation.getByRole("link", { name: "Home", exact: true }),
+  ).toHaveAttribute("aria-current", "page");
+}
+
 async function json(page: Page, path: string, body?: unknown) {
   return page.evaluate(
     async ({ path, body }) => {
@@ -50,39 +82,22 @@ test("school roles share a lesson, submit work, exchange feedback and messages, 
     await login(student, "student");
     await login(advisor, "advisor");
     await login(parent, "parent");
-    await expect(teacher.getByRole("tab")).toHaveText([
-      "Schoolwork",
-      "Shared lessons",
-    ]);
-    await expect(student.getByRole("tab")).toHaveText([
-      "Schoolwork",
-      "Shared lessons",
-      "Advisor conversations",
-      "Plans & decisions",
-    ]);
-    await expect(advisor.getByRole("tab")).toHaveText([
-      "Advisor conversations",
-      "Plans & decisions",
-    ]);
-    await expect(parent.getByRole("tab")).toHaveText([
-      "Schoolwork",
-      "Plans & decisions",
-    ]);
+    await expectRoleSections(teacher, ["lessons", "work"]);
+    await expectRoleSections(student, ["plans", "lessons", "work", "messages"]);
+    await expectRoleSections(advisor, ["students", "plans", "messages"]);
+    await expectRoleSections(parent, ["plans", "work"]);
+    const teacherNavigation = teacher
+      .getByRole("complementary", { name: "Main navigation" })
+      .getByRole("navigation", { name: "Workspace", exact: true });
+    await teacherNavigation
+      .getByRole("link", { name: "My lessons", exact: true })
+      .focus();
+    await teacher.keyboard.press("Enter");
+    await expect(teacher).toHaveURL("/workspace?section=lessons");
     await expect(
-      advisor.getByRole("tab", { name: "Advisor conversations" }),
-    ).toHaveAttribute("aria-selected", "true");
-    await teacher.getByRole("tab", { name: "Schoolwork" }).focus();
-    await teacher.keyboard.press("ArrowRight");
-    await expect(
-      teacher.getByRole("tab", { name: "Shared lessons" }),
-    ).toBeFocused();
-    await expect(
-      teacher.getByRole("tab", { name: "Shared lessons" }),
-    ).toHaveAttribute("aria-selected", "true");
-    await teacher.keyboard.press("ArrowRight");
-    await expect(
-      teacher.getByRole("tab", { name: "Schoolwork" }),
-    ).toBeFocused();
+      teacherNavigation.getByRole("link", { name: "My lessons", exact: true }),
+    ).toHaveAttribute("aria-current", "page");
+    await openSection(teacher, "work");
     const title = `Newton work ${Date.now()}`;
     const lesson = await json(teacher, "/study/lessons", {
       title,
@@ -116,7 +131,7 @@ test("school roles share a lesson, submit work, exchange feedback and messages, 
     await expect(
       teacher.getByRole("heading", { name: title, exact: true }),
     ).toBeVisible();
-    await student.reload();
+    await openSection(student, "work");
     const studentWork = student.getByRole("article").filter({
       has: student.getByRole("heading", { name: title, exact: true }),
     });
@@ -127,7 +142,7 @@ test("school roles share a lesson, submit work, exchange feedback and messages, 
       .getByRole("button", { name: "Submit work", exact: true })
       .click();
     await expect(studentWork).toContainText("With your teacher");
-    await student.getByRole("tab", { name: "Shared lessons" }).click();
+    await openSection(student, "lessons");
     await expect(
       student.getByRole("heading", { name: title, exact: true }),
     ).toBeVisible();
@@ -142,11 +157,11 @@ test("school roles share a lesson, submit work, exchange feedback and messages, 
       .getByRole("button", { name: "Send feedback", exact: true })
       .click();
     await expect(teacherWork).toContainText("Feedback ready");
-    await student.reload();
+    await openSection(student, "work");
     await expect(studentWork).toContainText(
       "Your units and reasoning are clear.",
     );
-    await student.getByRole("tab", { name: "Advisor conversations" }).click();
+    await openSection(student, "messages");
     await student
       .getByLabel("Message to School Advisor")
       .fill("Can we discuss my engineering project?");
@@ -157,7 +172,7 @@ test("school roles share a lesson, submit work, exchange feedback and messages, 
       student.getByRole("log", { name: "Advisor messages" }),
     ).toContainText("engineering project");
     await advisor.reload();
-    await advisor.getByRole("tab", { name: "Advisor conversations" }).click();
+    await openSection(advisor, "messages");
     await expect(advisor.getByRole("log")).toContainText("engineering project");
     await advisor
       .getByLabel("Message to School Student")
@@ -166,7 +181,7 @@ test("school roles share a lesson, submit work, exchange feedback and messages, 
       .getByRole("button", { name: "Send message", exact: true })
       .click();
     await expect(advisor.getByRole("log")).toContainText("review the plan");
-    await student.getByRole("tab", { name: "Plans & decisions" }).click();
+    await openSection(student, "plans");
     await student
       .getByText("Bring an idea to your advisor", { exact: true })
       .click();
@@ -188,7 +203,7 @@ test("school roles share a lesson, submit work, exchange feedback and messages, 
       student.getByRole("heading", { name: proposal, exact: true }),
     ).toBeVisible();
     await advisor.reload();
-    await advisor.getByRole("tab", { name: "Plans & decisions" }).click();
+    await openSection(advisor, "plans");
     const advisorProposal = advisor.getByRole("article").filter({
       has: advisor.getByRole("heading", { name: proposal, exact: true }),
     });
@@ -200,7 +215,7 @@ test("school roles share a lesson, submit work, exchange feedback and messages, 
       .click();
     await expect(advisorProposal).toContainText("With parent");
     await parent.reload();
-    await parent.getByRole("tab", { name: "Plans & decisions" }).click();
+    await openSection(parent, "plans");
     const parentProposal = parent.getByRole("article").filter({
       has: parent.getByRole("heading", { name: proposal, exact: true }),
     });
@@ -212,11 +227,13 @@ test("school roles share a lesson, submit work, exchange feedback and messages, 
       "Approved",
     );
     await student.reload();
-    await student.getByRole("tab", { name: "Plans & decisions" }).click();
+    await openSection(student, "plans");
     await expect(
       student.getByRole("article").filter({ hasText: proposal }),
     ).toContainText("prepare the materials");
     await student.setViewportSize({ width: 390, height: 844 });
+    await openSection(student, "work");
+    await openSection(student, "plans");
     expect(
       await student.evaluate(
         () => document.documentElement.scrollWidth <= innerWidth,
@@ -279,11 +296,85 @@ test("workspace stays private and gives unprovisioned accounts an honest empty s
   ).toHaveCount(0);
   await expect(page.getByRole("tablist")).toHaveCount(0);
   await expect(
-    page.getByRole("link", { name: "Open your study space" }),
+    page.getByRole("button", { name: "Open your study space" }),
   ).toBeVisible();
   await page.getByRole("button", { name: "Sign out", exact: true }).click();
   await expect(
     page.getByRole("heading", { name: "Sign in to your workspace" }),
   ).toBeVisible();
   await expect(page.getByRole("tablist")).toHaveCount(0);
+});
+
+test("real and preview accounts share the Pearl home and keep uploads in the main navigation", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto("/preview/lina/home");
+  await expect(
+    page.getByRole("heading", { name: "Welcome back, Lina", exact: true }),
+  ).toBeVisible();
+  const previewFrame = await page
+    .locator(".atlas-workspace")
+    .evaluate((root) => ({
+      frame: root.className,
+      aside: root.querySelector("aside")?.className,
+      main: root.querySelector("#main-content")?.className,
+      hero: root.querySelector(".pearl-home-hero")?.className,
+    }));
+  await login(page, "student");
+  const realFrame = await page.locator(".atlas-workspace").evaluate((root) => ({
+    frame: root.className,
+    aside: root.querySelector("aside")?.className,
+    main: root.querySelector("#main-content")?.className,
+    hero: root.querySelector(".pearl-home-hero")?.className,
+  }));
+  expect(realFrame).toEqual(previewFrame);
+  await expect(page.locator(".atlas-composer-wrap")).toBeVisible();
+  await expect(
+    page
+      .getByRole("complementary", { name: "Main navigation" })
+      .getByRole("link", { name: "Files & recordings", exact: true }),
+  ).toHaveAttribute("href", "/files");
+  await page
+    .getByRole("complementary", { name: "Main navigation" })
+    .getByRole("link", { name: "Files & recordings", exact: true })
+    .click();
+  await expect(page).toHaveURL("/files");
+  await expect(
+    page.getByRole("heading", { name: "Your files", exact: true }),
+  ).toBeVisible();
+  await expect(page.locator(".atlas-workspace > aside")).toHaveClass(
+    previewFrame.aside ?? "",
+  );
+  await expect(
+    page
+      .getByRole("complementary", { name: "Main navigation" })
+      .getByRole("link", { name: "Files & recordings", exact: true }),
+  ).toHaveAttribute("aria-current", "page");
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page
+    .getByRole("button", { name: "Open navigation", exact: true })
+    .click();
+  await page
+    .getByRole("dialog")
+    .getByRole("link", { name: "Home", exact: true })
+    .click();
+  await expect(page.getByRole("dialog")).toBeHidden();
+  await expect(
+    page.getByRole("heading", { name: "Welcome back, School", exact: true }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", {
+      name: "Upload a document or recording",
+      exact: true,
+    })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Your files", exact: true }),
+  ).toBeVisible();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
 });

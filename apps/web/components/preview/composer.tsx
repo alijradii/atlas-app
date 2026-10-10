@@ -23,6 +23,12 @@ export function Composer({
   children,
   inline = false,
   onMinimize,
+  disabled = false,
+  sendDisabled = false,
+  sendLabel = "Send message",
+  inputInvalid = false,
+  inputDescription,
+  action,
 }: {
   value: string;
   onChange: (value: string) => void;
@@ -35,6 +41,12 @@ export function Composer({
   children?: ReactNode;
   inline?: boolean;
   onMinimize?: () => void;
+  disabled?: boolean;
+  sendDisabled?: boolean;
+  sendLabel?: string;
+  inputInvalid?: boolean;
+  inputDescription?: string;
+  action?: ReactNode;
 }) {
   const input = useRef<HTMLTextAreaElement>(null);
   useEffect(() => {
@@ -46,7 +58,7 @@ export function Composer({
       : "32px";
   }, [value]);
   const submit = () => {
-    if (value.trim()) onSubmit(value.trim());
+    if (!disabled && !sendDisabled && value.trim()) onSubmit(value.trim());
   };
   return (
     <section
@@ -60,7 +72,12 @@ export function Composer({
           aria-label="Recommended actions"
         >
           {suggestions.map((text) => (
-            <button key={text} type="button" onClick={() => onSubmit(text)}>
+            <button
+              key={text}
+              type="button"
+              disabled={disabled || sendDisabled}
+              onClick={() => onSubmit(text)}
+            >
               {text}
             </button>
           ))}
@@ -77,6 +94,9 @@ export function Composer({
           ref={input}
           rows={1}
           aria-label={label}
+          aria-invalid={inputInvalid || undefined}
+          aria-describedby={inputDescription}
+          disabled={disabled}
           value={value}
           maxLength={2000}
           placeholder={placeholder}
@@ -125,14 +145,16 @@ export function Composer({
               <ArrowDownRight size={18} />
             </button>
           )}
-          <button
-            type="submit"
-            className="atlas-round-button atlas-send"
-            aria-label="Send message"
-            disabled={!value.trim()}
-          >
-            <Send size={17} />
-          </button>
+          {action ?? (
+            <button
+              type="submit"
+              className="atlas-round-button atlas-send"
+              aria-label={sendLabel}
+              disabled={disabled || sendDisabled || !value.trim()}
+            >
+              <Send size={17} />
+            </button>
+          )}
         </div>
       </form>
     </section>

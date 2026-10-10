@@ -3,7 +3,7 @@ import { ApiError, api } from "@school2036/api-client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Lesson, Session, Workspace } from "./types";
 
-export function useWorkspace() {
+export function useWorkspace(section = "home") {
   const [session, setSession] = useState<Session | null>(null);
   const [data, setData] = useState<Workspace | null>(null);
   const [lessons, setLessons] = useState<Lesson[]>([]);
@@ -33,7 +33,7 @@ export function useWorkspace() {
     setSignedOut(true);
     setBusy(false);
   }, [clear]);
-  // biome-ignore lint/correctness/useExhaustiveDependencies: revision explicitly reloads after writes.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: revision reloads after writes; section reauthorizes current records on navigation.
   useEffect(() => {
     if (signedOut) return;
     let alive = true;
@@ -76,15 +76,13 @@ export function useWorkspace() {
           refresh();
           return;
         }
-        const ownLessons = workspace.roles.includes("teacher")
-          ? await api<Lesson[]>(
-              "/study/lessons",
-              "GET",
-              undefined,
-              undefined,
-              controller.signal,
-            )
-          : [];
+        const availableLessons = await api<Lesson[]>(
+          "/study/lessons",
+          "GET",
+          undefined,
+          undefined,
+          controller.signal,
+        );
         const confirmed = await api<Session>(
           "/auth/me",
           "GET",
@@ -101,11 +99,7 @@ export function useWorkspace() {
         }
         setSession(confirmed);
         setData(workspace);
-        setLessons(
-          ownLessons.filter(
-            (lesson) => lesson.owned && lesson.state === "ready",
-          ),
-        );
+        setLessons(availableLessons);
       } catch (cause) {
         if (!current()) return;
         clear();
@@ -132,7 +126,7 @@ export function useWorkspace() {
       document.removeEventListener("visibilitychange", read);
       window.removeEventListener("focus", read);
     };
-  }, [revision, signedOut, clear, expire]);
+  }, [revision, section, signedOut, clear, expire]);
   useEffect(
     () => () => {
       writes.current?.abort();

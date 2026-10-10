@@ -122,8 +122,20 @@ test("a typed navigation request in chat opens and highlights the teacher upload
   await expect(page).toHaveURL(/\/preview\/daher\/upload\?guide=/);
   await expect(
     page.getByRole("dialog", { name: "Assistant tip" }),
-  ).toContainText("Choose a recording here");
+  ).toContainText("Open files & recordings here");
   await expect(
     page.locator('.atlas-spotlight-ring[data-target="lessons.upload"]'),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Got it", exact: true }).click();
+  await expect(page.locator('input[type="file"]')).toHaveCount(0);
+  await expect(
+    page.getByRole("link", { name: "Open files & recordings", exact: true }),
+  ).toHaveAttribute("href", "/files");
+  await page
+    .getByRole("link", { name: "Open files & recordings", exact: true })
+    .click();
+  await expect(page).toHaveURL("/login?next=files");
+  await expect(
+    page.getByRole("button", { name: "Sign in", exact: true }),
   ).toBeVisible();
 });

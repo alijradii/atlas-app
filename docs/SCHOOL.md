@@ -2,6 +2,12 @@
 
 `/workspace` is the authenticated, persisted school workspace. The role layouts under `/preview/*` remain demonstrations. This minimal workflow does not implement a student information system, enrollment import, institutional grading rules or automated school decisions.
 
+Both use the same Pearl frame and Home presentation. Real Home shows only tasks
+returned for the signed-in account. Schoolwork, Lessons, advisor conversations and
+plans are reached through the sidebar. Section navigation refreshes current records
+and permissions; a page that was already open does not retain a stale home snapshot.
+Files & recordings and Study with agent remain in the same frame for every account.
+
 Use the app from home or school. Authentication, an active account, explicit roles and explicit student relationships determine access. A school LAN or IP address does not grant authority.
 
 ## Provision accounts and responsibilities

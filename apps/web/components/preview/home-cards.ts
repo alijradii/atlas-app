@@ -1,23 +1,10 @@
+import type { HomeCard } from "../pearl-home-types";
 import { type AccountId, duration, fixture } from "./data";
 import type { PreviewState, Proposal } from "./state";
 import type { TaskKind } from "./task-art";
 
-export type HomeGroup = "needs" | "continue" | "waiting" | "done";
+export type { HomeCard, HomeGroup } from "../pearl-home-types";
 
-export type HomeCard = {
-  group: HomeGroup;
-  status: string;
-  id: string;
-  kind: TaskKind;
-  label: string;
-  title: string;
-  sub: string;
-  action: string;
-  href: string;
-  initials?: string;
-  progress?: number;
-  locked?: boolean;
-};
 const labels: Record<TaskKind, string> = {
   cards: "Study cards",
   practice: "Practice",
@@ -195,9 +182,10 @@ function buildHomeCards(accountId: AccountId, state: PreviewState): HomeCard[] {
         "upload",
         "upload",
         "Share a lesson",
-        "Choose a recording and who it’s for",
+        "Upload materials, review the text, then prepare a lesson",
         "Upload a session",
         "upload",
+        { href: "/files" },
       ),
       card(
         "class-progress",

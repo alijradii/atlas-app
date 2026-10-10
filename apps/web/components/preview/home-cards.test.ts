@@ -41,7 +41,10 @@ test("functional card art identifies human guidance, people and access independe
     kind: "advisor",
     action: "View matching status",
   });
-  expect(findCard("daher", "upload").kind).toBe("upload");
+  expect(findCard("daher", "upload")).toMatchObject({
+    kind: "upload",
+    href: "/files",
+  });
   expect(findCard("nassar", "students").kind).toBe("people");
   expect(findCard("hajj", "access").kind).toBe("access");
   expect(findCard("hajj", "settings").kind).toBe("settings");

@@ -1,58 +1,16 @@
-.study-app,
-.study-modal {
-  --muted-foreground: #485365;
-}
-:where(.dark) .study-app,
-:where(.dark) .study-modal {
-  --muted-foreground: #b5bece;
-}
 .study-app {
-  min-height: 100dvh;
-  color: var(--foreground);
-}
-.study-header {
-  height: 76px;
-  padding: 0 clamp(20px, 3vw, 44px);
-  display: flex;
-  align-items: center;
-  gap: 28px;
-  border-bottom: 1px solid var(--border);
-  background: var(--card);
-}
-.study-header-title {
-  font-size: 13px;
-  color: var(--muted-foreground);
-}
-.study-header nav {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  font-size: 13px;
-}
-.study-header nav > a:hover {
-  text-decoration: underline;
-}
-.study-layout {
   display: grid;
-  grid-template-columns: 320px minmax(0, 1fr);
-  height: calc(100dvh - 76px);
+  gap: 20px;
+  min-height: 0;
+  color: var(--foreground);
 }
 .study-sidebar {
   min-width: 0;
-  padding: 28px 20px;
-  border-right: 1px solid var(--border);
-  overflow-y: auto;
-  background: color-mix(in srgb, var(--card) 45%, transparent);
 }
 .study-sidebar-intro {
   padding: 0 8px 24px;
 }
-.study-sidebar-intro h2 {
-  font-size: 22px;
-  margin: 8px 0;
-  letter-spacing: -0.025em;
-}
+
 .study-sidebar-intro > p:last-child {
   color: var(--muted-foreground);
   font-size: 13px;
@@ -264,59 +222,15 @@
 }
 .study-main {
   min-width: 0;
-  padding: 24px clamp(20px, 4vw, 64px);
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
-}
-.study-welcome {
-  max-width: 720px;
-  margin: auto;
-  padding: 32px 0;
-}
-.study-welcome-art {
-  width: 138px;
-  height: 132px;
-  margin-bottom: 24px;
-}
-.study-welcome-art .atlas-task-art {
-  width: 100%;
-  height: 100%;
-}
-.study-welcome h1 {
-  font-size: clamp(32px, 3.5vw, 48px);
-  line-height: 1.15;
-  letter-spacing: -0.04em;
-  max-width: 550px;
-  margin: 12px 0 20px;
-}
-.study-welcome > p:not(.eyebrow) {
-  color: var(--muted-foreground);
-  font-size: 17px;
-  line-height: 1.75;
-  max-width: 580px;
 }
 .study-welcome-actions {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: 10px;
-  margin: 28px 0 40px;
-}
-.study-welcome-principles {
-  display: grid;
-  gap: 14px;
-  font-size: 13px;
-  color: var(--muted-foreground);
-}
-.study-welcome-principles > span {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.study-welcome-principles svg {
-  width: 18px;
-  height: 18px;
-  color: var(--cobalt);
+  margin-top: 28px;
 }
 .study-error-banner,
 .study-service-notice {
@@ -348,7 +262,8 @@
 .study-conversation {
   display: flex;
   flex-direction: column;
-  min-height: 0;
+  height: calc(100dvh - 150px);
+  min-height: 420px;
   flex: 1;
   width: 100%;
   max-width: 960px;
@@ -357,8 +272,8 @@
 .study-conversation-header {
   padding: 4px 0 18px;
 }
-.study-conversation-header h1 {
-  font-size: clamp(24px, 2.7vw, 32px);
+.study-conversation-header h2 {
+  font-size: 16px;
   line-height: 1.3;
   letter-spacing: -0.025em;
   margin-top: 6px;
@@ -394,62 +309,6 @@
   overflow-y: auto;
   padding: 6px 10px 22px 0;
   overscroll-behavior: contain;
-}
-.study-message {
-  margin: 14px 0 28px;
-  overflow-wrap: anywhere;
-}
-.study-message-author {
-  margin-bottom: 10px;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  color: var(--muted-foreground);
-}
-.study-message-user {
-  padding: 16px 20px;
-  margin-left: 12%;
-  border-radius: 20px 20px 4px 20px;
-  background: color-mix(in srgb, var(--surface) 78%, transparent);
-}
-.study-user-text {
-  white-space: pre-wrap;
-  font-size: 15px;
-  line-height: 1.7;
-}
-.study-chat-empty {
-  padding: 38px 0;
-  text-align: center;
-  color: var(--muted-foreground);
-}
-.study-chat-empty .atlas-task-art {
-  width: 95px;
-  height: 85px;
-  display: inline-block;
-  margin-bottom: 24px;
-}
-.study-chat-empty h2 {
-  color: var(--foreground);
-  font-size: 22px;
-  margin-bottom: 12px;
-}
-.study-chat-empty p {
-  max-width: 390px;
-  margin: auto;
-  font-size: 14px;
-  line-height: 1.7;
-}
-.study-starters {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 22px;
-}
-.study-starters button {
-  font-size: 11px;
-  letter-spacing: normal;
-  text-transform: none;
 }
 .study-citations {
   display: flex;
@@ -520,49 +379,30 @@
 .study-thinking i:nth-child(3) {
   animation-delay: 0.3s;
 }
-.study-composer {
+.study-composer-slot {
   flex-shrink: 0;
-  background: var(--surface);
-  border: 1px solid var(--input);
-  border-radius: 24px;
-  padding: 14px 16px 10px;
-  box-shadow: 0 9px 26px #111b3110;
-  margin-top: 8px;
+  padding-block: 12px 4px;
 }
-.study-composer textarea {
-  width: 100%;
-  border: 0;
-  background: transparent;
-  resize: vertical;
-  max-height: 180px;
-  min-height: 48px;
-  font-size: 15px;
-  line-height: 1.65;
-  outline: none;
+.study-draft-notice {
+  padding: 18px;
+  margin-top: 20px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  font-size: 13px;
+  overflow-wrap: anywhere;
 }
-.study-composer:focus-within {
-  border-color: color-mix(in srgb, var(--cobalt) 65%, var(--input));
+.study-draft-notice p {
+  margin-block: 8px;
+  white-space: pre-wrap;
 }
-.study-composer-footer {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  justify-content: space-between;
-  margin-top: 8px;
-}
-.study-composer-footer > span {
-  font-size: 11px;
-  line-height: 1.5;
+.study-draft-notice span {
+  display: block;
   color: var(--muted-foreground);
 }
-.study-composer-footer button {
-  flex-shrink: 0;
-}
-.study-composer-footer button[type="submit"] {
-  border-radius: 50%;
-  width: 36px;
-  height: 36px;
-  padding: 0;
+.study-draft-notice button {
+  margin-top: 12px;
+  text-decoration: underline;
 }
 .study-conversation-loading {
   margin: auto;
@@ -717,17 +557,6 @@
       background var(--motion-fast),
       border-color var(--motion-fast);
   }
-  .study-message {
-    animation: study-message-in var(--motion-enter) var(--motion-ease-enter);
-  }
-  @keyframes study-message-in {
-    from {
-      transform: translateY(5px);
-    }
-    to {
-      transform: translateY(0);
-    }
-  }
 }
 @media (prefers-reduced-motion: reduce) {
   .study-spinner,
@@ -735,89 +564,29 @@
     animation: none;
   }
 }
-@media (max-width: 900px) {
-  .study-layout {
-    grid-template-columns: 275px minmax(0, 1fr);
-  }
-  .study-main {
-    padding: 20px;
-  }
-  .study-sidebar {
-    padding: 22px 14px;
-  }
-  .study-header-title {
-    display: none;
-  }
-}
-@media (max-width: 640px) {
-  .study-header {
-    height: auto;
-    min-height: 66px;
-    flex-wrap: wrap;
-    padding-block: 12px;
-    padding-inline: 16px;
-    gap: 10px;
-  }
-  .study-header nav {
-    flex-wrap: wrap;
-    gap: 7px;
-  }
-  .study-header nav > a {
-    font-size: 11px;
-  }
-  .study-header nav button {
-    padding-inline: 8px;
-  }
-  .study-header :where(nav button) span {
-    display: none;
-  }
-  .study-layout {
-    display: flex;
-    flex-direction: column;
-    height: auto;
-  }
-  .study-sidebar {
-    border-right: 0;
-    border-bottom: 1px solid var(--border);
-    max-height: 44dvh;
-    padding: 18px;
-  }
+@media (max-width: 1100px) {
   .study-sidebar-intro {
-    display: none;
+    padding-bottom: 14px;
+  }
+  .study-lesson-list {
+    max-height: 36dvh;
+    overflow-y: auto;
   }
   .study-history {
     margin-top: 18px;
     padding-top: 14px;
   }
-  .study-main {
-    min-height: calc(100dvh - 66px);
-    padding: 24px 16px;
-  }
-  .study-welcome {
-    padding-top: 12px;
-  }
-  .study-welcome h1 {
-    font-size: 34px;
-  }
-  .study-welcome > p:not(.eyebrow) {
-    font-size: 15px;
-  }
-  .study-welcome-art {
-    width: 100px;
-    height: 100px;
+}
+@media (max-width: 640px) {
+  .study-sidebar-intro > p:last-child {
+    display: none;
   }
   .study-conversation {
-    min-height: 70dvh;
+    min-height: 65dvh;
   }
   .study-messages {
     max-height: 58dvh;
     min-height: 180px;
-  }
-  .study-composer-footer > span {
-    font-size: 10px;
-  }
-  .study-message-user {
-    margin-left: 4%;
   }
   .study-share-form {
     flex-direction: column;

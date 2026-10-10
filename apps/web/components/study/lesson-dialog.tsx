@@ -277,7 +277,7 @@ export function LessonDialog({
     void (async () => {
       try {
         const detail = await api<LessonDetail>(
-          `/study/lessons/${id}`,
+          `/study/lessons/${encodeURIComponent(id)}`,
           "GET",
           undefined,
           undefined,
@@ -285,7 +285,7 @@ export function LessonDialog({
         );
         const grants = detail.owned
           ? await api<Access[]>(
-              `/study/lessons/${id}/access`,
+              `/study/lessons/${encodeURIComponent(id)}/access`,
               "GET",
               undefined,
               undefined,
@@ -390,7 +390,9 @@ export function LessonDialog({
             )}
             {lesson.has_file && (
               <Button asChild variant="outline">
-                <a href={`/api/v1/study/lessons/${id}/file`}>
+                <a
+                  href={`/api/v1/study/lessons/${encodeURIComponent(id)}/file`}
+                >
                   Download original material
                 </a>
               </Button>
@@ -401,7 +403,7 @@ export function LessonDialog({
                 onSubmit={async (event) => {
                   event.preventDefault();
                   const result = await mutate(
-                    `/study/lessons/${id}/approve`,
+                    `/study/lessons/${encodeURIComponent(id)}/approve`,
                     "POST",
                     { transcript: draft.trim() },
                   );
@@ -474,7 +476,7 @@ export function LessonDialog({
                       disabled={busy}
                       onClick={async () => {
                         const result = await mutate(
-                          `/study/lessons/${id}/access/${person.account_id}`,
+                          `/study/lessons/${encodeURIComponent(id)}/access/${person.account_id}`,
                           "DELETE",
                         );
                         if (result.ok) setRevision((value) => value + 1);
@@ -496,7 +498,7 @@ export function LessonDialog({
                       return;
                     }
                     const result = await mutate(
-                      `/study/lessons/${id}/access`,
+                      `/study/lessons/${encodeURIComponent(id)}/access`,
                       "POST",
                       { login: login.trim() },
                     );
@@ -537,7 +539,7 @@ export function LessonDialog({
                         disabled={busy}
                         onClick={async () => {
                           const result = await mutate(
-                            `/study/lessons/${id}`,
+                            `/study/lessons/${encodeURIComponent(id)}`,
                             "DELETE",
                           );
                           if (result.ok) onClose();

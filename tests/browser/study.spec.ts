@@ -109,7 +109,7 @@ test("real study API saves a transcript, answers with a source, restores history
   ).toHaveText(transcript);
   await page.keyboard.press("Escape");
   const conversationTitle = await page
-    .locator(".study-conversation-header h1")
+    .locator(".study-conversation-header h2")
     .innerText();
   await page.reload();
   await page

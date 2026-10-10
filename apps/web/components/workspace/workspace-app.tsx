@@ -7,8 +7,6 @@ import {
   Check,
   ClipboardList,
   GitBranch,
-  LogOut,
-  MessageCircle,
   Plus,
   RefreshCw,
   Send,
@@ -16,22 +14,26 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { type FormEvent, type ReactNode, useState } from "react";
+import { ConnectedShell } from "../connected-shell";
 import { Brand } from "../pearl";
-import { TaskArt } from "../preview/task-art";
-import { ThemeToggle } from "../theme-toggle";
 import type {
   Assignment,
   Person,
   Proposal,
+  Session,
   Workspace as WorkspaceData,
 } from "./types";
 import { useWorkspace } from "./use-workspace";
+import { WorkspaceAdvisor } from "./workspace-advisor";
+import { WorkspaceHome } from "./workspace-home";
+import { WorkspaceLessons } from "./workspace-lessons";
 import "./workspace.css";
 
-type Store = Omit<ReturnType<typeof useWorkspace>, "data"> & {
+type Store = Omit<ReturnType<typeof useWorkspace>, "data" | "session"> & {
   data: WorkspaceData;
+  session: Session;
 };
-type Tab = "work" | "lessons" | "advisor" | "choices";
+type Tab = "work" | "lessons" | "advisor" | "choices" | "students";
 const labels: Record<string, string> = {
   assigned: "Ready to start",
   submitted: "With your teacher",
@@ -50,8 +52,12 @@ const date = (value: number) =>
     day: "numeric",
   });
 
-export default function WorkspaceApp() {
-  const store = useWorkspace();
+export default function WorkspaceApp({
+  section = "home",
+}: {
+  section?: string;
+}) {
+  const store = useWorkspace(section);
   if (!store.session || !store.data)
     return (
       <main id="main-content" className="school-gate">
@@ -81,23 +87,14 @@ export default function WorkspaceApp() {
       </main>
     );
   return (
-    <>
-      {store.checking && (
-        <p className="school-session-check" role="status">
-          Refreshing your workspace…
-        </p>
-      )}
-      <div hidden={store.checking}>
-        <Workspace
-          key={store.session.account_id}
-          store={{ ...store, data: store.data }}
-        />
-      </div>
-    </>
+    <Workspace
+      key={store.session.account_id}
+      section={section}
+      store={{ ...store, data: store.data, session: store.session }}
+    />
   );
 }
-function Workspace({ store }: { store: Store }) {
-  const [selectedTab, setTab] = useState<Tab>("work");
+function Workspace({ store, section }: { store: Store; section: string }) {
   const data = store.data;
   const has = (role: WorkspaceData["roles"][number]) =>
     data.roles.includes(role);
@@ -106,89 +103,50 @@ function Workspace({ store }: { store: Store }) {
       ? "You"
       : (data.people.find((person) => person.account_id === id)?.name ??
         "Connected person");
-  const actionable = data.assignments.filter(
-    (item) =>
-      (item.student_id === data.account_id &&
-        ["assigned", "returned"].includes(item.state)) ||
-      (item.teacher_id === data.account_id && item.state === "submitted"),
-  );
-  const pending = data.proposals.filter(
-    (item) =>
-      (item.advisor_id === data.account_id &&
-        item.state === "pending_advisor") ||
-      (item.parent_id === data.account_id && item.state === "pending_parent") ||
-      (item.student_id === data.account_id &&
-        item.state === "revision_requested"),
-  );
   const allowed: Record<Tab, boolean> = {
+    students: has("advisor"),
     work: has("student") || has("teacher") || has("parent"),
     lessons: has("student") || has("teacher"),
     advisor: has("student") || has("advisor"),
     choices: has("student") || has("advisor") || has("parent"),
   };
-  const tabs = [
-    { id: "work" as const, label: "Schoolwork", Icon: ClipboardList },
-    { id: "lessons" as const, label: "Shared lessons", Icon: BookOpen },
-    {
-      id: "advisor" as const,
-      label: "Advisor conversations",
-      Icon: MessageCircle,
-    },
-    { id: "choices" as const, label: "Plans & decisions", Icon: GitBranch },
-  ].filter((item) => allowed[item.id]);
-  const tab = tabs.find((item) => item.id === selectedTab)?.id ?? tabs[0]?.id;
+  const tab: Tab =
+    section === "students"
+      ? "students"
+      : section === "messages"
+        ? "advisor"
+        : section === "plans"
+          ? "choices"
+          : section === "lessons"
+            ? "lessons"
+            : "work";
   return (
-    <div className="school-app">
-      <header className="school-header">
-        <Brand />
-        <nav aria-label="Your spaces">
-          <Link href="/study">Study agent</Link>
-          <Link href="/files">Your files</Link>
-          <Link href="/account">Account</Link>
-          <Button
-            size="sm"
-            variant="ghost"
-            aria-label="Refresh workspace"
-            disabled={store.busy}
-            onClick={store.refresh}
-          >
-            <RefreshCw />
-          </Button>
-          <ThemeToggle />
-          <Button
-            variant="ghost"
-            size="sm"
-            aria-label="Sign out"
-            disabled={store.busy}
-            onClick={() => void store.signOut()}
-          >
-            <LogOut />
-            <span>Sign out</span>
-          </Button>
-        </nav>
-      </header>
-      <main id="main-content" className="school-main">
-        <section className="school-welcome">
-          <div>
-            <p className="eyebrow">
-              {data.roles.length ? data.roles.join(" · ") : "Your account"}
-            </p>
-            <h1>Good to see you, {data.name.split(" ")[0]}.</h1>
-            <p>
-              {actionable.length + pending.length
-                ? `${actionable.length + pending.length} ${actionable.length + pending.length === 1 ? "thing needs" : "things need"} your attention. Pick up where you left off.`
-                : "A little space to learn, keep in touch and plan what comes next."}
-            </p>
-            <Button asChild>
-              <Link href="/study">
-                Open your study space <ArrowRight />
-              </Link>
-            </Button>
-          </div>
-          <div className="school-welcome-art">
-            <TaskArt kind="practice" />
-          </div>
-        </section>
+    <ConnectedShell
+      session={store.session}
+      section={section}
+      data={data}
+      onSignOut={() => void store.signOut()}
+      headerActions={
+        <Button
+          size="icon"
+          variant="ghost"
+          aria-label="Refresh workspace"
+          disabled={store.busy}
+          onClick={store.refresh}
+        >
+          <RefreshCw />
+        </Button>
+      }
+    >
+      {store.checking && <p role="status">Refreshing your workspace…</p>}
+      <div hidden={store.checking}>
+        {section === "home" && (
+          <WorkspaceHome
+            session={store.session}
+            data={data}
+            lessons={store.lessons}
+          />
+        )}
         {store.error && (
           <div className="school-error" role="alert">
             {store.error}
@@ -198,7 +156,7 @@ function Workspace({ store }: { store: Store }) {
             </Button>
           </div>
         )}
-        {!data.roles.length && (
+        {section === "home" && !data.roles.length && (
           <section className="school-panel school-onboarding">
             <Users />
             <h2>Your school connections are not set up yet</h2>
@@ -210,167 +168,135 @@ function Workspace({ store }: { store: Store }) {
             </p>
           </section>
         )}
-        {tabs.length > 0 && (
-          <>
-            <div
-              className="school-tabs"
-              role="tablist"
-              aria-label="Workspace sections"
-            >
-              {tabs.map(({ id, label, Icon }) => (
-                <button
-                  type="button"
-                  key={id}
-                  role="tab"
-                  id={`tab-${id}`}
-                  aria-selected={tab === id}
-                  aria-controls={`panel-${id}`}
-                  tabIndex={tab === id ? 0 : -1}
-                  onKeyDown={(event) => {
-                    if (
-                      !["ArrowLeft", "ArrowRight", "Home", "End"].includes(
-                        event.key,
-                      )
-                    )
-                      return;
-                    event.preventDefault();
-                    const index = tabs.findIndex((item) => item.id === id);
-                    const next =
-                      event.key === "Home"
-                        ? 0
-                        : event.key === "End"
-                          ? tabs.length - 1
-                          : (index +
-                              (event.key === "ArrowRight" ? 1 : -1) +
-                              tabs.length) %
-                            tabs.length;
-                    setTab(tabs[next].id);
-                    document.getElementById(`tab-${tabs[next].id}`)?.focus();
-                  }}
-                  onClick={() => setTab(id)}
-                >
-                  <Icon />
-                  {label}
-                </button>
-              ))}
-            </div>
-            <section
-              key={tab}
-              role="tabpanel"
-              id={`panel-${tab}`}
-              aria-labelledby={`tab-${tab}`}
-              className="school-content"
-            >
-              {tab === "work" && (
-                <>
-                  <SectionHeading
-                    title={
-                      has("teacher")
-                        ? "Work with your students"
-                        : has("parent")
-                          ? "Your child’s schoolwork"
-                          : "Your schoolwork"
-                    }
-                    description="Assignments, your own work and feedback stay together."
+        {section !== "home" && !allowed[tab] && (
+          <section className="school-panel">
+            <h1 className="text-2xl">
+              This section isn’t connected to your account
+            </h1>
+            <p className="my-4 text-muted-foreground">
+              Your school connections determine which work you can access. Your
+              private files and study library are still available.
+            </p>
+            <Button asChild variant="outline">
+              <Link href="/workspace">Back to home</Link>
+            </Button>
+          </section>
+        )}
+        {section !== "home" && allowed[tab] && (
+          <section
+            key={tab}
+            className="school-content"
+            aria-label="School workflow"
+          >
+            {tab === "work" && (
+              <>
+                <SectionHeading
+                  title={
+                    has("teacher")
+                      ? "Work with your students"
+                      : has("parent")
+                        ? "Your child’s schoolwork"
+                        : "Your schoolwork"
+                  }
+                  description="Assignments, your own work and feedback stay together."
+                />
+                {has("teacher") && <CreateAssignment store={store} />}
+                {!data.assignments.length && (
+                  <Empty
+                    icon={<ClipboardList />}
+                    title="A fresh page"
+                    text="Assignments will appear here when your teacher shares them."
                   />
-                  {has("teacher") && <CreateAssignment store={store} />}
-                  {!data.assignments.length && (
-                    <Empty
-                      icon={<ClipboardList />}
-                      title="A fresh page"
-                      text="Assignments will appear here when your teacher shares them."
+                )}
+                <div className="school-card-list">
+                  {data.assignments.map((assignment) => (
+                    <AssignmentCard
+                      key={assignment.id}
+                      assignment={assignment}
+                      store={store}
+                      name={name}
                     />
-                  )}
-                  <div className="school-card-list">
-                    {data.assignments.map((assignment) => (
-                      <AssignmentCard
-                        key={assignment.id}
-                        assignment={assignment}
-                        store={store}
-                        name={name}
-                      />
-                    ))}
-                  </div>
-                </>
-              )}
-              {tab === "lessons" && (
-                <>
-                  <SectionHeading
-                    title="Lessons, shared with care"
-                    description="These lessons connect directly to your study library. Study privately, at home or wherever you are."
+                  ))}
+                </div>
+              </>
+            )}
+            {tab === "lessons" && (
+              <WorkspaceLessons
+                teacher={has("teacher")}
+                lessons={store.lessons}
+                sharing={
+                  has("teacher") ? (
+                    <>
+                      {has("teacher") && <PublishLesson store={store} />}
+                      <div className="school-card-list">
+                        {data.publications.map((item) => (
+                          <article
+                            className="school-panel school-publication"
+                            key={item.id}
+                          >
+                            <BookOpen />
+                            <div>
+                              <p className="eyebrow">
+                                {item.subject || "Lesson"}
+                              </p>
+                              <h2>{item.title}</h2>
+                              <p>
+                                {name(item.teacher_id)} →{" "}
+                                {name(item.student_id)} · {date(item.created)}
+                              </p>
+                            </div>
+                            {item.student_id === data.account_id ||
+                            item.teacher_id === data.account_id ? (
+                              <Button asChild variant="outline" size="sm">
+                                <Link href="/study">
+                                  Open study library <ArrowRight />
+                                </Link>
+                              </Button>
+                            ) : null}
+                            {item.teacher_id === data.account_id && (
+                              <Unpublish id={item.id} store={store} />
+                            )}
+                          </article>
+                        ))}
+                      </div>
+                    </>
+                  ) : undefined
+                }
+              />
+            )}
+            {tab === "students" && (
+              <WorkspaceAdvisor store={store} name={name} caseload />
+            )}
+            {tab === "advisor" && (
+              <WorkspaceAdvisor store={store} name={name} />
+            )}
+            {tab === "choices" && (
+              <>
+                <SectionHeading
+                  title="Make your next move"
+                  description="Bring an idea to your advisor. If a parent decision is needed, it follows their review."
+                />
+                {has("student") && <CreateProposal store={store} />}
+                <div className="school-card-list">
+                  {data.proposals.map((proposal) => (
+                    <ProposalCard
+                      key={proposal.id}
+                      proposal={proposal}
+                      store={store}
+                      name={name}
+                    />
+                  ))}
+                </div>
+                {!data.proposals.length && (
+                  <Empty
+                    icon={<GitBranch />}
+                    title="Room for your next idea"
+                    text="A course choice, a project or a direction to explore. Proposals and decisions will stay here."
                   />
-                  {has("teacher") && <PublishLesson store={store} />}
-                  {!data.publications.length && (
-                    <Empty
-                      icon={<BookOpen />}
-                      title="No shared lessons yet"
-                      text={
-                        has("teacher")
-                          ? "Prepare a lesson in your study space, then share it with a connected student."
-                          : "Your teacher’s shared lessons will appear here and in your study library."
-                      }
-                    />
-                  )}
-                  <div className="school-card-list">
-                    {data.publications.map((item) => (
-                      <article
-                        className="school-panel school-publication"
-                        key={item.id}
-                      >
-                        <BookOpen />
-                        <div>
-                          <p className="eyebrow">{item.subject || "Lesson"}</p>
-                          <h3>{item.title}</h3>
-                          <p>
-                            {name(item.teacher_id)} → {name(item.student_id)} ·{" "}
-                            {date(item.created)}
-                          </p>
-                        </div>
-                        {item.student_id === data.account_id ||
-                        item.teacher_id === data.account_id ? (
-                          <Button asChild variant="outline" size="sm">
-                            <Link href="/study">
-                              Open study library <ArrowRight />
-                            </Link>
-                          </Button>
-                        ) : null}
-                        {item.teacher_id === data.account_id && (
-                          <Unpublish id={item.id} store={store} />
-                        )}
-                      </article>
-                    ))}
-                  </div>
-                </>
-              )}
-              {tab === "advisor" && <Advisor store={store} name={name} />}
-              {tab === "choices" && (
-                <>
-                  <SectionHeading
-                    title="Make your next move"
-                    description="Bring an idea to your advisor. If a parent decision is needed, it follows their review."
-                  />
-                  {has("student") && <CreateProposal store={store} />}
-                  <div className="school-card-list">
-                    {data.proposals.map((proposal) => (
-                      <ProposalCard
-                        key={proposal.id}
-                        proposal={proposal}
-                        store={store}
-                        name={name}
-                      />
-                    ))}
-                  </div>
-                  {!data.proposals.length && (
-                    <Empty
-                      icon={<GitBranch />}
-                      title="Room for your next idea"
-                      text="A course choice, a project or a direction to explore. Proposals and decisions will stay here."
-                    />
-                  )}
-                </>
-              )}
-            </section>
-          </>
+                )}
+              </>
+            )}
+          </section>
         )}
         <footer className="school-footer">
           <Users />
@@ -380,8 +306,8 @@ function Workspace({ store }: { store: Store }) {
           </span>
           <span>Your access follows your account, wherever you learn.</span>
         </footer>
-      </main>
-    </div>
+      </div>
+    </ConnectedShell>
   );
 }
 function SectionHeading({
@@ -393,7 +319,7 @@ function SectionHeading({
 }) {
   return (
     <header className="school-section-heading">
-      <h2>{title}</h2>
+      <h1>{title}</h1>
       <p>{description}</p>
     </header>
   );
@@ -410,7 +336,7 @@ function Empty({
   return (
     <div className="school-empty">
       {icon}
-      <h3>{title}</h3>
+      <h2>{title}</h2>
       <p>{text}</p>
     </div>
   );
@@ -521,11 +447,13 @@ function CreateAssignment({ store }: { store: Store }) {
               onChange={(event) => setLesson(event.target.value)}
             >
               <option value="">No lesson</option>
-              {store.lessons.map((item) => (
-                <option value={item.id} key={item.id}>
-                  {item.title}
-                </option>
-              ))}
+              {store.lessons
+                .filter((lesson) => lesson.owned && lesson.state === "ready")
+                .map((item) => (
+                  <option value={item.id} key={item.id}>
+                    {item.title}
+                  </option>
+                ))}
             </select>
           </label>
           <label>
@@ -574,7 +502,7 @@ function AssignmentCard({
               : `For ${name(item.student_id)}`}
             {item.due_at ? ` · Due ${date(item.due_at)}` : ""}
           </p>
-          <h3>{item.title}</h3>
+          <h2>{item.title}</h2>
         </div>
         <span className="school-status">{readable(item.state)}</span>
       </div>
@@ -587,7 +515,7 @@ function AssignmentCard({
       )}
       {item.answer && (
         <div className="school-saved-work">
-          <h4>Submitted work</h4>
+          <h3>Submitted work</h3>
           <p className="school-prose">{item.answer}</p>
         </div>
       )}
@@ -595,7 +523,7 @@ function AssignmentCard({
         <div className="school-feedback">
           <Check />
           <div>
-            <h4>Teacher feedback</h4>
+            <h3>Teacher feedback</h3>
             <p className="school-prose">{item.feedback}</p>
           </div>
         </div>
@@ -717,11 +645,13 @@ function PublishLesson({ store }: { store: Store }) {
               onChange={(event) => setLesson(event.target.value)}
             >
               <option value="">Choose a lesson</option>
-              {store.lessons.map((item) => (
-                <option value={item.id} key={item.id}>
-                  {item.title}
-                </option>
-              ))}
+              {store.lessons
+                .filter((lesson) => lesson.owned && lesson.state === "ready")
+                .map((item) => (
+                  <option value={item.id} key={item.id}>
+                    {item.title}
+                  </option>
+                ))}
             </select>
           </label>
         </div>
@@ -765,117 +695,6 @@ function Unpublish({ id, store }: { id: string; store: Store }) {
     <Button size="sm" variant="ghost" onClick={() => setConfirm(true)}>
       Stop sharing
     </Button>
-  );
-}
-function Advisor({
-  store,
-  name,
-}: {
-  store: Store;
-  name: (id: string) => string;
-}) {
-  const data = store.data;
-  const isAdvisor = data.roles.includes("advisor");
-  const peers = data.people.filter((person) =>
-    isAdvisor
-      ? person.relationship === "student" &&
-        Boolean(person.responsibilities?.includes("advisor"))
-      : person.relationship === "advisor",
-  );
-  const [selected, setSelected] = useState("");
-  const [draft, setDraft] = useState("");
-  const person = peers.find((item) => item.account_id === selected) ?? peers[0];
-  const student = isAdvisor ? person?.account_id : data.account_id;
-  const advisor = isAdvisor ? data.account_id : person?.account_id;
-  const messages = data.messages.filter(
-    (item) => item.student_id === student && item.advisor_id === advisor,
-  );
-  return (
-    <>
-      <SectionHeading
-        title={
-          isAdvisor
-            ? "Keep the conversation going"
-            : "Your advisor is a conversation away"
-        }
-        description="A direct conversation with a person. Your private study chats are separate."
-      />
-      {!person ? (
-        <Empty
-          icon={<MessageCircle />}
-          title="No advisor conversation yet"
-          text="Your administrator connects students and advisors. Conversations are visible only to the student and their advisor."
-        />
-      ) : (
-        <section className="school-panel school-conversation">
-          <div className="school-conversation-heading">
-            <SelectPeople
-              label={isAdvisor ? "Student" : "Advisor"}
-              people={peers}
-              value={person.account_id}
-              setValue={(value) => {
-                setSelected(value);
-                setDraft("");
-              }}
-            />
-          </div>
-          <div
-            role="log"
-            aria-label="Advisor messages"
-            className="school-messages"
-          >
-            {messages.length ? (
-              messages.map((item) => (
-                <article
-                  key={item.id}
-                  className={`school-message ${item.sender_id === data.account_id ? "school-message-own" : ""}`}
-                >
-                  <p className="eyebrow">
-                    {name(item.sender_id)} · {date(item.created)}
-                  </p>
-                  <p className="school-prose">{item.content}</p>
-                </article>
-              ))
-            ) : (
-              <p className="school-empty-copy">
-                Start with a question, an update, or something you are thinking
-                about.
-              </p>
-            )}
-          </div>
-          <form
-            className="school-form school-reply"
-            onSubmit={async (event) => {
-              event.preventDefault();
-              if (
-                await store.mutate("/school/messages", {
-                  student_id: student,
-                  advisor_id: advisor,
-                  content: draft.trim(),
-                })
-              )
-                setDraft("");
-            }}
-          >
-            <label>
-              Message to {person.name}
-              <textarea
-                required
-                rows={3}
-                maxLength={4000}
-                value={draft}
-                onChange={(event) => setDraft(event.target.value)}
-                placeholder="What’s on your mind?"
-              />
-            </label>
-            <Button disabled={store.busy || !draft.trim()} type="submit">
-              {store.busy ? "Sending…" : "Send message"}
-              <Send />
-            </Button>
-          </form>
-        </section>
-      )}
-    </>
   );
 }
 function CreateProposal({ store }: { store: Store }) {
@@ -995,7 +814,7 @@ function ProposalCard({
             {name(item.student_id)} · Advisor: {name(item.advisor_id)}
             {item.parent_id ? ` · Parent: ${name(item.parent_id)}` : ""}
           </p>
-          <h3>{item.title}</h3>
+          <h2>{item.title}</h2>
         </div>
         <span className="school-status">{readable(item.state)}</span>
       </div>
@@ -1007,13 +826,13 @@ function ProposalCard({
       </ol>
       {item.advisor_note && (
         <div className="school-saved-work">
-          <h4>Advisor note</h4>
+          <h3>Advisor note</h3>
           <p className="school-prose">{item.advisor_note}</p>
         </div>
       )}
       {item.parent_note && (
         <div className="school-saved-work">
-          <h4>Parent note</h4>
+          <h3>Parent note</h3>
           <p className="school-prose">{item.parent_note}</p>
         </div>
       )}

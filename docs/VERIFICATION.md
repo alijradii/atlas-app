@@ -1,5 +1,42 @@
 # Verification — October 10, 2026
 
+## Shared original Pearl screens and populated demos
+
+Authenticated accounts now render the original Pearl components for the frame,
+home cards and helper panel, lesson library, chat, advisor profile, caseload and
+student detail. Backend adapters supply authorized records and supported actions.
+The former alternate authenticated headers, welcome screen and advisor conversation
+layout were removed. Uploads, source review and account controls retain the shared
+navigation. The real helper panel builds a reviewable study request instead of
+claiming that unavailable notification subscriptions have been enabled.
+
+Local demo accounts now have persisted fictional assignments, feedback, proposals,
+a private advisor exchange, transcript drafts and four verified private TXT files.
+The teacher's synthetic physics transcript completed actual RAG ingestion and was
+published to the linked demo student. No provider readiness or citation was faked.
+Seed reruns preserve existing credentials, progress, revocations and deletions;
+only the designated four accounts are eligible. See [DEMO_ACCOUNTS.md](DEMO_ACCOUNTS.md).
+
+`SCHOOL_TEST_SCANNER=1 make check` passed all **64 Bun unit tests and 169 Python
+tests**, plus lint, types and generated-contract verification. `make build` passed.
+The complete compiled Chrome suite passed **76/76 scenarios** after the final
+layout and heading corrections. Application `make audit` passed with unchanged dependencies. The pre-existing
+Starlette test-client deprecation warning and public-release gates remain recorded.
+
+Actual populated student, teacher, advisor and parent accounts were checked in
+Chrome at desktop and 390px widths, including docking/restoring a private draft.
+Paired original/live home, lesson and advisor screenshots were inspected. Checked
+views had no horizontal overflow or Axe violations. Browser scenarios cover private
+Home-to-Study draft handoff without an early send, repeated New chat, authorized
+lesson deep links, advisor/caseload parity, upload review, role navigation and real
+school workflows. QA corrected heading hierarchy in assignment/proposal cards and
+missing spacing around the extracted lesson library.
+
+Visual evidence and logs are local in `.cache/output/playwright/` and
+`.cache/pearl-final-*`; credentials and generated artifacts remain ignored.
+The existing public deployment blockers below are not changed by this UI work.
+
+
 ## Connected hackathon workspace
 
 The active app now includes `/workspace`, `/files`, `/study` and `/account` with

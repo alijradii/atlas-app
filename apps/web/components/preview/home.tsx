@@ -3,7 +3,6 @@ import { Button, Card } from "@school2036/ui";
 import {
   Bell,
   CalendarDays,
-  Check,
   FileUp,
   Flag,
   GitBranch,
@@ -17,11 +16,12 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { PearlScene } from "../pearl";
+import { PearlHome } from "../pearl-home";
+import { PearlHomeHelpers } from "../pearl-home-helpers";
 import { type AccountId, fixture, type Role, roleNames } from "./data";
-import { type HomeGroup, homeCards } from "./home-cards";
+import { homeCards } from "./home-cards";
 import { ParentOverview, StudentWeek } from "./home-sections";
-import { ActionCard, Panel } from "./shared";
+import { Panel } from "./shared";
 import { usePreview } from "./state";
 
 const helpers: Record<Role, { label: string; icon: LucideIcon }[]> = {
@@ -147,107 +147,14 @@ export function WorkspaceHome({ accountId }: { accountId: AccountId }) {
         )
       : [];
   const cards = homeCards(accountId, state);
-  const groups: { id: HomeGroup; title: string; empty: string }[] = [
-    {
-      id: "needs",
-      title: "Needs you",
-      empty: "Nothing needs your attention right now.",
-    },
-    {
-      id: "continue",
-      title: "Continue",
-      empty:
-        "Nothing to pick up yet. Your lessons and other tools are in the sidebar.",
-    },
-    {
-      id: "waiting",
-      title: "Waiting on others",
-      empty: "Nothing is waiting on someone else.",
-    },
-  ];
-  const done = cards.filter((card) => card.group === "done");
-  const needs = cards.filter((card) => card.group === "needs").length;
-  const continuing = cards.filter((card) => card.group === "continue").length;
-  const waiting = cards.filter((card) => card.group === "waiting").length;
   if (accountId === "sami" && !state.onboarded) return <WelcomeWizard />;
   return (
-    <div className="pearl-home">
-      <header className="pearl-home-hero pearl-home-greeting">
-        <div className="pearl-home-hero-copy">
-          <p className="eyebrow">
-            {roleNames[role]} ·{" "}
-            {date
-              ? date.toLocaleDateString("en", {
-                  weekday: "long",
-                  day: "numeric",
-                  month: "long",
-                })
-              : "Your workspace"}
-          </p>
-          <h1>
-            Welcome back, <span className="text-cobalt">{firstName}</span>
-          </h1>
-          <p className="pearl-home-summary-line">
-            {needs
-              ? `${needs} ${needs === 1 ? "thing needs" : "things need"} you`
-              : "You’re all caught up"}{" "}
-            · {continuing} to continue · {waiting} waiting
-          </p>
-        </div>
-        <PearlScene
-          className="pearl-home-hero-stage pearl-home-greeting-scene"
-          compact
-        />
-      </header>
-      {groups.map(({ id, title, empty }) => {
-        const items = cards.filter((card) => card.group === id);
-        return (
-          <section
-            className={`pearl-home-group pearl-home-group-${id}`}
-            aria-labelledby={`home-${id}-title`}
-            key={id}
-          >
-            <div className="pearl-home-group-heading">
-              <h2 id={`home-${id}-title`}>{title}</h2>
-              <span>{items.length}</span>
-            </div>
-            {items.length ? (
-              <div
-                className={
-                  id === "needs" ? "pearl-home-cards" : "pearl-home-task-list"
-                }
-              >
-                {items.map((card) => (
-                  <ActionCard
-                    key={card.id}
-                    {...card}
-                    compact={id !== "needs"}
-                  />
-                ))}
-              </div>
-            ) : (
-              <p className="pearl-home-group-empty">{empty}</p>
-            )}
-          </section>
-        );
-      })}
-      <details className="pearl-home-completed">
-        <summary>
-          <span>Done</span>
-          <span>{done.length} completed</span>
-        </summary>
-        {done.length ? (
-          <div className="pearl-home-task-list">
-            {done.map((card) => (
-              <ActionCard key={card.id} {...card} compact />
-            ))}
-          </div>
-        ) : (
-          <p className="pearl-home-group-empty">
-            Completed practice and confirmed choices will stay here.
-          </p>
-        )}
-      </details>
+    <PearlHome
+      firstName={firstName}
+      roleLabel={roleNames[role]}
+      cards={cards}
+      date={date}
+    >
       {pins.length > 0 && (accountId === "lina" || accountId === "sami") && (
         <section className="pearl-home-pins" aria-label="My shortcuts">
           <span className="eyebrow">My shortcuts</span>
@@ -278,67 +185,35 @@ export function WorkspaceHome({ accountId }: { accountId: AccountId }) {
           ))}
         </section>
       )}
-      <Card className="pearl-home-more">
-        <div>
-          <h2>More things I can do for you</h2>
-          <p>
-            Choose the updates you’d like. Preferences save as you select them;
-            this preview does not send notifications.
-          </p>
-        </div>
-        <div className="pearl-home-helpers">
-          {helpers[role].map(({ label, icon: Icon }, i) => {
-            const key = accountId + i;
-            const enabled = state.helpers.includes(key);
-            return (
-              <button
-                type="button"
-                key={label}
-                className="pearl-home-helper"
-                aria-pressed={enabled}
-                onClick={() =>
-                  setState((s) => ({
-                    ...s,
-                    helpers: s.helpers.includes(key)
-                      ? s.helpers.filter((x) => x !== key)
-                      : [...s.helpers, key],
-                  }))
-                }
-              >
-                <span className="pearl-home-helper-icon">
-                  <Icon />
-                </span>
-                <span>{label}</span>
-                <span className="pearl-home-helper-tick">
-                  {enabled && <Check />}
-                </span>
-              </button>
-            );
-          })}
-          <Button
-            className={
-              allHelpersOn
-                ? "pearl-home-helpers-all"
-                : "pearl-home-helpers-all pearl-home-primary"
-            }
-            variant={allHelpersOn ? "outline" : "default"}
-            disabled={allHelpersOn}
-            onClick={() =>
-              setState((s) => ({
-                ...s,
-                helpers: [
-                  ...new Set([
-                    ...s.helpers,
-                    ...helpers[role].map((_, i) => accountId + i),
-                  ]),
-                ],
-              }))
-            }
-          >
-            {allHelpersOn ? "All selected" : "Enable all updates"}
-          </Button>
-        </div>
-      </Card>
+      <PearlHomeHelpers
+        description="Choose the updates you’d like. Preferences save as you select them; this preview does not send notifications."
+        items={helpers[role].map((item, i) => ({
+          ...item,
+          id: accountId + i,
+          enabled: state.helpers.includes(accountId + i),
+        }))}
+        onToggle={(key) =>
+          setState((s) => ({
+            ...s,
+            helpers: s.helpers.includes(key)
+              ? s.helpers.filter((x) => x !== key)
+              : [...s.helpers, key],
+          }))
+        }
+        actionLabel={allHelpersOn ? "All selected" : "Enable all updates"}
+        actionDisabled={allHelpersOn}
+        onAction={() =>
+          setState((s) => ({
+            ...s,
+            helpers: [
+              ...new Set([
+                ...s.helpers,
+                ...helpers[role].map((_, i) => accountId + i),
+              ]),
+            ],
+          }))
+        }
+      />
       {(accountId === "lina" || accountId === "sami") && (
         <details className="pearl-home-overview">
           <summary>Your week &amp; subjects</summary>
@@ -369,6 +244,6 @@ export function WorkspaceHome({ accountId }: { accountId: AccountId }) {
           )}
         </Panel>
       )}
-    </div>
+    </PearlHome>
   );
 }

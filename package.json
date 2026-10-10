@@ -22,7 +22,7 @@
     "api:check": "bun scripts/check-contract.ts",
     "check": "bun run lint && bun run typecheck && bun run api:check && bun run test:unit",
     "audit:js": "bun audit",
-    "test:unit": "bun test apps/web/components/preview/*.test.ts packages/api-client/src/*.test.ts",
+    "test:unit": "bun test apps/web/components/preview/*.test.ts apps/web/components/workspace/*.test.ts apps/web/components/study/*.test.ts packages/api-client/src/*.test.ts",
     "test:preview": "bun --bun playwright test --config playwright.preview.config.ts"
   },
   "devDependencies": {

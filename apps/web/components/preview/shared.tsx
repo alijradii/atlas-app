@@ -1,7 +1,6 @@
 "use client";
 import { Badge, Card, CardContent, CardHeader, cn } from "@school2036/ui";
 import {
-  ArrowUpRight,
   BarChart3,
   BookOpen,
   Check,
@@ -17,12 +16,9 @@ import {
   UsersRound,
   Video,
 } from "lucide-react";
-import Link from "next/link";
 import { PearlScene } from "../pearl";
 import { fixture, subjectName } from "./data";
-import type { HomeCard } from "./home-cards";
 import { usePreview } from "./state";
-import { TaskArt } from "./task-art";
 
 export const icons = {
   home: Home,
@@ -118,47 +114,7 @@ export function Hero({
     </section>
   );
 }
-export function ActionCard({
-  id,
-  title,
-  sub,
-  label,
-  href,
-  kind,
-  initials,
-  progress,
-  action,
-  status,
-  group,
-  compact = false,
-}: HomeCard & { compact?: boolean }) {
-  return (
-    <Link
-      href={href}
-      className={`pearl-home-action${compact ? " pearl-home-action-compact" : ""}`}
-      data-task-kind={kind}
-      data-task-id={id}
-      data-task-group={group}
-    >
-      <div className="pearl-home-action-art">
-        <TaskArt kind={kind} initials={initials} progress={progress} />
-      </div>
-      <span className="pearl-home-action-status">
-        <i className="pearl-home-state-dot" aria-hidden="true" />
-        {status}
-      </span>
-      <span className="pearl-home-action-copy">
-        <span className="pearl-home-action-kicker">{label}</span>
-        <strong>{title}</strong>
-        <small>{sub}</small>
-      </span>
-      <span className="pearl-home-action-footer">
-        {action}
-        <ArrowUpRight size={15} aria-hidden="true" />
-      </span>
-    </Link>
-  );
-}
+export { ActionCard } from "../pearl-home";
 export function Evidence({ compact = false }: { compact?: boolean }) {
   return (
     <div className="space-y-5">

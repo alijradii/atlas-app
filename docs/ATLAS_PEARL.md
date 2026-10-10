@@ -23,11 +23,40 @@ Invalid accounts, sections and detail IDs render the framework not-found screen.
 
 ## Working services versus samples
 
+Real accounts and samples share the same `PearlFrame` sidebar, mobile navigation,
+theme controls and page spacing. `PearlHome` renders both sets of home tasks with
+the same greeting, glass artwork, priority groups and cards. The shared `Composer`
+and `AssistantDock` are also used for authenticated study. The earlier separate
+authenticated dashboard/header has been removed. Account data changes, not the
+design system.
+
+`PearlHomeHelpers`, `LessonLibrary`, `PearlChatLayout`/`PearlChatMessage`,
+`PearlAdvisor` and `PearlStudents` are extracted from the original screens and used
+by both adapters. The advisor profile, six panels, caseload grid and student detail
+layout are shared source. Real lesson cards open authorized transcript review via
+`/study?lesson=...`; a query parameter never grants access.
+
+The local authenticated demo accounts have persisted fictional examples; see
+[DEMO_ACCOUNTS.md](DEMO_ACCOUNTS.md) for the guarded, repeatable population tool.
+
+`/workspace` opens Home. Schoolwork, lessons, advisor messages and proposals are
+sidebar destinations (`?section=work|lessons|messages|students|plans`), based on actual
+roles. Files & recordings is visible in the sidebar for every account; Files,
+Study and Account all keep that sidebar. Source review appears as a real Home task.
+No fixture tasks, invented unread counts or nonfunctional notification switches are
+shown for authenticated accounts. Empty accounts retain the same presentation with
+truthful empty states and visible upload/study actions.
+
+Questions entered on Home are handed to Study only in account-scoped memory, never
+in the URL or browser storage, and never sent automatically. Users select their
+lesson sources and send explicitly. Preview identities remain clearly labeled;
+the real upload entry requests a real session rather than impersonating a persona.
+
 Login, sessions, private files, `/study`, `/workspace` and `/account` connect to the Python API. Preview accounts do not create sessions or grant access to files or transcripts. See [Study workspace](STUDY.md) for the real inference path and authorization boundaries.
 
-School records come from the kit's fictional fixtures. Preview actions persist in **sessionStorage for the current tab**, so a proposal can move from student/adviser to parent to staff by switching sample accounts. Practice answers, working and completion survive navigation. Help is paused during an active sample batch. Teacher analytics, recorded lessons and advisor requests do not depend on a school/home scenario. Access follows the account and resource sharing, not the user’s network. Preview controls simulate service availability and reset sample data; they never grant real API access. Older saved previews discard location flags while keeping answers, proposals and pins.
+School records under `/preview/*` come from the kit's fictional fixtures. Preview actions persist in **sessionStorage for the current tab**, so a proposal can move from student/adviser to parent to staff by switching sample accounts. Practice answers, working and completion survive navigation. Help is paused during an active sample batch. Teacher analytics, recorded lessons and advisor requests do not depend on a school/home scenario. Access follows the account and resource sharing, not the user’s network. Preview controls simulate service availability and reset sample data; they never grant real API access. Older saved previews discard location flags while keeping answers, proposals and pins.
 
-Within `/preview`, assistant responses and flashcards are scripted. Feedback uses the kit's fixed example answers. No inference, adviser notification, email, pilot signup, video playback, real assessment, or school-record mutation occurs. The lesson-publishing form saves local metadata only; it never sends the selected video. The real `/files` library supports documents, audio and video; verified materials can become reviewed study transcripts. See MEDIA.md for supported formats and limits. The sample parent progress policy is still exploratory. Additional student caseload profiles contain summaries, while Lina has the complete guidance example.
+Within `/preview`, assistant responses and flashcards are scripted. Feedback uses the kit's fixed example answers. No inference, adviser notification, email, pilot signup, video playback, real assessment, or school-record mutation occurs. Teacher upload actions open the real Files screen and require a real session. The old guided preview upload route now explains that handoff; it no longer presents a fake file picker or save-success flow. The real `/files` library supports documents, audio and video; verified materials can become reviewed study transcripts. See MEDIA.md for supported formats and limits. The sample parent progress policy is still exploratory. Additional student caseload profiles contain summaries, while Lina has the complete guidance example.
 
 ## Ownership
 

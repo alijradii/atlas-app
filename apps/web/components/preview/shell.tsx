@@ -13,16 +13,11 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
   Switch,
 } from "@school2036/ui";
 import {
-  Menu,
+  FolderOpen,
+  LogIn,
   MoreHorizontal,
   Pin,
   SlidersHorizontal,
@@ -32,12 +27,10 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { Brand } from "../pearl";
+import { PearlFrame, pearlNavLinkClass } from "../pearl-frame";
 import { AssistantDock } from "./assistant-dock";
 import { Composer } from "./composer";
-import { resolveGuide } from "./guidance";
-import "./workspace.css";
-import { Brand } from "../pearl";
-import { ThemeToggle } from "../theme-toggle";
 import {
   type AccountId,
   accounts,
@@ -47,6 +40,7 @@ import {
   type Role,
   roleNames,
 } from "./data";
+import { resolveGuide } from "./guidance";
 import { icons } from "./shared";
 import { usePreview } from "./state";
 
@@ -65,7 +59,6 @@ export function WorkspaceShell({
   const role = account.role as Role;
   const { state, setState, reset } = usePreview();
   const router = useRouter();
-  const [menu, setMenu] = useState(false);
   const [prompt, setPrompt] = useState("");
   const [pinPending, setPinPending] = useState(false);
   const [wasPinned, setWasPinned] = useState(false);
@@ -131,7 +124,7 @@ export function WorkspaceShell({
           state.lessonPins[accountId].includes(lesson.id),
         )
       : [];
-  const nav = (
+  const nav = (closeMenu: () => void) => (
     <>
       <Brand className="px-3 py-7" />
       <nav aria-label="Workspace" className="mt-3 grid gap-1">
@@ -140,8 +133,8 @@ export function WorkspaceShell({
           return (
             <Link
               key={id}
-              href={base + id}
-              onClick={() => setMenu(false)}
+              href={id === "upload" ? "/files" : base + id}
+              onClick={closeMenu}
               aria-current={
                 section === id ||
                 (section === "lesson" && id === "lessons") ||
@@ -149,7 +142,7 @@ export function WorkspaceShell({
                   ? "page"
                   : undefined
               }
-              className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm text-muted-foreground transition-colors hover:bg-surface/60 aria-[current=page]:bg-surface aria-[current=page]:text-foreground aria-[current=page]:shadow-pearl"
+              className={pearlNavLinkClass}
             >
               <Icon className="size-4 shrink-0" />
               {label}
@@ -163,12 +156,24 @@ export function WorkspaceShell({
             </Link>
           );
         })}
+        <Link href="/files" onClick={closeMenu} className={pearlNavLinkClass}>
+          <FolderOpen className="size-4 shrink-0" />
+          Files & recordings
+        </Link>
+        <Link
+          href="/workspace"
+          onClick={closeMenu}
+          className={pearlNavLinkClass}
+        >
+          <LogIn className="size-4 shrink-0" />
+          Use your account
+        </Link>
       </nav>
       <Button asChild variant="outline" className="mt-7 w-full bg-transparent">
         <Link
           href={`${base}chat`}
           onClick={() => {
-            setMenu(false);
+            closeMenu();
             onNewChat();
           }}
         >
@@ -184,7 +189,7 @@ export function WorkspaceShell({
               key={lesson.id}
               href={`${base}lesson/${lesson.id}`}
               className="text-xs text-muted-foreground"
-              onClick={() => setMenu(false)}
+              onClick={closeMenu}
             >
               {lesson.title}
             </Link>
@@ -214,10 +219,7 @@ export function WorkspaceShell({
             <DropdownMenuLabel>Switch preview account</DropdownMenuLabel>
             {accounts.map((a) => (
               <DropdownMenuItem key={a.id} asChild>
-                <Link
-                  href={`/preview/${a.id}/home`}
-                  onClick={() => setMenu(false)}
-                >
+                <Link href={`/preview/${a.id}/home`} onClick={closeMenu}>
                   {a.name}
                 </Link>
               </DropdownMenuItem>
@@ -240,159 +242,132 @@ export function WorkspaceShell({
     </>
   );
   return (
-    <div className="atlas-workspace min-h-screen" data-section={section}>
-      <aside
-        className="pearl-panel fixed inset-y-0 left-0 z-20 hidden w-64 flex-col overflow-y-auto border-r p-3 lg:flex"
-        aria-label="Main navigation"
-      >
-        {nav}
-      </aside>
-      <div className="lg:ml-64">
-        <header className="flex min-h-20 flex-wrap items-center gap-3 px-5 py-4 sm:px-8">
-          <Sheet open={menu} onOpenChange={setMenu}>
-            <SheetTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon"
-                className="lg:hidden"
-                aria-label="Open navigation"
-              >
-                <Menu />
-              </Button>
-            </SheetTrigger>
-            <SheetContent
-              side="left"
-              className="pearl-panel flex w-72 flex-col px-3"
+    <PearlFrame
+      section={section}
+      navigation={nav}
+      headerActions={
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button
+              variant="outline"
+              className="gap-2 text-xs normal-case tracking-normal"
             >
-              <SheetHeader className="sr-only">
-                <SheetTitle>Workspace navigation</SheetTitle>
-                <SheetDescription>
-                  Explore the Atlas role pages.
-                </SheetDescription>
-              </SheetHeader>
-              {nav}
-            </SheetContent>
-          </Sheet>
-          <span className="mr-auto" />
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button
-                variant="outline"
-                className="gap-2 text-xs normal-case tracking-normal"
+              <SlidersHorizontal />
+              Preview controls
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Preview scenario</DialogTitle>
+              <DialogDescription>
+                Explore availability and empty states. These controls only
+                affect sample screens.
+              </DialogDescription>
+            </DialogHeader>
+            {(
+              [
+                ["tutor", "Study agent & feedback"],
+                ["video", "Video playback"],
+              ] as const
+            ).map(([key, label]) => (
+              <label
+                htmlFor={`scenario-${key}`}
+                key={key}
+                className="flex items-center justify-between gap-4 py-2"
               >
-                <SlidersHorizontal />
-                Preview controls
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Preview scenario</DialogTitle>
-                <DialogDescription>
-                  Explore availability and empty states. These controls only
-                  affect sample screens.
-                </DialogDescription>
-              </DialogHeader>
-              {(
-                [
-                  ["tutor", "Study agent & feedback"],
-                  ["video", "Video playback"],
-                ] as const
-              ).map(([key, label]) => (
-                <label
-                  htmlFor={`scenario-${key}`}
-                  key={key}
-                  className="flex items-center justify-between gap-4 py-2"
-                >
-                  {label}
-                  <Switch
-                    id={`scenario-${key}`}
-                    checked={state[key]}
-                    onCheckedChange={(checked) =>
-                      setState((s) => ({ ...s, [key]: checked }))
-                    }
-                  />
-                </label>
-              ))}
-              <Button variant="outline" onClick={reset}>
-                Reset preview data
-              </Button>
-            </DialogContent>
-          </Dialog>
-          <ThemeToggle />
-        </header>
-        <main id="main-content" className="atlas-workspace-main">
-          {children}
-        </main>
-        {section === "home" && !(accountId === "sami" && !state.onboarded) && (
-          <div className="atlas-composer-wrap">
-            <AssistantDock>
-              {(minimize) => (
-                <Composer
-                  onMinimize={minimize}
-                  value={prompt}
-                  onChange={setPrompt}
-                  onSubmit={ask}
-                  label="Ask the assistant"
-                  suggestions={suggestions[role]}
-                  hint={hints[role]}
-                  placeholder={
-                    role === "student"
-                      ? "Ask about a lesson, a problem, or your subjects"
-                      : "Ask about your workspace"
+                {label}
+                <Switch
+                  id={`scenario-${key}`}
+                  checked={state[key]}
+                  onCheckedChange={(checked) =>
+                    setState((s) => ({ ...s, [key]: checked }))
                   }
-                  moreOptions={[
-                    { label: "Your private files", href: "/files" },
-                    { label: "New conversation", href: `${base}chat` },
-                  ]}
-                >
-                  {pinPending && (
-                    <div className="atlas-pin-tray" role="status">
-                      <Pin size={17} />
-                      <span>
-                        <small className="atlas-ai-label">
-                          Suggested shortcut
-                        </small>
-                        Pin Mass vs weight to your home?
-                      </span>
-                      <Button onClick={pinLesson}>Pin to home</Button>
-                      <button
-                        type="button"
-                        aria-label="Cancel pin"
-                        onClick={() => setPinPending(false)}
-                      >
-                        <X size={18} />
-                      </button>
-                    </div>
-                  )}
-                </Composer>
-              )}
-            </AssistantDock>
+                />
+              </label>
+            ))}
+            <Button variant="outline" onClick={reset}>
+              Reset preview data
+            </Button>
+          </DialogContent>
+        </Dialog>
+      }
+      composer={
+        section === "home" &&
+        !(accountId === "sami" && !state.onboarded) && (
+          <AssistantDock>
+            {(minimize) => (
+              <Composer
+                onMinimize={minimize}
+                value={prompt}
+                onChange={setPrompt}
+                onSubmit={ask}
+                label="Ask the assistant"
+                suggestions={suggestions[role]}
+                hint={hints[role]}
+                placeholder={
+                  role === "student"
+                    ? "Ask about a lesson, a problem, or your subjects"
+                    : "Ask about your workspace"
+                }
+                moreOptions={[
+                  { label: "Your private files", href: "/files" },
+                  { label: "New conversation", href: `${base}chat` },
+                ]}
+              >
+                {pinPending && (
+                  <div className="atlas-pin-tray" role="status">
+                    <Pin size={17} />
+                    <span>
+                      <small className="atlas-ai-label">
+                        Suggested shortcut
+                      </small>
+                      Pin Mass vs weight to your home?
+                    </span>
+                    <Button onClick={pinLesson}>Pin to home</Button>
+                    <button
+                      type="button"
+                      aria-label="Cancel pin"
+                      onClick={() => setPinPending(false)}
+                    >
+                      <X size={18} />
+                    </button>
+                  </div>
+                )}
+              </Composer>
+            )}
+          </AssistantDock>
+        )
+      }
+      overlays={
+        toast && (
+          <div className="atlas-toast" role="status">
+            Pinned to your home.
+            <button
+              type="button"
+              onClick={() => {
+                if (
+                  !wasPinned &&
+                  (accountId === "lina" || accountId === "sami")
+                )
+                  setState((s) => ({
+                    ...s,
+                    lessonPins: {
+                      ...s.lessonPins,
+                      [accountId]: s.lessonPins[accountId].filter(
+                        (id) => id !== "L1",
+                      ),
+                    },
+                  }));
+                setToast(false);
+              }}
+            >
+              Undo
+            </button>
           </div>
-        )}
-      </div>
-      {toast && (
-        <div className="atlas-toast" role="status">
-          Pinned to your home.
-          <button
-            type="button"
-            onClick={() => {
-              if (!wasPinned && (accountId === "lina" || accountId === "sami"))
-                setState((s) => ({
-                  ...s,
-                  lessonPins: {
-                    ...s.lessonPins,
-                    [accountId]: s.lessonPins[accountId].filter(
-                      (id) => id !== "L1",
-                    ),
-                  },
-                }));
-              setToast(false);
-            }}
-          >
-            Undo
-          </button>
-        </div>
-      )}
-    </div>
+        )
+      }
+    >
+      {children}
+    </PearlFrame>
   );
 }
