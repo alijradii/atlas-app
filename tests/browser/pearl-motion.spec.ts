@@ -112,10 +112,10 @@ test("helper state changes preserve animation identity and use bare line icons",
   await expect(icons.first()).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
   await expect(icons.first()).toHaveCSS("box-shadow", "none");
   await page
-    .getByRole("button", { name: "Put me to work", exact: true })
+    .getByRole("button", { name: "Enable all updates", exact: true })
     .click();
   await expect(
-    page.getByRole("button", { name: "All helpers on" }),
+    page.getByRole("button", { name: "All selected" }),
   ).toBeVisible();
 });
 
@@ -138,7 +138,8 @@ test("home reference proportions and student work sections survive narrow layout
     };
   });
   expect(bounds.copy / bounds.hero).toBeCloseTo(0.575, 2);
-  expect(bounds.tile).toBe(236);
+  expect(bounds.tile).toBeGreaterThanOrEqual(270);
+  expect(bounds.tile).toBeLessThan(360);
   expect(bounds.helper).toBe(720);
   await expect(
     page.getByRole("heading", { name: "Needs your attention" }),

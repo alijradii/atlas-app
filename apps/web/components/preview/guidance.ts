@@ -15,6 +15,7 @@ export type GuideAnchor =
   | "analytics.inspect"
   | "analytics.tab"
   | "proposal.recommend"
+  | "proposal.confirm"
   | "choice.agree"
   | "acts.approve";
 export type Guide = {
@@ -178,6 +179,20 @@ export function resolveGuide(
       {
         id: "screen.heading",
         text: "The subject is not awaiting your agreement yet. Review the current status here; the advisor recommends before the family decides.",
+      },
+    );
+  if (
+    role === "staff" &&
+    /subject|choice|propos/.test(text) &&
+    !/activit/.test(text)
+  )
+    return guide(
+      "proposal.confirm",
+      "proposals",
+      "After the advisor and family have reviewed the subject, add your review note and confirm the choice here. You can request changes with an explanation instead.",
+      {
+        id: "screen.heading",
+        text: "No subject proposals are waiting for school confirmation. Review the current status here; the advisor and family decide before the school confirms.",
       },
     );
   if (role === "staff" && /approv|review|activit|propos/.test(text)) {

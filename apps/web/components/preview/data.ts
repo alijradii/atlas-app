@@ -40,6 +40,7 @@ export const navigation: Record<Role, [string, string, string][]> = {
   ],
   staff: [
     ["home", "Home", "home"],
+    ["proposals", "Subject proposals", "path"],
     ["activities", "Activities review", "heart"],
     ["access", "Access & availability", "shield"],
     ["settings", "School settings", "settings"],

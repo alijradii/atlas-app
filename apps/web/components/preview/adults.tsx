@@ -89,10 +89,28 @@ export function Proposals({ accountId }: { accountId: AccountId }) {
                 e.preventDefault();
                 const note = String(
                   new FormData(e.currentTarget).get("note") || "",
-                );
+                ).trim();
+                if (!note) {
+                  const field = e.currentTarget.querySelector("textarea");
+                  field?.setCustomValidity(
+                    "Add a review note before continuing.",
+                  );
+                  field?.reportValidity();
+                  return;
+                }
+                const submitter = (e.nativeEvent as SubmitEvent).submitter;
+                const changesRequested =
+                  submitter instanceof HTMLButtonElement &&
+                  submitter.value === "changes";
                 update(
                   p.subject,
-                  staff ? "agreed" : parent ? "school" : "parent",
+                  changesRequested
+                    ? "changes"
+                    : staff
+                      ? "agreed"
+                      : parent
+                        ? "school"
+                        : "parent",
                   note,
                 );
               }}
@@ -105,6 +123,7 @@ export function Proposals({ accountId }: { accountId: AccountId }) {
                 name="note"
                 placeholder="Add context for the next conversation…"
                 maxLength={1000}
+                onInput={(e) => e.currentTarget.setCustomValidity("")}
                 required
               />
               <div className="flex flex-wrap gap-3">
@@ -113,10 +132,12 @@ export function Proposals({ accountId }: { accountId: AccountId }) {
                     parent
                       ? "choice.agree"
                       : staff
-                        ? undefined
+                        ? "proposal.confirm"
                         : "proposal.recommend"
                   }
                   type="submit"
+                  name="decision"
+                  value="advance"
                 >
                   {staff
                     ? "Confirm choice"
@@ -127,14 +148,9 @@ export function Proposals({ accountId }: { accountId: AccountId }) {
                 </Button>
                 <Button
                   variant="outline"
-                  type="button"
-                  onClick={() =>
-                    update(
-                      p.subject,
-                      "changes",
-                      "Please discuss the subject load with your advisor before resubmitting.",
-                    )
-                  }
+                  type="submit"
+                  name="decision"
+                  value="changes"
                 >
                   Request changes
                 </Button>
@@ -819,7 +835,6 @@ export function Settings() {
           </label>
         ))}
       </Panel>
-      <Proposals accountId="hajj" />
     </>
   );
 }

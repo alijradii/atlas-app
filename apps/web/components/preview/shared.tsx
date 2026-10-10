@@ -8,6 +8,7 @@ import {
   cn,
 } from "@school2036/ui";
 import {
+  ArrowUpRight,
   BarChart3,
   BookOpen,
   Check,
@@ -25,9 +26,11 @@ import {
   Video,
 } from "lucide-react";
 import Link from "next/link";
-import { PearlObject, PearlScene } from "../pearl";
+import { PearlScene } from "../pearl";
 import { fixture, subjectName } from "./data";
+import type { HomeCard } from "./home-cards";
 import { usePreview } from "./state";
+import { TaskArt } from "./task-art";
 
 export const icons = {
   home: Home,
@@ -147,36 +150,39 @@ export function Hero({
   );
 }
 export function ActionCard({
+  id,
   title,
   sub,
   label,
   href,
-  kind = "blue",
+  kind,
   locked,
-}: {
-  title: string;
-  sub: string;
-  label: string;
-  href: string;
-  kind?: "blue" | "lens" | "bubble";
-  locked?: boolean;
-}) {
+  initials,
+  progress,
+  action,
+}: HomeCard) {
   return (
-    <Link href={href} className="pearl-home-action">
-      <span className="haze" />
-      <PearlObject
-        kind={kind}
-        core={label !== "Choices"}
-        className="pearl-home-action-object"
-      />
+    <Link
+      href={href}
+      className="pearl-home-action"
+      data-task-kind={kind}
+      data-task-id={id}
+    >
+      <div className="pearl-home-action-art">
+        <TaskArt kind={kind} initials={initials} progress={progress} />
+      </div>
       <span className="pearl-home-action-copy">
         <span className="pearl-home-action-kicker">{label}</span>
         <strong>{title}</strong>
         <small>{sub}</small>
       </span>
+      <span className="pearl-home-action-footer">
+        {action}
+        <ArrowUpRight size={15} aria-hidden="true" />
+      </span>
       {locked && (
         <span className="pearl-home-action-lock">
-          <LockKeyhole /> School network only
+          <LockKeyhole /> At school
         </span>
       )}
     </Link>

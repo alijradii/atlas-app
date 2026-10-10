@@ -1,0 +1,70 @@
+/* Pearl is the material; familiar task silhouettes carry the meaning. */
+.atlas-task-art {
+  display: block;
+  width: 88px;
+  height: 82px;
+  flex: none;
+  overflow: visible;
+  pointer-events: none;
+  --task-ink-light: #526ee3;
+  --task-ink-shade: #263d9f;
+  --task-glass-light: #ffffff;
+  --task-glass-shade: #d8e1f0;
+  --task-face-shade: #c7d3ed;
+  --task-edge: rgb(255 255 255 / 90%);
+  --task-track: rgb(45 65 125 / 17%);
+}
+.dark .atlas-task-art {
+  --task-ink-light: #c3d0ff;
+  --task-ink-shade: #8ca5ff;
+  --task-glass-light: #434f6b;
+  --task-glass-shade: #252e42;
+  --task-face-shade: #344360;
+  --task-edge: rgb(197 211 249 / 45%);
+  --task-track: rgb(182 198 244 / 22%);
+}
+.atlas-task-glass-light {
+  stop-color: var(--task-glass-light);
+}
+.atlas-task-glass-shade {
+  stop-color: var(--task-glass-shade);
+}
+.atlas-task-face-shade {
+  stop-color: var(--task-face-shade);
+}
+.atlas-task-ink-light {
+  stop-color: var(--task-ink-light);
+}
+.atlas-task-ink-shade {
+  stop-color: var(--task-ink-shade);
+}
+.atlas-task-relief {
+  filter: drop-shadow(0 5px 5px rgb(33 49 87 / 13%));
+}
+.atlas-task-glass-edge {
+  stroke: var(--task-edge);
+  stroke-width: 1.4px;
+}
+.atlas-task-fold {
+  fill: none;
+  stroke: var(--task-track);
+  stroke-width: 1.4px;
+  stroke-linejoin: round;
+}
+.atlas-task-highlight {
+  stroke: var(--task-edge);
+}
+.atlas-task-progress-track {
+  fill: none;
+  stroke: var(--task-track);
+  stroke-width: 3px;
+}
+.atlas-task-initials {
+  fill: var(--task-ink-shade);
+  font-family: inherit;
+  font-size: 21px;
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}

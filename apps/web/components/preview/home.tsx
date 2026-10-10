@@ -1,20 +1,34 @@
 "use client";
 import { Button, Card } from "@school2036/ui";
-import { Bell, Check, Flag, LineChart, Pin, X } from "lucide-react";
+import {
+  Bell,
+  CalendarDays,
+  Check,
+  FileUp,
+  Flag,
+  GitBranch,
+  LineChart,
+  type LucideIcon,
+  MessageCircle,
+  Pin,
+  ShieldCheck,
+  UsersRound,
+  X,
+} from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { type AccountId, fixture, type Role, roleNames } from "./data";
+import { homeCards } from "./home-cards";
 import { ParentOverview, StudentWeek } from "./home-sections";
 import { ActionCard, Hero, Panel } from "./shared";
 import { usePreview } from "./state";
 
 const copy: Record<
-  string,
+  AccountId,
   {
     title: string;
     action: string;
     route: string;
-    cards: [string, string, string, string][];
   }
 > = {
   lina: {
@@ -22,166 +36,64 @@ const copy: Record<
       "Hi Lina, I’m your study assistant. Pick up where you left off, or ask me anything from your lessons.",
     action: "Continue practice batch",
     route: "practice",
-    cards: [
-      ["Finish your practice batch", "2 of 5 answered", "Next", "practice"],
-      [
-        "Resume Newton’s second law",
-        "Stopped at 10:12",
-        "Continue",
-        "lesson/L1",
-      ],
-      [
-        "Dr. Nassar replied",
-        "Do universities look at Design & Technology?",
-        "People",
-        "adviser",
-      ],
-      ["Computer Science proposal", "With advisor", "Choices", "subjects"],
-    ],
   },
   sami: {
     title:
       "Hi Sami, let’s set up your first week. Start with a lesson, a little practice, and what interests you.",
     action: "Watch your first lesson",
     route: "lessons",
-    cards: [
-      [
-        "Watch your first lesson",
-        "Recorded by your teachers",
-        "Next",
-        "lessons",
-      ],
-      [
-        "Try a practice batch",
-        "Five problems, on your own",
-        "Continue",
-        "practice",
-      ],
-      [
-        "Tell us what you’re curious about",
-        "Make room for your interests",
-        "People",
-        "activities",
-      ],
-      ["Meet your advisor", "Matching in progress", "Choices", "adviser"],
-    ],
   },
   daher: {
     title:
       "Good morning, Elie. Here’s what your Grade 10 physics classes need this week, and what’s worth revisiting in your teaching.",
     action: "Open class analytics",
     route: "analytics",
-    cards: [
-      [
-        "9 students confuse mass and weight",
-        "Recurring misconception",
-        "Next",
-        "analytics",
-      ],
-      [
-        "A lesson segment to revisit",
-        "Mass vs weight · 6:10",
-        "Continue",
-        "analytics",
-      ],
-      ["Upload a session", "Pick who it’s for", "People", "upload"],
-      [
-        "Students relying on help",
-        "A gap between help and own work",
-        "Evidence",
-        "analytics",
-      ],
-    ],
   },
   nassar: {
     title:
-      "Welcome back, Maya. Lina’s Computer Science proposal is waiting for your recommendation. Your advice stays your own.",
+      "Welcome back, Maya. Review your students’ questions, subject proposals and agreed next steps. Your advice stays your own.",
     action: "Open Lina’s workspace",
     route: "student/lina",
-    cards: [
-      ["Review Lina’s proposal", "Computer Science", "Next", "proposals"],
-      [
-        "Lina asked a question",
-        "Advanced Maths and Computer Science?",
-        "Continue",
-        "student/lina",
-      ],
-      [
-        "Your students",
-        "Five people, different pathways",
-        "People",
-        "students",
-      ],
-      ["Follow-ups", "Make time for what matters", "Choices", "students"],
-    ],
   },
   karim: {
     title:
       "Hello Karim. Here’s what’s happening around Lina’s subject choices, guidance and activities.",
     action: "Review subject choices",
     route: "choices",
-    cards: [
-      [
-        "Computer Science proposal",
-        "Follow the review together",
-        "Next",
-        "choices",
-      ],
-      [
-        "Guidance from Dr. Nassar",
-        "Keep Design & Technology",
-        "Continue",
-        "home#guidance",
-      ],
-      ["Lina’s interests", "Engineering, Robotics, Drawing", "People", "home"],
-      [
-        "An honest picture of progress",
-        "A view for discussion",
-        "Evidence",
-        "progress",
-      ],
-    ],
   },
   hajj: {
     title:
-      "Good morning, Rita. Two student activities are waiting for review. Here’s what needs your attention.",
+      "Good morning, Rita. Review student activities, confirm subject choices and manage school access.",
     action: "Review activities",
     route: "activities",
-    cards: [
-      [
-        "Campus composting project",
-        "Needs a staff sponsor",
-        "Next",
-        "activities",
-      ],
-      ["Game design jam", "Weekend access requested", "Continue", "activities"],
-      ["Access & availability", "What works from home", "People", "access"],
-      ["School settings", "Draft the right boundaries", "Settings", "settings"],
-    ],
   },
 };
-const helpers: Record<Role, string[]> = {
+const helpers: Record<Role, { label: string; icon: LucideIcon }[]> = {
   student: [
-    "New lessons in my subjects",
-    "Remind me of agreed steps",
-    "Weekly recap: own work vs help",
+    { label: "New lessons in my subjects", icon: Bell },
+    { label: "Remind me of agreed steps", icon: Flag },
+    { label: "Weekly recap: own work vs help", icon: LineChart },
   ],
   teacher: [
-    "Recurring misconception alerts",
-    "Weekly class summary",
-    "Tell me when uploads are ready",
+    { label: "Recurring misconception alerts", icon: Bell },
+    { label: "Weekly class summary", icon: LineChart },
+    { label: "Tell me when uploads are ready", icon: FileUp },
   ],
   adviser: [
-    "New subject proposals",
-    "Unanswered student questions",
-    "Overdue follow-ups",
+    { label: "New subject proposals", icon: GitBranch },
+    { label: "Unanswered student questions", icon: MessageCircle },
+    { label: "Overdue follow-ups", icon: Flag },
   ],
   parent: [
-    "Choices that need my review",
-    "New guidance from the advisor",
-    "Activity updates",
+    { label: "Choices that need my review", icon: GitBranch },
+    { label: "New guidance from the advisor", icon: MessageCircle },
+    { label: "Activity updates", icon: CalendarDays },
   ],
-  staff: ["New activity proposals", "Activities filling up", "Access requests"],
+  staff: [
+    { label: "New activity proposals", icon: CalendarDays },
+    { label: "Activities filling up", icon: UsersRound },
+    { label: "Access requests", icon: ShieldCheck },
+  ],
 };
 
 function WelcomeWizard() {
@@ -306,40 +218,16 @@ export function WorkspaceHome({ accountId }: { accountId: AccountId }) {
             <Link href={base + content.route}>
               {accountId === "lina" && state.batch === "feedback"
                 ? "See your batch feedback"
-                : content.action}
+                : accountId === "lina" && state.batch === "none"
+                  ? "Start a practice batch"
+                  : content.action}
             </Link>
           </Button>
         }
       />
       <div className="pearl-home-cards">
-        {content.cards.map(([title, sub, label, href], i) => (
-          <ActionCard
-            key={title}
-            title={
-              accountId === "lina" && href === "practice"
-                ? state.batch === "feedback"
-                  ? "Your batch feedback is ready"
-                  : state.batch === "none"
-                    ? "Try a new practice batch"
-                    : title
-                : title
-            }
-            sub={
-              accountId === "lina" && href === "practice"
-                ? state.batch === "active"
-                  ? `${state.answers.filter((a, i) => a.trim() || state.stuck[i]).length} of 5 ready`
-                  : state.batch === "feedback"
-                    ? "Independent work, with next steps"
-                    : "Five problems, on your own"
-                : href === "subjects" && accountId === "lina"
-                  ? `Status: ${(state.proposals.find((p) => p.subject === "cs")?.status ?? "Not proposed").replace("adviser", "advisor")}`
-                  : sub
-            }
-            label={label}
-            href={base + href}
-            kind={i === 1 ? "lens" : i > 1 ? "bubble" : "blue"}
-            locked={role === "teacher" && href === "analytics" && !state.school}
-          />
+        {homeCards(accountId, state).map((card) => (
+          <ActionCard key={card.id} {...card} />
         ))}
       </div>
       {pins.length > 0 && (accountId === "lina" || accountId === "sami") && (
@@ -376,13 +264,12 @@ export function WorkspaceHome({ accountId }: { accountId: AccountId }) {
         <div>
           <h2>More things I can do for you</h2>
           <p>
-            Set up helpers that keep an eye on what matters, and tell you when
-            something changes.
+            Choose the updates you’d like. Preferences save as you select them;
+            this preview does not send notifications.
           </p>
         </div>
         <div className="pearl-home-helpers">
-          {helpers[role].map((label, i) => {
-            const Icon = [Bell, Flag, LineChart][i];
+          {helpers[role].map(({ label, icon: Icon }, i) => {
             const key = accountId + i;
             const enabled = state.helpers.includes(key);
             return (
@@ -417,6 +304,7 @@ export function WorkspaceHome({ accountId }: { accountId: AccountId }) {
                 : "pearl-home-helpers-all pearl-home-primary"
             }
             variant={allHelpersOn ? "outline" : "default"}
+            disabled={allHelpersOn}
             onClick={() =>
               setState((s) => ({
                 ...s,
@@ -429,7 +317,7 @@ export function WorkspaceHome({ accountId }: { accountId: AccountId }) {
               }))
             }
           >
-            {allHelpersOn ? "All helpers on" : "Put me to work"}
+            {allHelpersOn ? "All selected" : "Enable all updates"}
           </Button>
         </div>
       </Card>

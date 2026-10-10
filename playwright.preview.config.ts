@@ -10,6 +10,8 @@ export default defineConfig({
     "spotlight.spec.ts",
     "rich-message.spec.ts",
     "composer.spec.ts",
+    "workflow-meaning.spec.ts",
+    "home-meaning.spec.ts",
     "preview-regressions.spec.ts",
     "preview-storage.spec.ts",
     "files-regressions.spec.ts",

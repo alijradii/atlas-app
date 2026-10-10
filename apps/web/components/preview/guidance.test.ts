@@ -64,3 +64,37 @@ test("ordinary chat is not treated as an instruction to navigate", () => {
     resolveGuide("lina", "I have a practice batch", initialState()),
   ).toBeUndefined();
 });
+
+test("staff subject and generic proposal guidance uses the confirmation workflow without changing access", () => {
+  const state = initialState();
+  const before = JSON.stringify(state);
+  for (const request of [
+    "Where do I approve proposals?",
+    "Where do I confirm a subject choice?",
+    "Show me subject proposals",
+  ]) {
+    expect(resolveGuide("hajj", request, state)).toMatchObject({
+      id: "proposal.confirm",
+      route: "/preview/hajj/proposals",
+      fallback: { id: "screen.heading" },
+    });
+  }
+  expect(JSON.stringify(state)).toBe(before);
+});
+
+test("explicit activity proposals keep their own school-only workflow", () => {
+  const state = initialState();
+  expect(
+    resolveGuide("hajj", "Where do I approve activity proposals?", state),
+  ).toMatchObject({
+    id: "screen.heading",
+    route: "/preview/hajj/access",
+  });
+  state.school = true;
+  expect(
+    resolveGuide("hajj", "Where do I approve activity proposals?", state),
+  ).toMatchObject({
+    id: "acts.approve",
+    route: "/preview/hajj/activities",
+  });
+});
