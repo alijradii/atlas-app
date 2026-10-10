@@ -33,6 +33,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { AssistantDock } from "./assistant-dock";
 import { Composer } from "./composer";
 import { resolveGuide } from "./guidance";
 import "./workspace.css";
@@ -339,41 +340,48 @@ export function WorkspaceShell({
         </main>
         {section === "home" && !(accountId === "sami" && !state.onboarded) && (
           <div className="atlas-composer-wrap">
-            <Composer
-              value={prompt}
-              onChange={setPrompt}
-              onSubmit={ask}
-              label="Ask the assistant"
-              suggestions={suggestions[role]}
-              hint={hints[role]}
-              placeholder={
-                role === "student"
-                  ? "Ask about a lesson, a problem, or your subjects"
-                  : "Ask about your workspace"
-              }
-              moreOptions={[
-                { label: "Your private files", href: "/files" },
-                { label: "New conversation", href: `${base}chat` },
-              ]}
-            >
-              {pinPending && (
-                <div className="atlas-pin-tray" role="status">
-                  <Pin size={17} />
-                  <span>
-                    <small className="atlas-ai-label">Suggested shortcut</small>
-                    Pin Mass vs weight to your home?
-                  </span>
-                  <Button onClick={pinLesson}>Pin to home</Button>
-                  <button
-                    type="button"
-                    aria-label="Cancel pin"
-                    onClick={() => setPinPending(false)}
-                  >
-                    <X size={18} />
-                  </button>
-                </div>
+            <AssistantDock>
+              {(minimize) => (
+                <Composer
+                  onMinimize={minimize}
+                  value={prompt}
+                  onChange={setPrompt}
+                  onSubmit={ask}
+                  label="Ask the assistant"
+                  suggestions={suggestions[role]}
+                  hint={hints[role]}
+                  placeholder={
+                    role === "student"
+                      ? "Ask about a lesson, a problem, or your subjects"
+                      : "Ask about your workspace"
+                  }
+                  moreOptions={[
+                    { label: "Your private files", href: "/files" },
+                    { label: "New conversation", href: `${base}chat` },
+                  ]}
+                >
+                  {pinPending && (
+                    <div className="atlas-pin-tray" role="status">
+                      <Pin size={17} />
+                      <span>
+                        <small className="atlas-ai-label">
+                          Suggested shortcut
+                        </small>
+                        Pin Mass vs weight to your home?
+                      </span>
+                      <Button onClick={pinLesson}>Pin to home</Button>
+                      <button
+                        type="button"
+                        aria-label="Cancel pin"
+                        onClick={() => setPinPending(false)}
+                      >
+                        <X size={18} />
+                      </button>
+                    </div>
+                  )}
+                </Composer>
               )}
-            </Composer>
+            </AssistantDock>
           </div>
         )}
       </div>

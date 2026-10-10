@@ -6,7 +6,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@school2036/ui";
-import { Plus, Send } from "lucide-react";
+import { ArrowDownRight, Plus, Send } from "lucide-react";
 import Link from "next/link";
 import { type ReactNode, useEffect, useRef } from "react";
 import "./composer.css";
@@ -22,6 +22,7 @@ export function Composer({
   moreOptions = [],
   children,
   inline = false,
+  onMinimize,
 }: {
   value: string;
   onChange: (value: string) => void;
@@ -33,6 +34,7 @@ export function Composer({
   moreOptions?: { label: string; href: string }[];
   children?: ReactNode;
   inline?: boolean;
+  onMinimize?: () => void;
 }) {
   const input = useRef<HTMLTextAreaElement>(null);
   useEffect(() => {
@@ -112,6 +114,17 @@ export function Composer({
             </DropdownMenu>
           )}
           <span className="atlas-composer-hint">{hint}</span>
+          {onMinimize && (
+            <button
+              type="button"
+              className="atlas-composer-minimize"
+              aria-label="Minimize assistant"
+              title="Minimize assistant (Esc)"
+              onClick={onMinimize}
+            >
+              <ArrowDownRight size={18} />
+            </button>
+          )}
           <button
             type="submit"
             className="atlas-round-button atlas-send"
