@@ -1,0 +1,29 @@
+{
+  "name": "@school2036/web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun --bun next dev --hostname 127.0.0.1",
+    "build": "bun --bun next build",
+    "start": "bun --bun next start --hostname 0.0.0.0",
+    "typecheck": "bun --bun tsc --noEmit"
+  },
+  "dependencies": {
+    "@fontsource-variable/hanken-grotesk": "5.3.0",
+    "@school2036/api-client": "workspace:*",
+    "@school2036/ui": "workspace:*",
+    "@tailwindcss/postcss": "4.3.3",
+    "lucide-react": "1.54.0",
+    "next": "16.4.0",
+    "postcss": "8.5.29",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "tailwindcss": "4.3.3"
+  },
+  "devDependencies": {
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@types/node": "26.6.4",
+    "typescript": "7.0.2"
+  }
+}

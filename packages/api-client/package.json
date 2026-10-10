@@ -1,0 +1,16 @@
+{
+  "name": "@school2036/api-client",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "devDependencies": {
+    "openapi-typescript": "7.13.0",
+    "typescript": "5.9.3"
+  },
+  "scripts": {
+    "generate": "bun --bun openapi-typescript openapi.json -o src/schema.d.ts"
+  }
+}

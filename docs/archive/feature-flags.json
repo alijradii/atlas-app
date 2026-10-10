@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "identity": "implemented-local-verification",
+  "setup": "first-run-password-protected",
+  "accountAdministration": "implemented-local-verification",
+  "catalogue": "synthetic-prototypes-only",
+  "registrationAndGuardianRelationships": "implemented-local-verification",
+  "learningAndAssessment": "P3 learning and P4 rubric/evidence slice implemented; remaining P4 outstanding",
+  "fileUploadsAndSigning": "authorized-staging-and-proxy-download; live-R2-unverified",
+  "ai": false,
+  "outboundNotifications": false,
+  "production": false,
+  "academicAdministration": "implemented-local-verification",
+  "learningAndSubmissions": "implemented-local-verification",
+  "notebook": "private-by-default; explicit-course-sharing",
+  "mediaScanning": "ClamAV-local-tested",
+  "learningPlansAndSupport": "P5 local workflows; explicit staffed policy and assigned human review required",
+  "governedAI": "P6 integration implemented; disabled until exact model/policy/corpus evaluation and school processing approval",
+  "timetableProposals": "P7 manual room/staff proposals; current checks and administrator approval; no solver",
+  "projects": "P8 course-team briefs, contribution editions and teacher review; no public or mentor access"
+}

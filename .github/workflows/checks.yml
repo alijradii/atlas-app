@@ -1,0 +1,43 @@
+name: Checks
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "17 7 * * 1"
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: .bun-version
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.11.19"
+          python-version: "3.14"
+      - run: bun install --frozen-lockfile
+      - run: uv sync --frozen
+      - run: make infra-up
+      - run: docker compose -f infra/compose.dev.yaml --profile media up -d --wait scanner
+      - run: make check
+        env:
+          SCHOOL_TEST_SCANNER: "1"
+      - run: make build
+      - run: make audit
+      - run: PLAYWRIGHT_BROWSERS_PATH="$PWD/.cache/ms-playwright" bun --bun playwright install --with-deps chromium
+      - run: make browser-test
+      - run: docker build -f infra/Dockerfile.python -t school2036-python:ci .
+      - run: docker build -f infra/Dockerfile.web -t school2036-web:ci .
+      - if: always()
+        run: make infra-down
+  release-readiness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: .bun-version
+      - run: bun scripts/release-gate.ts

@@ -1,0 +1,23 @@
+FROM oven/bun:1.4.2@sha256:9114c058aeae42162ee16dd5084b95fe9473970bb6bcb5b232ab1630f0546895 AS dependencies
+WORKDIR /app
+COPY package.json bun.lock bunfig.toml ./
+COPY apps/web/package.json apps/web/package.json
+COPY packages/ui/package.json packages/ui/package.json
+COPY packages/api-client/package.json packages/api-client/package.json
+RUN bun install --frozen-lockfile
+
+FROM dependencies AS build
+COPY apps/web apps/web
+COPY packages packages
+ENV NEXT_TELEMETRY_DISABLED=1
+RUN bun run build
+
+FROM oven/bun:1.4.2-slim@sha256:cb3bbbb08e13a4a2ff400f24c7a2a1d5efa83f6ef8544d52d95a519631e2fc61 AS runtime
+WORKDIR /app
+ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 HOSTNAME=0.0.0.0 PORT=3000
+COPY --from=build --chown=bun:bun /app/apps/web/.next/standalone ./
+COPY --from=build --chown=bun:bun /app/apps/web/.next/static ./apps/web/.next/static
+COPY --from=build --chown=bun:bun /app/apps/web/public ./apps/web/public
+USER bun
+EXPOSE 3000
+CMD ["bun", "apps/web/server.js"]

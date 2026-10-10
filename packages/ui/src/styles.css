@@ -1,0 +1,153 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@source ".";
+@source "../../../apps/web";
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-sans:
+    "Hanken Grotesk Variable", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--foreground);
+  --color-popover: var(--surface);
+  --color-popover-foreground: var(--foreground);
+  --color-primary: var(--foreground);
+  --color-primary-foreground: var(--background);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--foreground);
+  --color-muted: var(--secondary);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent-soft);
+  --color-accent-foreground: var(--cobalt);
+  --color-cobalt: var(--cobalt);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--cobalt);
+  --color-surface: var(--surface);
+  --color-glass: var(--glass);
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+  --shadow-pearl: 0 1px 2px #141e320a, 0 24px 50px -30px #1e283c52;
+}
+:root {
+  color-scheme: light;
+  --background: #e8eaee;
+  --foreground: #11141b;
+  --secondary: #e1e5ea;
+  --surface: #f8f9fa;
+  --card: rgb(250 251 252 / 66%);
+  --muted-foreground: #4a5263;
+  --border: rgb(17 20 27 / 12%);
+  --input: rgb(17 20 27 / 22%);
+  --glass: rgb(255 255 255 / 65%);
+  --cobalt: #2a44d6;
+  --accent-soft: rgb(42 68 214 / 10%);
+  --destructive: #a62635;
+  --pearl:
+    radial-gradient(circle at 78% 28%, #f6efec 0, transparent 50%),
+    linear-gradient(165deg, #cfd5dd 0%, #e7e9ed 42%, #d6dce4 100%);
+  --mist:
+    radial-gradient(ellipse at 78% 18%, #f4f3f5 0, transparent 42%),
+    linear-gradient(135deg, #dcdfe5 0%, #bec5cf 48%, #7f8a9b 100%);
+}
+.dark {
+  color-scheme: dark;
+  --background: #12151b;
+  --foreground: #eef0f4;
+  --secondary: #1a1e26;
+  --surface: #1b1f28;
+  --card: rgb(32 36 46 / 72%);
+  --muted-foreground: #aab2c0;
+  --border: rgb(255 255 255 / 12%);
+  --input: rgb(255 255 255 / 25%);
+  --glass: rgb(255 255 255 / 10%);
+  --cobalt: #9bafff;
+  --accent-soft: rgb(125 147 255 / 14%);
+  --destructive: #ffa6b0;
+  --pearl:
+    radial-gradient(circle at 78% 28%, #2a2b33 0, transparent 50%),
+    linear-gradient(165deg, #1b1f27 0%, #232831 45%, #1a1e26 100%);
+  --mist:
+    radial-gradient(ellipse at 78% 18%, #3a3f4b 0, transparent 42%),
+    linear-gradient(135deg, #2b3039 0%, #20252e 50%, #151920 100%);
+}
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply m-0 bg-background font-sans text-foreground antialiased;
+    font-size: 14.5px;
+    line-height: 1.6;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-normal tracking-tight;
+    line-height: 1.2;
+  }
+  button,
+  a,
+  input,
+  textarea,
+  select {
+    -webkit-tap-highlight-color: transparent;
+  }
+  button:not(:disabled),
+  [role="tab"] {
+    cursor: pointer;
+  }
+  :focus-visible {
+    outline: 2px solid var(--cobalt);
+    outline-offset: 4px;
+  }
+  ::selection {
+    background: var(--accent-soft);
+  }
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 2rem;
+  }
+  p {
+    overflow-wrap: anywhere;
+  }
+}
+@utility pearl-panel {
+  background: var(--pearl);
+}
+@utility mist-panel {
+  background: var(--mist);
+}
+@utility eyebrow {
+  @apply text-[11px] font-semibold tracking-[0.14em] uppercase text-muted-foreground;
+}
+@utility glass-panel {
+  @apply rounded-2xl border border-glass bg-card shadow-pearl backdrop-blur-xl;
+}
+@utility help-track {
+  background: repeating-linear-gradient(
+    135deg,
+    rgb(42 68 214 / 30%) 0 2px,
+    rgb(42 68 214 / 12%) 2px 5px
+  );
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    /* biome-ignore lint/complexity/noImportantStyles: User motion preferences must override component animation utilities. */
+    animation: none !important;
+    /* biome-ignore lint/complexity/noImportantStyles: Respect reduced motion across Radix transitions. */
+    transition-duration: 0ms !important;
+  }
+}

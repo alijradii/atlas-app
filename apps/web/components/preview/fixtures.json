@@ -1,0 +1,1084 @@
+{
+  "subjects": {
+    "math": {
+      "name": "Mathematics",
+      "kind": "common",
+      "hours": 5,
+      "involves": "Functions, trigonometry, statistics and proof. Weekly problem sets and two exams a term.",
+      "pre": [],
+      "tags": ["Engineering", "Finance"]
+    },
+    "arabic": {
+      "name": "Arabic",
+      "kind": "common",
+      "hours": 4,
+      "involves": "Literature, argumentative writing and grammar.",
+      "pre": [],
+      "tags": ["Writing"]
+    },
+    "english": {
+      "name": "English",
+      "kind": "common",
+      "hours": 4,
+      "involves": "Reading, essays and spoken presentations.",
+      "pre": [],
+      "tags": ["Writing", "Debate"]
+    },
+    "physics": {
+      "name": "Physics",
+      "kind": "common",
+      "hours": 4,
+      "involves": "Mechanics, energy and waves, with lab reports.",
+      "pre": [],
+      "tags": ["Engineering", "Robotics", "Space"]
+    },
+    "chem": {
+      "name": "Chemistry",
+      "kind": "common",
+      "hours": 3,
+      "involves": "Atoms, bonding and reactions, with lab work.",
+      "pre": [],
+      "tags": ["Medicine", "Environment"]
+    },
+    "bio": {
+      "name": "Biology",
+      "kind": "common",
+      "hours": 3,
+      "involves": "Cells, genetics and ecosystems.",
+      "pre": [],
+      "tags": ["Medicine", "Environment"]
+    },
+    "hist": {
+      "name": "History & Civics",
+      "kind": "common",
+      "hours": 2,
+      "involves": "Modern history, institutions and citizenship.",
+      "pre": [],
+      "tags": ["Debate", "Law"]
+    },
+    "cs": {
+      "name": "Computer Science",
+      "kind": "optional",
+      "hours": 3,
+      "involves": "Programming in Python, algorithms and a term project you build and present.",
+      "pre": [
+        {
+          "t": "Mathematics, grade 9 passed",
+          "k": "math9"
+        }
+      ],
+      "tags": ["Robotics", "Engineering", "Games"]
+    },
+    "dt": {
+      "name": "Design & Technology",
+      "kind": "optional",
+      "hours": 3,
+      "involves": "Sketching, prototyping and a portfolio. Workshop sessions on campus.",
+      "pre": [],
+      "tags": ["Drawing", "Engineering", "Robotics"]
+    },
+    "econ": {
+      "name": "Economics",
+      "kind": "optional",
+      "hours": 3,
+      "involves": "Markets, money and policy, with data projects.",
+      "pre": [],
+      "tags": ["Finance", "Debate", "Law"]
+    },
+    "amath": {
+      "name": "Advanced Mathematics",
+      "kind": "optional",
+      "hours": 3,
+      "involves": "Calculus foundations and proof. Fast-paced and assessed by exam.",
+      "pre": [
+        {
+          "t": "Mathematics, grade 9 at 75% or above",
+          "k": "math75"
+        },
+        {
+          "t": "Adviser conversation",
+          "k": "adv"
+        }
+      ],
+      "tags": ["Engineering", "Finance", "Space"]
+    },
+    "psych": {
+      "name": "Psychology",
+      "kind": "optional",
+      "hours": 2,
+      "involves": "How people think and behave, research methods and a small study.",
+      "pre": [],
+      "tags": ["Medicine", "Writing"]
+    },
+    "art": {
+      "name": "Visual Arts",
+      "kind": "optional",
+      "hours": 2,
+      "involves": "Drawing, colour and an exhibition piece each term.",
+      "pre": [],
+      "tags": ["Drawing", "Design"]
+    }
+  },
+  "interests": [
+    "Engineering",
+    "Robotics",
+    "Drawing",
+    "Space",
+    "Medicine",
+    "Environment",
+    "Writing",
+    "Debate",
+    "Finance",
+    "Law",
+    "Games",
+    "Music",
+    "Sport",
+    "Design"
+  ],
+  "lessons": [
+    {
+      "id": "L1",
+      "subj": "physics",
+      "title": "Newton's second law: force, mass and acceleration",
+      "unit": "Unit 3 · Dynamics",
+      "dur": 1140,
+      "by": "Mr. Elie Daher",
+      "grades": [10],
+      "covers": ["F = ma", "Mass vs weight", "Free-body diagrams"],
+      "chapters": [
+        [0, "Why things speed up"],
+        [190, "Defining force"],
+        [370, "Mass vs weight"],
+        [610, "F = ma with worked examples"],
+        [900, "Common mistakes"]
+      ],
+      "hue": 225,
+      "added": -6
+    },
+    {
+      "id": "L2",
+      "subj": "physics",
+      "title": "Free-body diagrams step by step",
+      "unit": "Unit 3 · Dynamics",
+      "dur": 780,
+      "by": "Mr. Elie Daher",
+      "grades": [10],
+      "covers": ["Drawing forces", "Normal force", "Friction"],
+      "chapters": [
+        [0, "What a diagram shows"],
+        [240, "Normal force"],
+        [480, "Friction"]
+      ],
+      "hue": 200,
+      "added": -3
+    },
+    {
+      "id": "L3",
+      "subj": "math",
+      "title": "Quadratic functions and their graphs",
+      "unit": "Unit 2 · Functions",
+      "dur": 960,
+      "by": "Ms. Joelle Sfeir",
+      "grades": [10],
+      "covers": ["Vertex form", "Roots", "Graph shape"],
+      "chapters": [
+        [0, "The parabola"],
+        [300, "Vertex form"],
+        [620, "Finding roots"]
+      ],
+      "hue": 160,
+      "added": -10
+    },
+    {
+      "id": "L4",
+      "subj": "cs",
+      "title": "Your first Python program",
+      "unit": "Intro · Programming",
+      "dur": 840,
+      "by": "Mr. Ziad Moussa",
+      "grades": [10, 11],
+      "covers": ["Variables", "Input and output", "Loops"],
+      "chapters": [[0, "Setting up"], [200, "Variables"], [520, "Loops"]],
+      "hue": 280,
+      "added": -14,
+      "optional": true
+    },
+    {
+      "id": "L5",
+      "subj": "math",
+      "title": "Introduction to limits",
+      "unit": "Grade 11 · Calculus",
+      "dur": 1020,
+      "by": "Ms. Joelle Sfeir",
+      "grades": [11],
+      "covers": ["Limits", "Continuity"],
+      "chapters": [[0, "Approaching a value"], [400, "Continuity"]],
+      "hue": 30,
+      "added": -2
+    },
+    {
+      "id": "L6",
+      "subj": "english",
+      "title": "Building an argumentative essay",
+      "unit": "Unit 1 · Argument",
+      "dur": 720,
+      "by": "Ms. Rita Hajj",
+      "grades": [10],
+      "covers": ["Thesis", "Evidence", "Counterargument"],
+      "chapters": [
+        [0, "The thesis"],
+        [260, "Evidence"],
+        [500, "Counterarguments"]
+      ],
+      "hue": 350,
+      "added": -20
+    }
+  ],
+  "batch": [
+    {
+      "q": "A 4 kg cart has a net force of 10 N on it. What is its acceleration (m/s²)?",
+      "ans": 2.5,
+      "tol": 0.01,
+      "why": "a = F / m = 10 / 4 = 2.5 m/s².",
+      "mistake": {
+        "40": "Multiplied force and mass instead of dividing.",
+        "0.4": "Divided mass by force (m/F) instead of F/m."
+      }
+    },
+    {
+      "q": "A 60 kg student stands on Earth (g = 9.8 m/s²). What is their weight in newtons?",
+      "ans": 588,
+      "tol": 1,
+      "why": "Weight = m × g = 60 × 9.8 = 588 N. Mass stays 60 kg; weight is a force.",
+      "mistake": {
+        "60": "Gave the mass (kg) instead of the weight (N). Mass and weight are different quantities."
+      }
+    },
+    {
+      "q": "What net force (N) gives a 1200 kg car an acceleration of 3 m/s²?",
+      "ans": 3600,
+      "tol": 1,
+      "why": "F = m × a = 1200 × 3 = 3600 N.",
+      "mistake": {
+        "400": "Divided mass by acceleration."
+      }
+    },
+    {
+      "q": "A 2 kg box is pushed with 15 N while friction is 5 N. What is its acceleration (m/s²)?",
+      "ans": 5,
+      "tol": 0.01,
+      "why": "Net force = 15 − 5 = 10 N, so a = 10 / 2 = 5 m/s².",
+      "mistake": {
+        "10": "Added friction instead of subtracting it.",
+        "7.5": "Used the applied force (15 N) instead of the net force."
+      }
+    },
+    {
+      "q": "Same push, but the box mass is doubled to 4 kg. What is the new acceleration (m/s²)?",
+      "ans": 2.5,
+      "tol": 0.01,
+      "why": "Net force is still 10 N; a = 10 / 4 = 2.5 m/s². Doubling mass halves acceleration.",
+      "mistake": {
+        "10": "Doubled the acceleration instead of halving it."
+      }
+    }
+  ],
+  "v": 2,
+  "accounts": {
+    "lina": {
+      "id": "lina",
+      "role": "student",
+      "name": "Lina Haddad",
+      "email": "lina.h@cedarhill.demo",
+      "meta": "Grade 10 · 10A",
+      "grade": 10,
+      "adviser": "nassar",
+      "parent": "karim",
+      "onboarded": true
+    },
+    "sami": {
+      "id": "sami",
+      "role": "student",
+      "name": "Sami Aoun",
+      "email": "sami.a@cedarhill.demo",
+      "meta": "Grade 10 · 10B · new",
+      "grade": 10,
+      "adviser": null,
+      "parent": null,
+      "onboarded": false
+    },
+    "nassar": {
+      "id": "nassar",
+      "role": "adviser",
+      "name": "Dr. Maya Nassar",
+      "email": "m.nassar@advisers.demo",
+      "meta": "Engineering & sciences adviser"
+    },
+    "daher": {
+      "id": "daher",
+      "role": "teacher",
+      "name": "Mr. Elie Daher",
+      "email": "e.daher@cedarhill.demo",
+      "meta": "Physics · Grade 10"
+    },
+    "karim": {
+      "id": "karim",
+      "role": "parent",
+      "name": "Karim Haddad",
+      "email": "karim@family.demo",
+      "meta": "Parent of Lina",
+      "child": "lina"
+    },
+    "hajj": {
+      "id": "hajj",
+      "role": "staff",
+      "name": "Ms. Rita Hajj",
+      "email": "r.hajj@cedarhill.demo",
+      "meta": "Student life & access"
+    }
+  },
+  "adviserProfile": {
+    "field": "Engineering, technology and physical sciences",
+    "quals": [
+      "MEng, Mechanical Engineering",
+      "Certified school guidance counsellor",
+      "8 years advising secondary students"
+    ],
+    "expertise": [
+      "University engineering pathways",
+      "Robotics competitions",
+      "Balancing design and technical subjects"
+    ],
+    "langs": "Arabic, English, French"
+  },
+  "students": {
+    "lina": {
+      "interests": ["Engineering", "Robotics", "Drawing"],
+      "goals": [
+        "Decide between Computer Science and Advanced Mathematics before term 2",
+        "Build a small robot for the spring showcase"
+      ],
+      "chosen": ["dt"],
+      "met": {
+        "math9": true,
+        "math75": false,
+        "adv": true
+      },
+      "proposals": [
+        {
+          "id": "P1",
+          "subj": "cs",
+          "reason": "I want to program the robotics club robot and I enjoy logic puzzles.",
+          "status": "adviser",
+          "history": [
+            {
+              "who": "Lina",
+              "t": -2,
+              "txt": "Proposed Computer Science"
+            }
+          ],
+          "adviserNote": null,
+          "parentNote": null
+        }
+      ],
+      "progress": {
+        "math": {
+          "ind": 64,
+          "as": 81,
+          "todo": 1
+        },
+        "physics": {
+          "ind": 58,
+          "as": 84,
+          "todo": 2
+        },
+        "chem": {
+          "ind": 71,
+          "as": 78,
+          "todo": 0
+        },
+        "english": {
+          "ind": 76,
+          "as": 80,
+          "todo": 1
+        },
+        "arabic": {
+          "ind": 73,
+          "as": 75,
+          "todo": 0
+        },
+        "bio": {
+          "ind": 69,
+          "as": 74,
+          "todo": 0
+        },
+        "hist": {
+          "ind": 80,
+          "as": 82,
+          "todo": 0
+        },
+        "dt": {
+          "ind": 85,
+          "as": 88,
+          "todo": 0
+        }
+      },
+      "trend": {
+        "ind": [44, 47, 52, 55, 58],
+        "as": [70, 76, 79, 83, 84]
+      },
+      "watch": {
+        "L1": 612,
+        "L3": 960
+      },
+      "batch": {
+        "state": "active",
+        "answers": ["0.4", "588", "", "", ""],
+        "work": ["I divided 4 by 10", "60 × 9.8", "", "", ""],
+        "skipped": [false, false, false, false, false],
+        "startedAt": -1
+      },
+      "sessions": [],
+      "mistakes": [
+        {
+          "what": "Divided mass by force (m ÷ F) instead of force by mass.",
+          "src": "Practice batch (last week) · problem 1",
+          "k": "newton"
+        },
+        {
+          "what": "Gave the mass in kg when the question asked for weight in newtons.",
+          "src": "Study session · Mass vs weight",
+          "k": "weight"
+        },
+        {
+          "what": "Used the 15 N push instead of the net force after friction.",
+          "src": "Practice batch (last week) · problem 4",
+          "k": "net"
+        }
+      ],
+      "questions": [
+        {
+          "id": "Q1",
+          "from": "lina",
+          "t": -3,
+          "txt": "Do universities look at Design & Technology for engineering?",
+          "reply": {
+            "t": -2,
+            "txt": "Yes, many value a design portfolio. It shows you can take an idea to a prototype. Keep your sketches and photos from every project."
+          }
+        },
+        {
+          "id": "Q2",
+          "from": "lina",
+          "t": -1,
+          "txt": "Is Advanced Maths too much if I also take Computer Science?",
+          "reply": null
+        }
+      ],
+      "advice": [
+        {
+          "id": "A1",
+          "by": "nassar",
+          "t": -12,
+          "txt": "Lina shows strong spatial reasoning in Design & Technology. Keep it as an optional subject; it supports an engineering pathway.",
+          "shared": true
+        },
+        {
+          "id": "A2",
+          "by": "nassar",
+          "t": -5,
+          "txt": "Before choosing Advanced Mathematics, let's look at your independent results in Mathematics after Unit 2. Your work with help is strong; the independent score is what predicts how Advanced Maths will feel.",
+          "shared": true
+        }
+      ],
+      "steps": [
+        {
+          "id": "S1",
+          "txt": "Finish the Newton's second law practice batch",
+          "owner": "Lina",
+          "due": 1,
+          "done": false
+        },
+        {
+          "id": "S2",
+          "txt": "Rewatch \"Mass vs weight\" before the batch",
+          "owner": "Lina",
+          "due": 0,
+          "done": true
+        },
+        {
+          "id": "S3",
+          "txt": "Share the Computer Science course outline with Karim",
+          "owner": "Dr. Nassar",
+          "due": 3,
+          "done": false
+        },
+        {
+          "id": "S4",
+          "txt": "Talk with Lina about subject load",
+          "owner": "Karim",
+          "due": 5,
+          "done": false
+        }
+      ],
+      "followups": [
+        {
+          "id": "F1",
+          "txt": "Review Lina's independent Mathematics result after Unit 2",
+          "due": 4,
+          "done": false
+        }
+      ],
+      "activities": ["robot"]
+    },
+    "sami": {
+      "interests": [],
+      "goals": [],
+      "chosen": [],
+      "met": {
+        "math9": true,
+        "math75": true,
+        "adv": false
+      },
+      "proposals": [],
+      "progress": {},
+      "trend": {
+        "ind": [],
+        "as": []
+      },
+      "watch": {},
+      "batch": {
+        "state": "none"
+      },
+      "sessions": [],
+      "mistakes": [],
+      "questions": [],
+      "advice": [],
+      "steps": [],
+      "followups": [],
+      "activities": []
+    }
+  },
+  "caseload": [
+    {
+      "id": "lina",
+      "name": "Lina Haddad",
+      "grade": 10,
+      "interests": ["Engineering", "Robotics", "Drawing"],
+      "chosen": ["Design & Technology"],
+      "pending": "Computer Science proposal",
+      "due": "Reply to a question"
+    },
+    {
+      "id": "x1",
+      "name": "Jad Rizk",
+      "grade": 10,
+      "interests": ["Space", "Games"],
+      "chosen": ["Computer Science"],
+      "pending": null,
+      "due": "Follow-up in 6 days"
+    },
+    {
+      "id": "x2",
+      "name": "Nour Saleh",
+      "grade": 11,
+      "interests": ["Medicine", "Writing"],
+      "chosen": ["Psychology"],
+      "pending": null,
+      "due": null
+    },
+    {
+      "id": "x3",
+      "name": "Hadi Nasr",
+      "grade": 10,
+      "interests": ["Finance", "Debate"],
+      "chosen": ["Economics"],
+      "pending": "Advanced Mathematics proposal",
+      "due": "Prerequisite not met"
+    },
+    {
+      "id": "x4",
+      "name": "Tala Ghanem",
+      "grade": 12,
+      "interests": ["Environment", "Drawing"],
+      "chosen": ["Visual Arts", "Economics"],
+      "pending": null,
+      "due": "Overdue: university list"
+    }
+  ],
+  "activities": [
+    {
+      "id": "robot",
+      "title": "Robotics club",
+      "tags": ["Robotics", "Engineering"],
+      "when": "Tuesdays 15:30",
+      "where": "Lab 2, on campus",
+      "lead": "Mr. Ziad Moussa",
+      "spots": 16,
+      "joined": 11,
+      "status": "approved",
+      "by": "staff",
+      "next": "Build the chassis · bring a sketch"
+    },
+    {
+      "id": "sketch",
+      "title": "Urban sketching walks",
+      "tags": ["Drawing", "Design"],
+      "when": "Saturdays, monthly",
+      "where": "Meet at main gate",
+      "lead": "Ms. Celine Rahme",
+      "spots": 12,
+      "joined": 7,
+      "status": "approved",
+      "by": "staff"
+    },
+    {
+      "id": "debate",
+      "title": "Debate society",
+      "tags": ["Debate", "Law", "Writing"],
+      "when": "Thursdays 15:30",
+      "where": "Library",
+      "lead": "Ms. Rita Hajj",
+      "spots": 20,
+      "joined": 18,
+      "status": "approved",
+      "by": "staff"
+    },
+    {
+      "id": "astro",
+      "title": "Night sky observation",
+      "tags": ["Space"],
+      "when": "Monthly, evenings",
+      "where": "Rooftop",
+      "lead": "Mr. Elie Daher",
+      "spots": 10,
+      "joined": 4,
+      "status": "approved",
+      "by": "staff"
+    },
+    {
+      "id": "eco",
+      "title": "Campus composting project",
+      "tags": ["Environment", "Medicine"],
+      "when": "Wednesdays 15:30",
+      "where": "Garden",
+      "lead": "Proposed by Nour Saleh",
+      "spots": 12,
+      "joined": 0,
+      "status": "proposed",
+      "by": "student",
+      "note": "Needs a staff sponsor and a space."
+    },
+    {
+      "id": "game",
+      "title": "Game design jam",
+      "tags": ["Games", "Drawing", "Robotics"],
+      "when": "One weekend in March",
+      "where": "CS room",
+      "lead": "Proposed by Jad Rizk",
+      "spots": 24,
+      "joined": 0,
+      "status": "proposed",
+      "by": "student",
+      "note": "Weekend access to the CS room requested."
+    }
+  ],
+  "analytics": {
+    "cls": [
+      {
+        "id": "lina",
+        "name": "Lina Haddad",
+        "cls": "10A",
+        "ind": 58,
+        "as": 84,
+        "hints": 1.6,
+        "attempts": 22,
+        "mw": true,
+        "dep": true
+      },
+      {
+        "id": "c1",
+        "name": "Ali Mansour",
+        "cls": "10B",
+        "ind": 57,
+        "as": 71,
+        "hints": 0.7,
+        "attempts": 19,
+        "mw": false,
+        "dep": false
+      },
+      {
+        "id": "c2",
+        "name": "Maya Khalil",
+        "cls": "10A",
+        "ind": 49,
+        "as": 54,
+        "hints": 2.3,
+        "attempts": 18,
+        "mw": true,
+        "dep": false
+      },
+      {
+        "id": "c3",
+        "name": "Jad Rizk",
+        "cls": "10B",
+        "ind": 55,
+        "as": 64,
+        "hints": 1.6,
+        "attempts": 13,
+        "mw": false,
+        "dep": false
+      },
+      {
+        "id": "c4",
+        "name": "Nour Saleh",
+        "cls": "10A",
+        "ind": 49,
+        "as": 75,
+        "hints": 0.6,
+        "attempts": 10,
+        "mw": true,
+        "dep": true
+      },
+      {
+        "id": "c5",
+        "name": "Sara Tannous",
+        "cls": "10B",
+        "ind": 51,
+        "as": 67,
+        "hints": 2.3,
+        "attempts": 9,
+        "mw": false,
+        "dep": false
+      },
+      {
+        "id": "c6",
+        "name": "Rami Fares",
+        "cls": "10A",
+        "ind": 65,
+        "as": 84,
+        "hints": 2,
+        "attempts": 27,
+        "mw": false,
+        "dep": false
+      },
+      {
+        "id": "c7",
+        "name": "Yara Bitar",
+        "cls": "10B",
+        "ind": 86,
+        "as": 98,
+        "hints": 0.1,
+        "attempts": 11,
+        "mw": true,
+        "dep": false
+      },
+      {
+        "id": "c8",
+        "name": "Hadi Nasr",
+        "cls": "10A",
+        "ind": 58,
+        "as": 59,
+        "hints": 0.3,
+        "attempts": 23,
+        "mw": true,
+        "dep": false
+      },
+      {
+        "id": "c9",
+        "name": "Tala Ghanem",
+        "cls": "10B",
+        "ind": 58,
+        "as": 72,
+        "hints": 2.8,
+        "attempts": 22,
+        "mw": false,
+        "dep": false
+      },
+      {
+        "id": "c10",
+        "name": "Celine Rahme",
+        "cls": "10A",
+        "ind": 53,
+        "as": 64,
+        "hints": 0.4,
+        "attempts": 10,
+        "mw": false,
+        "dep": false
+      },
+      {
+        "id": "c11",
+        "name": "Fadi Zein",
+        "cls": "10B",
+        "ind": 53,
+        "as": 59,
+        "hints": 1.9,
+        "attempts": 14,
+        "mw": true,
+        "dep": false
+      },
+      {
+        "id": "c12",
+        "name": "Joelle Kassab",
+        "cls": "10A",
+        "ind": 73,
+        "as": 98,
+        "hints": 1.6,
+        "attempts": 24,
+        "mw": false,
+        "dep": true
+      },
+      {
+        "id": "c13",
+        "name": "Ziad Abi Nader",
+        "cls": "10B",
+        "ind": 86,
+        "as": 90,
+        "hints": 1.6,
+        "attempts": 20,
+        "mw": false,
+        "dep": false
+      },
+      {
+        "id": "c14",
+        "name": "Lea Aoun",
+        "cls": "10A",
+        "ind": 88,
+        "as": 98,
+        "hints": 1.8,
+        "attempts": 27,
+        "mw": false,
+        "dep": false
+      },
+      {
+        "id": "c15",
+        "name": "Hassan Kassem",
+        "cls": "10B",
+        "ind": 65,
+        "as": 90,
+        "hints": 0,
+        "attempts": 18,
+        "mw": true,
+        "dep": true
+      },
+      {
+        "id": "sami",
+        "name": "Sami Aoun",
+        "cls": "10A",
+        "ind": null,
+        "as": null,
+        "hints": 2.3,
+        "attempts": 0,
+        "mw": false,
+        "dep": false
+      },
+      {
+        "id": "c17",
+        "name": "Wael Touma",
+        "cls": "10B",
+        "ind": 80,
+        "as": 93,
+        "hints": 1.9,
+        "attempts": 22,
+        "mw": false,
+        "dep": false
+      },
+      {
+        "id": "c18",
+        "name": "Dana Frem",
+        "cls": "10A",
+        "ind": 52,
+        "as": 59,
+        "hints": 0,
+        "attempts": 8,
+        "mw": false,
+        "dep": false
+      },
+      {
+        "id": "c19",
+        "name": "Marc Bou Saab",
+        "cls": "10B",
+        "ind": 81,
+        "as": 98,
+        "hints": 0,
+        "attempts": 20,
+        "mw": false,
+        "dep": false
+      },
+      {
+        "id": "c20",
+        "name": "Nadia Eid",
+        "cls": "10A",
+        "ind": 74,
+        "as": 98,
+        "hints": 0.8,
+        "attempts": 27,
+        "mw": false,
+        "dep": true
+      },
+      {
+        "id": "c21",
+        "name": "Tarek Obeid",
+        "cls": "10B",
+        "ind": 79,
+        "as": 98,
+        "hints": 2.5,
+        "attempts": 10,
+        "mw": false,
+        "dep": false
+      },
+      {
+        "id": "c22",
+        "name": "Maria Chidiac",
+        "cls": "10A",
+        "ind": 63,
+        "as": 80,
+        "hints": 0.5,
+        "attempts": 15,
+        "mw": true,
+        "dep": false
+      },
+      {
+        "id": "c23",
+        "name": "Karl Bitar",
+        "cls": "10B",
+        "ind": 80,
+        "as": 98,
+        "hints": 2.2,
+        "attempts": 21,
+        "mw": false,
+        "dep": false
+      }
+    ],
+    "misconceptions": [
+      {
+        "id": "M1",
+        "title": "Treats mass and weight as the same quantity",
+        "n": 9,
+        "of": 24,
+        "concept": "Mass vs weight",
+        "status": "open",
+        "examples": [
+          {
+            "who": "Lina Haddad",
+            "ans": "60",
+            "reason": "\"Weight is 60 because she is 60 kg.\"",
+            "ai": "Mass–weight confusion",
+            "assist": "none"
+          },
+          {
+            "who": "Rami Fares",
+            "ans": "60 kg",
+            "reason": "\"Weight and mass are the same, just different units.\"",
+            "ai": "Mass–weight confusion",
+            "assist": "none"
+          },
+          {
+            "who": "Yara Bitar",
+            "ans": "6.1",
+            "reason": "\"I divided 60 by 9.8 to get the weight.\"",
+            "ai": "Mass–weight confusion",
+            "assist": "hint"
+          }
+        ]
+      },
+      {
+        "id": "M2",
+        "title": "Uses applied force instead of net force",
+        "n": 7,
+        "of": 24,
+        "concept": "Net force",
+        "status": "open",
+        "examples": [
+          {
+            "who": "Maya Khalil",
+            "ans": "7.5",
+            "reason": "\"15 N push divided by 2 kg.\"",
+            "ai": "Ignores friction",
+            "assist": "none"
+          },
+          {
+            "who": "Jad Rizk",
+            "ans": "7.5",
+            "reason": "\"Friction doesn't count because it's small.\"",
+            "ai": "Ignores friction",
+            "assist": "none"
+          }
+        ]
+      },
+      {
+        "id": "M3",
+        "title": "Inverts F = ma (divides m by F)",
+        "n": 4,
+        "of": 24,
+        "concept": "F = ma",
+        "status": "open",
+        "examples": [
+          {
+            "who": "Lina Haddad",
+            "ans": "0.4",
+            "reason": "\"I divided 4 by 10.\"",
+            "ai": "Formula inverted",
+            "assist": "none"
+          }
+        ]
+      }
+    ],
+    "flags": [
+      {
+        "id": "I1",
+        "kind": "Explanation",
+        "target": "Lesson \"Newton's second law\" · 6:10–10:10 \"Mass vs weight\"",
+        "evidence": "Of 19 students who watched this segment, 12 later answered the weight question with a mass value. Students who rewatched it did no better (7 of 10).",
+        "suggest": "The segment shows the formula before the difference in units. Consider re-recording with a scale-on-the-Moon example first.",
+        "status": "open"
+      },
+      {
+        "id": "I2",
+        "kind": "Exercise",
+        "target": "Practice batch item 4 (friction)",
+        "evidence": "61% incorrect on first independent attempt; 8 of 11 wrong answers are exactly 7.5, which means the wording may hide the friction force.",
+        "suggest": "Make friction visible in the question or add a diagram.",
+        "status": "open"
+      },
+      {
+        "id": "I3",
+        "kind": "Approach",
+        "target": "Hints on F = ma problems",
+        "evidence": "Students who used 2+ hints solved assisted problems at 88% but independent ones at 49%. The hint gives the rearranged formula directly.",
+        "suggest": "Change the hint to ask which quantity is unknown, instead of giving the formula.",
+        "status": "open"
+      }
+    ],
+    "followups": []
+  },
+  "uploads": [
+    {
+      "id": "L1",
+      "status": "available",
+      "viewers": 52
+    },
+    {
+      "id": "L2",
+      "status": "available",
+      "viewers": 52
+    },
+    {
+      "id": "U3",
+      "title": "Momentum: an introduction",
+      "subj": "physics",
+      "unit": "Unit 4 · Momentum",
+      "grades": [10],
+      "classes": ["10A", "10B"],
+      "status": "details",
+      "viewers": 0
+    }
+  ],
+  "settings": {
+    "recHome": true,
+    "parentProgress": "undecided",
+    "studentProposals": true,
+    "advisersRemote": true
+  },
+  "meetingRequests": []
+}

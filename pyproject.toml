@@ -1,0 +1,38 @@
+[project]
+name = "school2036"
+version = "0.1.0"
+description = "School 2036 Python services"
+requires-python = ">=3.14,<3.15"
+dependencies = [
+  "fastapi==0.143.0",
+  "uvicorn==0.54.0",
+  "pydantic-settings==2.15.0",
+  "sqlalchemy==2.1.4",
+  "alembic==1.20.0",
+  "psycopg[binary]==3.3.6",
+  "celery==5.6.3",
+  "redis==8.1.0",
+  "boto3==1.43.110",
+  "cryptography==50.0.2",
+]
+
+[dependency-groups]
+dev = ["pytest==9.1.1", "httpx==0.28.1", "ruff==0.16.10", "pip-audit==2.10.1"]
+
+[build-system]
+requires = ["hatchling==1.32.4"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["packages/backend/src/school2036", "apps/api/src/school_api", "apps/worker/src/school_worker", "apps/ai/src/school_ai"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+extend-exclude = [".cache", ".tools", ".data", "node_modules", ".next"]
+target-version = "py314"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]

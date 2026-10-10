@@ -1,0 +1,104 @@
+name: school2036
+x-python: &python
+  image: ${SCHOOL_PYTHON_IMAGE:-school2036-python:local}
+  build:
+    context: ..
+    dockerfile: infra/Dockerfile.python
+  env_file: ../.env.production
+  restart: unless-stopped
+  init: true
+  security_opt: ["no-new-privileges:true"]
+  depends_on:
+    postgres: {condition: service_healthy}
+    redis: {condition: service_healthy}
+services:
+  proxy:
+    image: caddy:2-alpine@sha256:d8542f48d34a9cf4e4c11a478865229840e87e4c96ea3f439101f31a5d35f75f
+    restart: unless-stopped
+    ports: ["80:80", "443:443"]
+    environment:
+      DOMAIN: ${DOMAIN:?Set DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on: [web, api]
+  web:
+    image: ${SCHOOL_WEB_IMAGE:-school2036-web:local}
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.web
+    restart: unless-stopped
+    init: true
+    security_opt: ["no-new-privileges:true"]
+    environment:
+      API_INTERNAL_URL: http://api:8000
+    healthcheck:
+      test: ["CMD", "bun", "-e", "fetch('http://127.0.0.1:3000').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+  api:
+    <<: *python
+    volumes: ["identity_data:/app/.data"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health/ready', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+  worker:
+    <<: *python
+    command: ["celery", "-A", "school_worker.main:app", "worker", "--loglevel=INFO", "--concurrency=2", "-Q", "general"]
+  beat:
+    <<: *python
+    volumes: ["beat_data:/app/.data"]
+    command: ["celery", "-A", "school_worker.main:app", "beat", "--schedule", "/app/.data/celerybeat"]
+  ai:
+    <<: *python
+    profiles: ["ai"]
+    environment:
+      SCHOOL_DATABASE_URL: postgresql+psycopg://disabled:disabled-no-database-access-000000@127.0.0.1/disabled
+    mem_limit: 512m
+    command: ["uvicorn", "school_ai.main:app", "--host", "0.0.0.0", "--port", "8001"]
+  migrate:
+    <<: *python
+    profiles: ["tools"]
+    restart: "no"
+    command: ["alembic", "upgrade", "head"]
+  postgres:
+    image: postgres:18-alpine@sha256:77f585114c32fbca283dc835b0596f4e52b51b4c6662d7810b2f4084f60a1873
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: school2036
+      POSTGRES_USER: school
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+    volumes: ["postgres_data:/var/lib/postgresql"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U school -d school2036"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+  scanner:
+    image: clamav/clamav:1.5.4@sha256:ebec5bc138401b36ae987caa1a3fa3c3b2a21ed3d51f0bfa5852825e663e67b0
+    restart: unless-stopped
+    mem_limit: 4g
+    security_opt: ["no-new-privileges:true"]
+    volumes: ["scanner_data:/var/lib/clamav"]
+  redis:
+    image: redis:8-alpine@sha256:3811787313eba226a2ef38658c6ccb91cd5e110edc89c37767de373120a0e5a0
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes: ["redis_data:/data"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+volumes:
+  beat_data:
+  identity_data:
+  postgres_data:
+  redis_data:
+  scanner_data:
+  caddy_data:
+  caddy_config:

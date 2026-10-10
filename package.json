@@ -1,0 +1,33 @@
+{
+  "name": "school-2036",
+  "private": true,
+  "type": "module",
+  "packageManager": "bun@1.4.2",
+  "engines": {
+    "bun": "1.4.2"
+  },
+  "workspaces": [
+    "apps/web",
+    "packages/ui",
+    "packages/api-client"
+  ],
+  "scripts": {
+    "dev": "bun scripts/dev.ts",
+    "dev:web": "bun run --cwd apps/web dev",
+    "build": "bun run --cwd apps/web build",
+    "typecheck": "bun run --cwd apps/web typecheck && bun --bun tsc -p tsconfig.tools.json",
+    "lint": "bun --bun biome check .",
+    "format": "bun --bun biome check --write .",
+    "api:generate": "uv run python scripts/export_openapi.py && bun run --cwd packages/api-client generate",
+    "api:check": "bun scripts/check-contract.ts",
+    "check": "bun run lint && bun run typecheck && bun run api:check",
+    "audit:js": "bun audit"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
+    "@biomejs/biome": "2.5.15",
+    "@playwright/test": "1.64.0",
+    "@types/bun": "1.4.2",
+    "typescript": "7.0.2"
+  }
+}

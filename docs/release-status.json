@@ -1,0 +1,7 @@
+{
+  "productionApproved": false,
+  "reason": "Infrastructure reset: basic login and private personal files remain. Product features were removed for a rebuild. The recorded Next.js notice, live R2 verification, container scans, production recovery and new release acceptance remain unresolved.",
+  "source": "https://nextjs.org/blog/upcoming-nextjs-security-update-october-2026",
+  "scope": "infrastructure, basic login, private uploads and Atlas Pearl frontend previews",
+  "ai": "health-only placeholder; inference disabled"
+}

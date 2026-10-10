@@ -1,0 +1,16 @@
+{
+  "date": "2026-10-09",
+  "runtime": "Bun 1.4.2",
+  "cpu": "Intel(R) Core(TM) i7-14650HX",
+  "logicalCpus": 24,
+  "memoryGiB": 15,
+  "dataset": "Empty synthetic uninstalled school; cached images/dependencies; local PostgreSQL/Redis; no AI",
+  "startupMs": 3541,
+  "uiReloadMs": 83,
+  "apiReloadMs": 1105,
+  "targetsMs": {
+    "startup": 30000,
+    "uiReload": 2000,
+    "apiReload": 3000
+  }
+}

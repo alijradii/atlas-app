@@ -1,0 +1,14 @@
+.git
+.agents
+.aws
+.codex
+.tools
+.venv
+.env
+.env.*
+**/node_modules
+**/.next
+**/.next-e2e
+**/__pycache__
+.data
+.cache
