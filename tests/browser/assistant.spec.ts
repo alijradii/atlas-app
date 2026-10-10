@@ -88,6 +88,27 @@ test("assistant suggestions call the model once, then navigate and spotlight a r
   await expect(ring).toBeVisible();
   const target = page.locator('[data-guide-anchor="files.upload"]');
   await expect(target).toBeVisible();
+  await expect(
+    page.locator(".atlas-global-assistant .atlas-dock-pane"),
+  ).toBeHidden();
+  await expect(
+    page.getByRole("region", { name: "Atlas conversation" }),
+  ).toHaveCount(0);
+  await expect
+    .poll(() =>
+      target.evaluate((element) => {
+        const rect = element.getBoundingClientRect();
+        return [0.2, 0.5, 0.8].every((fraction) =>
+          element.contains(
+            document.elementFromPoint(
+              rect.left + rect.width / 2,
+              rect.top + rect.height * fraction,
+            ),
+          ),
+        );
+      }),
+    )
+    .toBe(true);
   const geometry = await ring.boundingBox();
   const targetGeometry = await target.boundingBox();
   expect(geometry).not.toBeNull();
@@ -109,6 +130,29 @@ test("assistant suggestions call the model once, then navigate and spotlight a r
   expect(requests[0].history).toEqual([]);
   expect(mutations).toEqual([]);
   await page.keyboard.press("Escape");
+  await expect(tip).toHaveCount(0);
+  await open(page);
+  await expect(page.getByText(response.answer, { exact: true })).toBeVisible();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByRole("button", { name: "Show me", exact: true }).click();
+  await expect(tip).toBeVisible();
+  await expect(
+    page.locator(".atlas-global-assistant .atlas-dock-pane"),
+  ).toBeHidden();
+  await expect
+    .poll(() =>
+      target.evaluate((element) => {
+        const rect = element.getBoundingClientRect();
+        return element.contains(
+          document.elementFromPoint(
+            rect.left + rect.width / 2,
+            rect.top + rect.height / 2,
+          ),
+        );
+      }),
+    )
+    .toBe(true);
+  await page.getByRole("button", { name: "Got it", exact: true }).click();
   await expect(tip).toHaveCount(0);
   await open(page);
   await expect(page.getByText(response.answer, { exact: true })).toBeVisible();

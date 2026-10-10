@@ -69,10 +69,17 @@ Implementation references: [official MCP Python SDK](https://github.com/modelcon
 the root layout. Authenticated shells register the current session; unauthenticated
 routes clear memory, account changes abort pending work, and a 401 redirects to
 sign-in. Responses are checked against current identity before being displayed.
-No private question is placed in a URL, localStorage or sessionStorage.
+No private question is placed in a URL, localStorage or sessionStorage. On Study,
+the same provider-owned dock is portaled into a stable mount in the conversation
+column. Both Study session and Ask Atlas modes stay in that column; source controls
+remain in their own sidebar. Other screens use the original floating placement.
 
 A returned guide uses a fixed allowlist and waits for the destination anchor to
-mount before opening the shared Spotlight. Dim and border follow viewport/layout
+mount before opening the shared Spotlight. The saved conversation collapses first;
+the spotlight waits for that motion to finish, so the reply cannot cover the control.
+The conversation stays saved and can be reopened or replay its Show me action.
+When the composer itself is the target, it stays open and the competing UI-help
+reply is hidden while guidance is active. Dim and border follow viewport/layout
 events rather than a continuous measurement loop. Guidance navigates but never
 clicks a control or commits a mutation. Escape dismisses it, and Show me can replay
 it. A failed request retains the question for an explicit Retry; Stop aborts the

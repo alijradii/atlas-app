@@ -355,3 +355,130 @@ test("a direct lesson card URL still rejects unavailable source access", async (
     page.getByRole("region", { name: "Full transcript" }),
   ).toHaveCount(0);
 });
+
+for (const viewport of [
+  { width: 1440, height: 1000 },
+  { width: 1600, height: 800 },
+  { width: 390, height: 844 },
+]) {
+  test(`Study keeps its shared dock inside the conversation column at ${viewport.width}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize(viewport);
+    await workspace(page, { messages: 30 });
+    const dock = page.locator(".atlas-global-assistant");
+    const assertPlacement = async () => {
+      await expect(dock).toHaveCount(1);
+      await expect(
+        page.locator(
+          ".study-main .study-assistant-mount .atlas-global-assistant",
+        ),
+      ).toHaveCount(1);
+      const geometry = await page.evaluate(() => {
+        const box = (selector: string) => {
+          const element = document.querySelector(selector);
+          if (!element) throw new Error(`Missing ${selector}`);
+          return element.getBoundingClientRect();
+        };
+        const composer = box(".atlas-global-assistant");
+        const main = box(".study-main");
+        const tools = box(".atlas-chat-sidebar");
+        return {
+          contained:
+            composer.left >= main.left - 1 && composer.right <= main.right + 1,
+          overlapsTools:
+            composer.left < tools.right &&
+            composer.right > tools.left &&
+            composer.top < tools.bottom &&
+            composer.bottom > tools.top,
+          position: getComputedStyle(
+            document.querySelector(".atlas-global-assistant") as HTMLElement,
+          ).position,
+          overflow: document.documentElement.scrollWidth > innerWidth,
+        };
+      });
+      expect(geometry).toEqual({
+        contained: true,
+        overlapsTools: false,
+        position: "relative",
+        overflow: false,
+      });
+    };
+    const starter = page.getByRole("textbox", {
+      name: "Start a study session",
+      exact: true,
+    });
+    await starter.fill("An unsent study question");
+    await assertPlacement();
+    const modes = page.getByRole("group", {
+      name: "Assistant mode",
+      exact: true,
+    });
+    await modes.getByRole("button", { name: "Ask Atlas", exact: true }).click();
+    const atlas = page.getByRole("textbox", {
+      name: "Ask the assistant",
+      exact: true,
+    });
+    await atlas.fill("Keep my navigation question");
+    await assertPlacement();
+    await page
+      .getByRole("button", { name: "Minimize assistant", exact: true })
+      .click();
+    const launcher = page.getByRole("button", {
+      name: "Open Atlas assistant",
+      exact: true,
+    });
+    await expect(launcher).toBeVisible();
+    await assertPlacement();
+    await launcher.click();
+    await expect(atlas).toHaveValue("Keep my navigation question");
+    await modes
+      .getByRole("button", { name: "Study session", exact: true })
+      .click();
+    await expect(starter).toHaveValue("An unsent study question");
+    await page
+      .getByRole("button", { name: conversation.title, exact: true })
+      .click();
+    const active = page.getByRole("textbox", {
+      name: "Ask about your lessons",
+      exact: true,
+    });
+    await expect(active).toBeVisible();
+    await assertPlacement();
+    if (viewport.width === 1600) {
+      await page.evaluate(() => window.scrollTo(0, 0));
+      const box = await page
+        .locator(".study-assistant-mount .atlas-composer-inline form")
+        .boundingBox();
+      expect(box).not.toBeNull();
+      expect((box?.y ?? 0) + (box?.height ?? 0)).toBeLessThanOrEqual(
+        viewport.height,
+      );
+    }
+    await modes.getByRole("button", { name: "Ask Atlas", exact: true }).click();
+    await expect(atlas).toHaveValue("Keep my navigation question");
+    await assertPlacement();
+    await page.route("**/api/v1/assistant/messages", (route) =>
+      route.fulfill({
+        json: {
+          answer: "Here are ways to explore a topic.\n\n".repeat(40),
+          guidance: null,
+          suggestions: [
+            "Where can I add a transcript?",
+            "How do I find my lessons?",
+            "Show my files",
+          ],
+        },
+      }),
+    );
+    await atlas.press("Enter");
+    await expect(
+      page.getByRole("region", { name: "Atlas conversation", exact: true }),
+    ).toBeVisible();
+    await assertPlacement();
+    await page.screenshot({
+      path: test.info().outputPath(`study-column-${viewport.width}.png`),
+      fullPage: true,
+    });
+  });
+}

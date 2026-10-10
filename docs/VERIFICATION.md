@@ -1,5 +1,35 @@
 # Verification — October 10, 2026
 
+## Clear guidance and an inline Study composer
+
+Review of the first demo exposed two overlapping surfaces: the saved Atlas reply
+covered the control it was highlighting, and the floating Study prompt covered
+Your learning space. Guidance now collapses the reply panel and waits for its
+closing animation before showing the spotlight. The reply remains available when
+the user restores the assistant. Guiding the composer itself keeps that input open
+and suppresses the competing reply panel.
+
+Study places the existing root assistant in the conversation column through a
+portal. Both Study session and Ask Atlas modes stay within that column, including
+long replies and collapse/restore. The message list scrolls independently while
+the page can grow; the lesson controls remain unobstructed. Other screens retain
+the floating dock and its existing account-bound state.
+
+`SCHOOL_TEST_SCANNER=1 make check` passed **64 Bun tests and 200 Python tests**.
+The production build, application audits and final frontend checks passed. The complete compiled
+Chrome suite passed **92/92 scenarios**. Coverage now checks actual target hit
+positions during guidance on desktop and mobile, replay without another model
+request, and Study geometry at 1440×1000, 1600×800 and 390×844 with long conversations,
+long Atlas replies, draft preservation and collapse/restore.
+
+The affected guidance, open tutoring and source-grounded tutoring scenes were
+recorded again against the real local app with real model calls. The corrected
+`Atlas-2036-Demo-v2.mp4` is **1:58**, 1600×900 at 30 fps, captioned and silent.
+Finished MP4 frames were inspected at the guidance and Study scenes; both controls
+are clear. One source-processing wait remains shortened and labeled. Captures
+logged no page errors. Use v2; the first video is retained only as a local artifact.
+Existing public-release gates remain unchanged.
+
 ## Talk-first Study and application demo
 
 Study now creates a saved conversation and sends the first question directly from

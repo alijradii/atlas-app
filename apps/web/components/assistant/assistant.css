@@ -88,3 +88,12 @@
     animation: none;
   }
 }
+
+/* Study gives the same persistent dock a real place in its conversation column. */
+.atlas-global-assistant.atlas-assistant-in-study {
+  position: relative;
+  inset: auto;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}

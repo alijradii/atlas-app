@@ -37,6 +37,7 @@ type Context = {
   register: (session: Session, section: string) => () => void;
   reset: () => void;
   host: HTMLDivElement | null;
+  setStudyMount: (element: HTMLDivElement | null) => void;
   setStudy: (active: boolean) => void;
   minimize: () => void;
   openStudy: () => void;
@@ -100,6 +101,7 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
   const [study, setStudyActive] = useState(false);
   const [mode, setMode] = useState<"atlas" | "study">("atlas");
   const [host, setHost] = useState<HTMLDivElement | null>(null);
+  const [studyMount, setStudyMount] = useState<HTMLDivElement | null>(null);
   const [pendingGuide, setPendingGuide] = useState<Guidance | null>(null);
   const [guide, setGuide] = useState<Guide | null>(null);
   const request = useRef<AbortController | null>(null);
@@ -166,14 +168,40 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
     const safe = safeGuide(value);
     if (!safe) return;
     setGuide(null);
+    // Guidance takes the stage. Keep the answer saved, but move its panel away
+    // before spotlighting a control; the composer itself is the one exception.
+    setCollapsed(safe.anchor !== "study.composer");
+    if (safe.anchor === "study.composer") setMode("study");
     setPendingGuide(safe);
     if (currentScreen() !== safe.route) router.push(safe.route);
   }
   useEffect(() => {
     if (!pendingGuide || !registration) return;
     let frame = 0;
+    let disposed = false;
+    let waiting = false;
     const find = () => {
-      if (currentScreen() !== pendingGuide.route) return;
+      if (disposed || waiting || currentScreen() !== pendingGuide.route) return;
+      if (pendingGuide.anchor !== "study.composer") {
+        const animations = document
+          .querySelector(".atlas-global-assistant .atlas-dock-pane")
+          ?.getAnimations()
+          .filter(
+            (animation) =>
+              animation.playState === "running" || animation.pending,
+          );
+        if (animations?.length) {
+          waiting = true;
+          void Promise.allSettled(
+            animations.map((animation) => animation.finished),
+          ).then(() => {
+            if (disposed) return;
+            waiting = false;
+            frame = requestAnimationFrame(find);
+          });
+          return;
+        }
+      }
       const target = Array.from(
         document.querySelectorAll<HTMLElement>(
           `[data-guide-anchor="${CSS.escape(pendingGuide.anchor)}"]`,
@@ -197,9 +225,10 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
       attributes: true,
       attributeFilter: ["hidden", "data-state"],
     });
-    find();
+    frame = requestAnimationFrame(find);
     const timeout = window.setTimeout(() => setPendingGuide(null), 8000);
     return () => {
+      disposed = true;
       clearTimeout(timeout);
       cancelAnimationFrame(frame);
       observer.disconnect();
@@ -286,149 +315,169 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
     }
   }
   const context = useMemo(
-    () => ({ register, reset, host, setStudy, minimize, openStudy }),
+    () => ({
+      register,
+      reset,
+      host,
+      setStudyMount,
+      setStudy,
+      minimize,
+      openStudy,
+    }),
     [register, reset, host, setStudy, minimize, openStudy],
+  );
+  const dock = registration && (
+    <div
+      className={`atlas-global-assistant atlas-composer-wrap${studyMount ? " atlas-assistant-in-study" : ""}`}
+      data-guide-anchor="study.composer"
+    >
+      <AssistantDock
+        collapsed={collapsed}
+        onCollapsedChange={(next) => {
+          if (!next) {
+            setGuide(null);
+            setPendingGuide(null);
+          }
+          setCollapsed(next);
+        }}
+      >
+        {(close) => (
+          <>
+            {study && (
+              <fieldset
+                className="atlas-assistant-modes"
+                aria-label="Assistant mode"
+              >
+                <button
+                  type="button"
+                  aria-pressed={mode === "study"}
+                  onClick={() => setMode("study")}
+                >
+                  Study session
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={mode === "atlas"}
+                  onClick={() => setMode("atlas")}
+                >
+                  Ask Atlas
+                </button>
+              </fieldset>
+            )}
+            <div ref={setHost} hidden={!study || mode !== "study"} />
+            <div hidden={study && mode === "study"}>
+              {guide?.id !== "study.composer" &&
+                pendingGuide?.anchor !== "study.composer" &&
+                (messages.length > 0 || busy || error) && (
+                  <section
+                    className="atlas-assistant-replies"
+                    aria-label="Atlas conversation"
+                  >
+                    <div className="atlas-assistant-reply-header">
+                      <span>Atlas</span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Clear assistant conversation"
+                        disabled={busy}
+                        onClick={reset}
+                      >
+                        <X />
+                      </Button>
+                    </div>
+                    <div
+                      className="atlas-assistant-history"
+                      role="log"
+                      aria-live="polite"
+                    >
+                      {messages.map((message) => (
+                        <div
+                          key={message.id}
+                          className={`atlas-assistant-reply atlas-assistant-reply-${message.role}`}
+                        >
+                          {message.role === "assistant" ? (
+                            <RichMessage text={message.content} />
+                          ) : (
+                            <p>{message.content}</p>
+                          )}
+                          {message.guidance && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                showGuidance(message.guidance as Guidance)
+                              }
+                            >
+                              Show me
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                      <div ref={messagesEnd} />
+                    </div>
+                    {busy && (
+                      <p className="atlas-assistant-working" role="status">
+                        <span />
+                        Finding the right help…
+                      </p>
+                    )}
+                    {error && (
+                      <div role="alert">
+                        <p>{error}</p>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => void ask(retry)}
+                        >
+                          Retry
+                        </Button>
+                      </div>
+                    )}
+                  </section>
+                )}
+              <Composer
+                value={draft}
+                onChange={setDraft}
+                onSubmit={(text) => void ask(text)}
+                onMinimize={close}
+                label="Ask the assistant"
+                placeholder="Ask about a lesson, a problem, or your workspace"
+                hint="Ask me where to go or what to do next."
+                suggestions={suggestions}
+                sendDisabled={busy}
+                moreOptions={[
+                  {
+                    label: "Upload documents or recordings",
+                    href: "/files",
+                  },
+                  { label: "Your study library", href: "/study" },
+                ]}
+                action={
+                  busy ? (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        request.current?.abort();
+                        request.current = null;
+                        setBusy(false);
+                      }}
+                    >
+                      Stop
+                    </Button>
+                  ) : undefined
+                }
+              />
+            </div>
+          </>
+        )}
+      </AssistantDock>
+    </div>
   );
   return (
     <AssistantContext.Provider value={context}>
       {children}
-      {registration && (
-        <div
-          className="atlas-global-assistant atlas-composer-wrap"
-          data-guide-anchor="study.composer"
-        >
-          <AssistantDock collapsed={collapsed} onCollapsedChange={setCollapsed}>
-            {(close) => (
-              <>
-                {study && (
-                  <fieldset
-                    className="atlas-assistant-modes"
-                    aria-label="Assistant mode"
-                  >
-                    <button
-                      type="button"
-                      aria-pressed={mode === "study"}
-                      onClick={() => setMode("study")}
-                    >
-                      Study session
-                    </button>
-                    <button
-                      type="button"
-                      aria-pressed={mode === "atlas"}
-                      onClick={() => setMode("atlas")}
-                    >
-                      Ask Atlas
-                    </button>
-                  </fieldset>
-                )}
-                <div ref={setHost} hidden={!study || mode !== "study"} />
-                <div hidden={study && mode === "study"}>
-                  {(messages.length > 0 || busy || error) && (
-                    <section
-                      className="atlas-assistant-replies"
-                      aria-label="Atlas conversation"
-                    >
-                      <div className="atlas-assistant-reply-header">
-                        <span>Atlas</span>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          aria-label="Clear assistant conversation"
-                          disabled={busy}
-                          onClick={reset}
-                        >
-                          <X />
-                        </Button>
-                      </div>
-                      <div
-                        className="atlas-assistant-history"
-                        role="log"
-                        aria-live="polite"
-                      >
-                        {messages.map((message) => (
-                          <div
-                            key={message.id}
-                            className={`atlas-assistant-reply atlas-assistant-reply-${message.role}`}
-                          >
-                            {message.role === "assistant" ? (
-                              <RichMessage text={message.content} />
-                            ) : (
-                              <p>{message.content}</p>
-                            )}
-                            {message.guidance && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() =>
-                                  showGuidance(message.guidance as Guidance)
-                                }
-                              >
-                                Show me
-                              </Button>
-                            )}
-                          </div>
-                        ))}
-                        <div ref={messagesEnd} />
-                      </div>
-                      {busy && (
-                        <p className="atlas-assistant-working" role="status">
-                          <span />
-                          Finding the right help…
-                        </p>
-                      )}
-                      {error && (
-                        <div role="alert">
-                          <p>{error}</p>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => void ask(retry)}
-                          >
-                            Retry
-                          </Button>
-                        </div>
-                      )}
-                    </section>
-                  )}
-                  <Composer
-                    value={draft}
-                    onChange={setDraft}
-                    onSubmit={(text) => void ask(text)}
-                    onMinimize={close}
-                    label="Ask the assistant"
-                    placeholder="Ask about a lesson, a problem, or your workspace"
-                    hint="Ask me where to go or what to do next."
-                    suggestions={suggestions}
-                    sendDisabled={busy}
-                    moreOptions={[
-                      {
-                        label: "Upload documents or recordings",
-                        href: "/files",
-                      },
-                      { label: "Your study library", href: "/study" },
-                    ]}
-                    action={
-                      busy ? (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            request.current?.abort();
-                            request.current = null;
-                            setBusy(false);
-                          }}
-                        >
-                          Stop
-                        </Button>
-                      ) : undefined
-                    }
-                  />
-                </div>
-              </>
-            )}
-          </AssistantDock>
-        </div>
-      )}
+      {studyMount ? createPortal(dock, studyMount) : dock}
       {registration && guide && (
         <Spotlight guide={guide} onClose={dismissGuide} />
       )}
@@ -461,4 +510,10 @@ export function StudyAssistantSlot({
     return () => setStudy(false);
   }, [setStudy]);
   return host ? createPortal(children(minimize), host) : null;
+}
+
+/** Places the persistent dock in the conversation column on Study only. */
+export function StudyAssistantMount() {
+  const { setStudyMount } = useAssistant();
+  return <div className="study-assistant-mount" ref={setStudyMount} />;
 }

@@ -18,7 +18,11 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { StudyAssistantSlot, useAssistant } from "../assistant/provider";
+import {
+  StudyAssistantMount,
+  StudyAssistantSlot,
+  useAssistant,
+} from "../assistant/provider";
 import { ConnectedShell } from "../connected-shell";
 import { Brand, PageHeading } from "../pearl";
 import {
@@ -550,6 +554,7 @@ function StudyWorkspace({
               </StudyAssistantSlot>
             </PearlChatEmpty>
           )}
+          <StudyAssistantMount />
         </section>
       </PearlChatLayout>
       <ImportLesson

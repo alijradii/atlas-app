@@ -4,7 +4,11 @@
 require an explicit, currently valid student relationship; see [SCHOOL.md](SCHOOL.md).
 
 Study uses the same Pearl sidebar, message renderer, composer and collapsible
-assistant dock as the main interface. The source library stays next to the
+assistant dock as the main interface. On Study, that persistent dock is mounted
+inside the main conversation column, in normal page flow, and keeps its collapse
+control. It reserves its own space beside the source library instead of floating
+across it. On other authenticated screens it remains a floating dock.
+The source library stays next to the
 conversation (above it on narrow screens). Home questions transfer as private
 in-memory drafts. Start talking to create a saved session directly; selecting sources
 is optional.

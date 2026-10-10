@@ -130,8 +130,7 @@ permits. This is implemented topology, not proof of production deployment readin
 ## Recorded deliverable
 
 The captioned, silent application reel is saved locally at
-`.cache/output/playwright/atlas-demo/Atlas-2036-Demo.mp4` (1600×900, 30 fps,
-about 1 minute 56 seconds). It contains actual authenticated interactions with
+`.cache/output/playwright/atlas-demo/Atlas-2036-Demo-v2.mp4` (1600×900, 30 fps). It contains actual authenticated interactions with
 fictional persisted accounts and real model responses. One source-processing wait
 is shortened and labeled. The framing excludes browser chrome and desktop edges.
 Screenshots, raw WebM captures and the editing manifest are beside it in the ignored
@@ -139,3 +138,8 @@ artifact folder. No credentials or session storage files are included in the vid
 
 The team can speak over this reel or insert it into the up-to-five-minute pitch.
 No upload or submission has been performed.
+
+The v2 reel replaces the guidance and both Study scenes after user review exposed
+obstructed controls in v1. The answer now folds away before a spotlight appears,
+and Study places its prompt in the conversation column instead of over the source
+sidebar. Use v2 for the presentation; v1 remains only as an earlier local artifact.
