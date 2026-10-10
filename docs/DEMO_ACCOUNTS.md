@@ -112,3 +112,17 @@ Repeated simplification is a no-op when already applied. Default seeding remains
 additive and preserves the current password. If receipt replacement fails after the
 database commit, retain the generated private `.pending-*` receipt for operator
 recovery; do not repeat credential changes blindly.
+
+## Saved community walkthrough
+
+The October 10 local walkthrough added fictional examples through authenticated
+application endpoints: Lina's astronomy interest and telescope activity request,
+Elie's makers event, and an astronomy exploration report that Lina explicitly
+reviewed and shared with Elie and Karim. The report was drafted using the real
+configured model. These are saved local database records, not runtime UI fixtures;
+the original seed command does not recreate this later walkthrough.
+
+The local four-account dataset has only one student. It intentionally does not
+invent two additional opt-ins to enable the teacher's AI activity button. That
+button requires three distinct linked students; the disposable browser suite
+provisions three real test accounts to verify the complete suggestion workflow.

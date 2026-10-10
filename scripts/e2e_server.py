@@ -75,9 +75,46 @@ try:
         set_roles(config, app.state.sessions, f"school-{role}", [role])
     for role in ("teacher", "advisor", "parent"):
         set_relationship(config, app.state.sessions, f"school-{role}", "school-student", role)
+    # Separate community accounts keep these flows independent of schoolwork fixtures.
+    for suffix in ("teacher", "student", "advisor", "parent", "peer-a", "peer-b"):
+        role = "student" if suffix.startswith("peer-") else suffix
+        create_user(
+            config,
+            app.state.sessions,
+            f"community-{suffix}",
+            f"Community {suffix.title()}",
+            "synthetic browser password 2036",
+        )
+        set_roles(config, app.state.sessions, f"community-{suffix}", [role])
+    for suffix in ("student", "peer-a", "peer-b"):
+        set_relationship(
+            config, app.state.sessions, "community-teacher", f"community-{suffix}", "teacher"
+        )
+    for role in ("advisor", "parent"):
+        set_relationship(config, app.state.sessions, f"community-{role}", "community-student", role)
     from e2e_study import BrowserStudyProviders
     from school2036 import study_jobs
+    from school2036.activity_schemas import ActivitySuggestionText
     from school2036.jobs import drain_one
+    from school_api import activity_routes, school_report_routes
+
+    async def browser_activity(_config, topic, count):
+        return ActivitySuggestionText(
+            title=f"Explore {topic} together",
+            description=f"A teacher-led workshop inspired by {count} shared interests.",
+        )
+
+    async def browser_report(_config, messages):
+        quote = next(message["content"] for message in messages if message["role"] == "user")
+        return {
+            "title": "My exploration report",
+            "body": f"## What I said\n> {quote}\n\n"
+            "## Possible next steps\nDiscuss a small project together.",
+        }
+
+    # Deterministic provider boundaries only; browser requests still traverse real auth/DB.
+    activity_routes.suggest_activity = browser_activity
+    school_report_routes.draft_report = browser_report
 
     providers = BrowserStudyProviders()
     study_jobs.StudyProviders = lambda _config: providers

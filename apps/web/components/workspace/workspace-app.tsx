@@ -25,8 +25,12 @@ import type {
 } from "./types";
 import { useWorkspace } from "./use-workspace";
 import { WorkspaceAdvisor } from "./workspace-advisor";
+import { WorkspaceAssistant } from "./workspace-assistant";
+import { WorkspaceConnections } from "./workspace-connections";
+import { WorkspaceEvents } from "./workspace-events";
 import { WorkspaceHome } from "./workspace-home";
 import { WorkspaceLessons } from "./workspace-lessons";
+import { WorkspaceReports } from "./workspace-reports";
 import "./workspace.css";
 
 type Store = Omit<ReturnType<typeof useWorkspace>, "data" | "session"> & {
@@ -110,6 +114,9 @@ function Workspace({ store, section }: { store: Store; section: string }) {
     advisor: has("student") || has("advisor"),
     choices: has("student") || has("advisor") || has("parent"),
   };
+  const dedicated = ["assistant", "events", "connections", "reports"].includes(
+    section,
+  );
   const tab: Tab =
     section === "students"
       ? "students"
@@ -155,6 +162,16 @@ function Workspace({ store, section }: { store: Store; section: string }) {
             </Button>
           </div>
         )}
+        {section === "assistant" && <WorkspaceAssistant data={data} />}
+        {section === "events" && (
+          <WorkspaceEvents session={store.session} data={data} />
+        )}
+        {section === "connections" && (
+          <WorkspaceConnections session={store.session} data={data} />
+        )}
+        {section === "reports" && (
+          <WorkspaceReports session={store.session} data={data} />
+        )}
         {section === "home" && !data.roles.length && (
           <section className="school-panel school-onboarding">
             <Users />
@@ -167,7 +184,7 @@ function Workspace({ store, section }: { store: Store; section: string }) {
             </p>
           </section>
         )}
-        {section !== "home" && !allowed[tab] && (
+        {section !== "home" && !dedicated && !allowed[tab] && (
           <section className="school-panel">
             <h1 className="text-2xl">
               This section isn’t connected to your account
@@ -181,7 +198,7 @@ function Workspace({ store, section }: { store: Store; section: string }) {
             </Button>
           </section>
         )}
-        {section !== "home" && allowed[tab] && (
+        {section !== "home" && !dedicated && allowed[tab] && (
           <section
             key={tab}
             className="school-content"
@@ -254,8 +271,8 @@ function Workspace({ store, section }: { store: Store; section: string }) {
                             {item.student_id === data.account_id ||
                             item.teacher_id === data.account_id ? (
                               <Button asChild variant="outline" size="sm">
-                                <Link href="/study">
-                                  Open study library <ArrowRight />
+                                <Link href={`/study?lesson=${item.lesson_id}`}>
+                                  Open lesson material <ArrowRight />
                                 </Link>
                               </Button>
                             ) : null}
@@ -515,9 +532,12 @@ function AssignmentCard({
       </div>
       <p className="school-prose">{item.instructions}</p>
       {item.lesson_id && (own || teacher) && (
-        <Link className="school-text-link" href="/study">
+        <Link
+          className="school-text-link"
+          href={`/study?lesson=${item.lesson_id}`}
+        >
           <BookOpen />
-          Study the related lesson
+          {teacher ? "Review the related lesson" : "Study the related lesson"}
         </Link>
       )}
       {item.answer && (
@@ -667,8 +687,8 @@ function PublishLesson({ store }: { store: Store }) {
         {!store.lessons.length && (
           <p>
             No prepared lessons yet.{" "}
-            <Link className="school-text-link" href="/study">
-              Add a lesson in your study space
+            <Link className="school-text-link" href="/study?materials=1">
+              Prepare a lesson for your students
             </Link>
             .
           </p>

@@ -68,6 +68,289 @@
         "title": "AccountSessionView",
         "type": "object"
       },
+      "ActivityInterestInput": {
+        "additionalProperties": false,
+        "properties": {
+          "interested": {
+            "title": "Interested",
+            "type": "boolean"
+          },
+          "teacher_id": {
+            "format": "uuid",
+            "title": "Teacher Id",
+            "type": "string"
+          },
+          "topic": {
+            "maxLength": 80,
+            "minLength": 2,
+            "title": "Topic",
+            "type": "string"
+          }
+        },
+        "required": [
+          "topic",
+          "teacher_id",
+          "interested"
+        ],
+        "title": "ActivityInterestInput",
+        "type": "object"
+      },
+      "ActivityInterestView": {
+        "properties": {
+          "can_suggest": {
+            "title": "Can Suggest",
+            "type": "boolean"
+          },
+          "interested_count": {
+            "title": "Interested Count",
+            "type": "integer"
+          },
+          "joined": {
+            "title": "Joined",
+            "type": "boolean"
+          },
+          "organizer_name": {
+            "title": "Organizer Name",
+            "type": "string"
+          },
+          "teacher_id": {
+            "title": "Teacher Id",
+            "type": "string"
+          },
+          "topic": {
+            "title": "Topic",
+            "type": "string"
+          }
+        },
+        "required": [
+          "teacher_id",
+          "organizer_name",
+          "topic",
+          "interested_count",
+          "joined",
+          "can_suggest"
+        ],
+        "title": "ActivityInterestView",
+        "type": "object"
+      },
+      "ActivityJoinInput": {
+        "additionalProperties": false,
+        "properties": {
+          "interested": {
+            "title": "Interested",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "interested"
+        ],
+        "title": "ActivityJoinInput",
+        "type": "object"
+      },
+      "ActivityRequestInput": {
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "default": "",
+            "maxLength": 2000,
+            "title": "Description",
+            "type": "string"
+          },
+          "teacher_id": {
+            "format": "uuid",
+            "title": "Teacher Id",
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          },
+          "topic": {
+            "maxLength": 80,
+            "minLength": 2,
+            "title": "Topic",
+            "type": "string"
+          }
+        },
+        "required": [
+          "topic",
+          "teacher_id",
+          "title"
+        ],
+        "title": "ActivityRequestInput",
+        "type": "object"
+      },
+      "ActivityRequestView": {
+        "properties": {
+          "can_join": {
+            "title": "Can Join",
+            "type": "boolean"
+          },
+          "can_manage": {
+            "title": "Can Manage",
+            "type": "boolean"
+          },
+          "created": {
+            "title": "Created",
+            "type": "number"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "event_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Id"
+          },
+          "evidence_count": {
+            "title": "Evidence Count",
+            "type": "integer"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "interested_count": {
+            "title": "Interested Count",
+            "type": "integer"
+          },
+          "joined": {
+            "title": "Joined",
+            "type": "boolean"
+          },
+          "organizer_name": {
+            "title": "Organizer Name",
+            "type": "string"
+          },
+          "participant_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Participant Ids",
+            "type": "array"
+          },
+          "source": {
+            "enum": [
+              "student",
+              "ai"
+            ],
+            "title": "Source",
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "pending",
+              "accepted",
+              "declined"
+            ],
+            "title": "State",
+            "type": "string"
+          },
+          "teacher_id": {
+            "title": "Teacher Id",
+            "type": "string"
+          },
+          "teacher_note": {
+            "title": "Teacher Note",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "topic": {
+            "title": "Topic",
+            "type": "string"
+          },
+          "updated": {
+            "title": "Updated",
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "teacher_id",
+          "organizer_name",
+          "title",
+          "description",
+          "topic",
+          "source",
+          "state",
+          "teacher_note",
+          "event_id",
+          "interested_count",
+          "joined",
+          "participant_ids",
+          "evidence_count",
+          "can_manage",
+          "can_join",
+          "created",
+          "updated"
+        ],
+        "title": "ActivityRequestView",
+        "type": "object"
+      },
+      "ActivityReviewInput": {
+        "additionalProperties": false,
+        "properties": {
+          "event_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Id"
+          },
+          "state": {
+            "enum": [
+              "accepted",
+              "declined"
+            ],
+            "title": "State",
+            "type": "string"
+          },
+          "teacher_note": {
+            "default": "",
+            "maxLength": 2000,
+            "title": "Teacher Note",
+            "type": "string"
+          }
+        },
+        "required": [
+          "state"
+        ],
+        "title": "ActivityReviewInput",
+        "type": "object"
+      },
+      "ActivitySuggestionInput": {
+        "additionalProperties": false,
+        "properties": {
+          "topic": {
+            "maxLength": 80,
+            "minLength": 2,
+            "title": "Topic",
+            "type": "string"
+          }
+        },
+        "required": [
+          "topic"
+        ],
+        "title": "ActivitySuggestionInput",
+        "type": "object"
+      },
       "AdvisorMessageInput": {
         "additionalProperties": false,
         "properties": {
@@ -1182,6 +1465,239 @@
         "title": "RunView",
         "type": "object"
       },
+      "SchoolEventEdit": {
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "anyOf": [
+              {
+                "maxLength": 4000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "ends_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ends At"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
+          },
+          "starts_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Starts At"
+          },
+          "state": {
+            "anyOf": [
+              {
+                "enum": [
+                  "scheduled",
+                  "cancelled"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "State"
+          },
+          "student_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                "maxItems": 100,
+                "minItems": 1,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Student Ids"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "maxLength": 160,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          }
+        },
+        "title": "SchoolEventEdit",
+        "type": "object"
+      },
+      "SchoolEventInput": {
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "default": "",
+            "maxLength": 4000,
+            "title": "Description",
+            "type": "string"
+          },
+          "ends_at": {
+            "format": "date-time",
+            "title": "Ends At",
+            "type": "string"
+          },
+          "location": {
+            "default": "",
+            "maxLength": 200,
+            "title": "Location",
+            "type": "string"
+          },
+          "starts_at": {
+            "format": "date-time",
+            "title": "Starts At",
+            "type": "string"
+          },
+          "student_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 100,
+            "minItems": 1,
+            "title": "Student Ids",
+            "type": "array"
+          },
+          "title": {
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "starts_at",
+          "ends_at",
+          "student_ids"
+        ],
+        "title": "SchoolEventInput",
+        "type": "object"
+      },
+      "SchoolEventView": {
+        "properties": {
+          "can_manage": {
+            "title": "Can Manage",
+            "type": "boolean"
+          },
+          "created": {
+            "title": "Created",
+            "type": "number"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "ends_at": {
+            "format": "date-time",
+            "title": "Ends At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "location": {
+            "title": "Location",
+            "type": "string"
+          },
+          "organizer_name": {
+            "title": "Organizer Name",
+            "type": "string"
+          },
+          "starts_at": {
+            "format": "date-time",
+            "title": "Starts At",
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "scheduled",
+              "cancelled"
+            ],
+            "title": "State",
+            "type": "string"
+          },
+          "student_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Student Ids",
+            "type": "array"
+          },
+          "teacher_id": {
+            "title": "Teacher Id",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "updated": {
+            "title": "Updated",
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "teacher_id",
+          "organizer_name",
+          "title",
+          "description",
+          "location",
+          "starts_at",
+          "ends_at",
+          "state",
+          "student_ids",
+          "can_manage",
+          "created",
+          "updated"
+        ],
+        "title": "SchoolEventView",
+        "type": "object"
+      },
       "SchoolPersonView": {
         "properties": {
           "account_id": {
@@ -1233,6 +1749,139 @@
           "relationship"
         ],
         "title": "SchoolPersonView",
+        "type": "object"
+      },
+      "SchoolReportDraft": {
+        "properties": {
+          "body": {
+            "title": "Body",
+            "type": "string"
+          },
+          "conversation_id": {
+            "title": "Conversation Id",
+            "type": "string"
+          },
+          "requires_review": {
+            "const": true,
+            "default": true,
+            "title": "Requires Review",
+            "type": "boolean"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "body",
+          "conversation_id"
+        ],
+        "title": "SchoolReportDraft",
+        "type": "object"
+      },
+      "SchoolReportInput": {
+        "additionalProperties": false,
+        "properties": {
+          "body": {
+            "maxLength": 8000,
+            "minLength": 1,
+            "title": "Body",
+            "type": "string"
+          },
+          "conversation_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conversation Id"
+          },
+          "recipient_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 30,
+            "minItems": 1,
+            "title": "Recipient Ids",
+            "type": "array"
+          },
+          "title": {
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "body",
+          "recipient_ids"
+        ],
+        "title": "SchoolReportInput",
+        "type": "object"
+      },
+      "SchoolReportView": {
+        "properties": {
+          "body": {
+            "title": "Body",
+            "type": "string"
+          },
+          "conversation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conversation Id"
+          },
+          "created": {
+            "title": "Created",
+            "type": "number"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "recipient_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Recipient Ids",
+            "type": "array"
+          },
+          "student_id": {
+            "title": "Student Id",
+            "type": "string"
+          },
+          "student_name": {
+            "title": "Student Name",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "student_id",
+          "student_name",
+          "title",
+          "body",
+          "recipient_ids",
+          "conversation_id",
+          "created"
+        ],
+        "title": "SchoolReportView",
         "type": "object"
       },
       "SchoolWorkspace": {
@@ -1951,6 +2600,283 @@
         ]
       }
     },
+    "/api/v1/school/activity-interests": {
+      "get": {
+        "operationId": "interests_api_v1_school_activity_interests_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ActivityInterestView"
+                  },
+                  "title": "Response Interests Api V1 School Activity Interests Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Interests",
+        "tags": [
+          "school"
+        ]
+      },
+      "put": {
+        "operationId": "change_interest_api_v1_school_activity_interests_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActivityInterestInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ActivityInterestView"
+                  },
+                  "title": "Response Change Interest Api V1 School Activity Interests Put",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Change Interest",
+        "tags": [
+          "school"
+        ]
+      }
+    },
+    "/api/v1/school/activity-requests": {
+      "get": {
+        "operationId": "list_requests_api_v1_school_activity_requests_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ActivityRequestView"
+                  },
+                  "title": "Response List Requests Api V1 School Activity Requests Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Requests",
+        "tags": [
+          "school"
+        ]
+      },
+      "post": {
+        "operationId": "create_request_api_v1_school_activity_requests_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActivityRequestInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivityRequestView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Request",
+        "tags": [
+          "school"
+        ]
+      }
+    },
+    "/api/v1/school/activity-requests/suggest": {
+      "post": {
+        "operationId": "suggest_api_v1_school_activity_requests_suggest_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActivitySuggestionInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivityRequestView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Suggest",
+        "tags": [
+          "school"
+        ]
+      }
+    },
+    "/api/v1/school/activity-requests/{request_id}": {
+      "patch": {
+        "operationId": "review_api_v1_school_activity_requests__request_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "request_id",
+            "required": true,
+            "schema": {
+              "title": "Request Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActivityReviewInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivityRequestView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Review",
+        "tags": [
+          "school"
+        ]
+      }
+    },
+    "/api/v1/school/activity-requests/{request_id}/interest": {
+      "put": {
+        "operationId": "join_request_api_v1_school_activity_requests__request_id__interest_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "request_id",
+            "required": true,
+            "schema": {
+              "title": "Request Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActivityJoinInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivityRequestView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Join Request",
+        "tags": [
+          "school"
+        ]
+      }
+    },
     "/api/v1/school/assignments": {
       "post": {
         "operationId": "add_assignment_api_v1_school_assignments_post",
@@ -2091,6 +3017,162 @@
           }
         },
         "summary": "Submit",
+        "tags": [
+          "school"
+        ]
+      }
+    },
+    "/api/v1/school/events": {
+      "get": {
+        "operationId": "list_events_api_v1_school_events_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SchoolEventView"
+                  },
+                  "title": "Response List Events Api V1 School Events Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Events",
+        "tags": [
+          "school"
+        ]
+      },
+      "post": {
+        "operationId": "create_event_api_v1_school_events_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SchoolEventInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchoolEventView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Event",
+        "tags": [
+          "school"
+        ]
+      }
+    },
+    "/api/v1/school/events/{event_id}": {
+      "get": {
+        "operationId": "get_event_api_v1_school_events__event_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchoolEventView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Event",
+        "tags": [
+          "school"
+        ]
+      },
+      "patch": {
+        "operationId": "edit_event_api_v1_school_events__event_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SchoolEventEdit"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchoolEventView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Edit Event",
         "tags": [
           "school"
         ]
@@ -2410,6 +3492,112 @@
         ]
       }
     },
+    "/api/v1/school/reports": {
+      "get": {
+        "operationId": "list_reports_api_v1_school_reports_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SchoolReportView"
+                  },
+                  "title": "Response List Reports Api V1 School Reports Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Reports",
+        "tags": [
+          "school"
+        ]
+      },
+      "post": {
+        "operationId": "share_report_api_v1_school_reports_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SchoolReportInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchoolReportView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Share Report",
+        "tags": [
+          "school"
+        ]
+      }
+    },
+    "/api/v1/school/reports/{report_id}": {
+      "get": {
+        "operationId": "get_report_api_v1_school_reports__report_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "report_id",
+            "required": true,
+            "schema": {
+              "title": "Report Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchoolReportView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Report",
+        "tags": [
+          "school"
+        ]
+      }
+    },
     "/api/v1/school/workspace": {
       "get": {
         "operationId": "workspace_api_v1_school_workspace_get",
@@ -2682,6 +3870,48 @@
         "summary": "Message",
         "tags": [
           "study"
+        ]
+      }
+    },
+    "/api/v1/study/conversations/{conversation_id}/report-draft": {
+      "post": {
+        "operationId": "report_draft_api_v1_study_conversations__conversation_id__report_draft_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "conversation_id",
+            "required": true,
+            "schema": {
+              "title": "Conversation Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchoolReportDraft"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Report Draft",
+        "tags": [
+          "school"
         ]
       }
     },

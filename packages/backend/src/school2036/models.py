@@ -1,9 +1,12 @@
 """Identity infrastructure. Legacy columns remain compatible with existing databases."""
 
+from datetime import datetime
+
 from sqlalchemy import (
     JSON,
     Boolean,
     CheckConstraint,
+    DateTime,
     Float,
     ForeignKey,
     Integer,
@@ -258,3 +261,83 @@ class SchoolProposal(Base):
     parent_note: Mapped[str] = mapped_column(Text, default="")
     created: Mapped[float] = mapped_column(Float)
     updated: Mapped[float] = mapped_column(Float)
+
+
+class SchoolEvent(Base):
+    __tablename__ = "school_event"
+    __table_args__ = (
+        CheckConstraint("ends_at > starts_at", name="school_event_chronological"),
+        CheckConstraint("state IN ('scheduled', 'cancelled')", name="school_event_state"),
+    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    teacher_id: Mapped[str] = mapped_column(ForeignKey("account.id"), index=True)
+    title: Mapped[str] = mapped_column(String(160))
+    description: Mapped[str] = mapped_column(Text)
+    location: Mapped[str] = mapped_column(String(200))
+    starts_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+    ends_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    state: Mapped[str] = mapped_column(String(16), default="scheduled")
+    created: Mapped[float] = mapped_column(Float)
+    updated: Mapped[float] = mapped_column(Float)
+
+
+class SchoolEventStudent(Base):
+    __tablename__ = "school_event_student"
+    event_id: Mapped[str] = mapped_column(ForeignKey("school_event.id"), primary_key=True)
+    student_id: Mapped[str] = mapped_column(ForeignKey("account.id"), primary_key=True, index=True)
+
+
+class ActivityInterest(Base):
+    """Opt-in sharing of one topic with a currently linked teacher's peer group."""
+
+    __tablename__ = "activity_interest"
+    teacher_id: Mapped[str] = mapped_column(ForeignKey("account.id"), primary_key=True)
+    student_id: Mapped[str] = mapped_column(ForeignKey("account.id"), primary_key=True)
+    topic: Mapped[str] = mapped_column(String(80), primary_key=True)
+    created: Mapped[float] = mapped_column(Float)
+
+
+class ActivityRequest(Base):
+    __tablename__ = "activity_request"
+    __table_args__ = (
+        CheckConstraint("source IN ('student', 'ai')", name="activity_request_source"),
+        CheckConstraint(
+            "state IN ('pending', 'accepted', 'declined')", name="activity_request_state"
+        ),
+        CheckConstraint("evidence_count >= 0", name="activity_request_evidence"),
+    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    teacher_id: Mapped[str] = mapped_column(ForeignKey("account.id"), index=True)
+    creator_id: Mapped[str | None] = mapped_column(ForeignKey("account.id"))
+    topic: Mapped[str] = mapped_column(String(80))
+    title: Mapped[str] = mapped_column(String(160))
+    description: Mapped[str] = mapped_column(Text)
+    source: Mapped[str] = mapped_column(String(16))
+    state: Mapped[str] = mapped_column(String(16), default="pending")
+    teacher_note: Mapped[str] = mapped_column(Text, default="")
+    event_id: Mapped[str | None] = mapped_column(ForeignKey("school_event.id"))
+    evidence_count: Mapped[int] = mapped_column(Integer, default=0)
+    created: Mapped[float] = mapped_column(Float)
+    updated: Mapped[float] = mapped_column(Float)
+
+
+class ActivityParticipant(Base):
+    __tablename__ = "activity_participant"
+    request_id: Mapped[str] = mapped_column(ForeignKey("activity_request.id"), primary_key=True)
+    student_id: Mapped[str] = mapped_column(ForeignKey("account.id"), primary_key=True, index=True)
+
+
+class SchoolReport(Base):
+    __tablename__ = "school_report"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    student_id: Mapped[str] = mapped_column(ForeignKey("account.id"), index=True)
+    conversation_id: Mapped[str | None] = mapped_column(ForeignKey("study_conversation.id"))
+    title: Mapped[str] = mapped_column(String(160))
+    body: Mapped[str] = mapped_column(Text)
+    created: Mapped[float] = mapped_column(Float)
+
+
+class SchoolReportRecipient(Base):
+    __tablename__ = "school_report_recipient"
+    report_id: Mapped[str] = mapped_column(ForeignKey("school_report.id"), primary_key=True)
+    account_id: Mapped[str] = mapped_column(ForeignKey("account.id"), primary_key=True, index=True)

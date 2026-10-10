@@ -2,6 +2,7 @@
 
 import { ApiError, api } from "@school2036/api-client";
 import { useCallback, useEffect, useRef, useState } from "react";
+import type { Workspace } from "../workspace/types";
 import {
   activeRun,
   type Conversation,
@@ -13,6 +14,7 @@ import {
 
 /** Private data stays in memory; every read is authenticated and stale reads are discarded. */
 export function useStudy() {
+  const [workspace, setWorkspace] = useState<Workspace | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -29,6 +31,7 @@ export function useStudy() {
   const writeAbort = useRef<AbortController | null>(null);
   const refresh = useCallback(() => setRevision((value) => value + 1), []);
   const clearPrivate = useCallback(() => {
+    setWorkspace(null);
     setLessons([]);
     setConversations([]);
     setThread(null);
@@ -91,40 +94,53 @@ export function useStudy() {
         }
         account.current = next.account_id;
         setSession(next);
-        const [nextLessons, nextConversations, nextStatus, nextThread] =
-          await Promise.all([
-            api<Lesson[]>(
-              "/study/lessons",
-              "GET",
-              undefined,
-              undefined,
-              controller.signal,
-            ),
-            api<Conversation[]>(
-              "/study/conversations",
-              "GET",
-              undefined,
-              undefined,
-              controller.signal,
-            ),
-            api<StudyStatus>(
-              "/study/status",
-              "GET",
-              undefined,
-              undefined,
-              controller.signal,
-            ),
-            selectedId
-              ? api<Thread>(
-                  `/study/conversations/${selectedId}`,
-                  "GET",
-                  undefined,
-                  undefined,
-                  controller.signal,
-                )
-              : Promise.resolve(null),
-          ]);
+        const [
+          nextLessons,
+          nextConversations,
+          nextStatus,
+          nextThread,
+          nextWorkspace,
+        ] = await Promise.all([
+          api<Lesson[]>(
+            "/study/lessons",
+            "GET",
+            undefined,
+            undefined,
+            controller.signal,
+          ),
+          api<Conversation[]>(
+            "/study/conversations",
+            "GET",
+            undefined,
+            undefined,
+            controller.signal,
+          ),
+          api<StudyStatus>(
+            "/study/status",
+            "GET",
+            undefined,
+            undefined,
+            controller.signal,
+          ),
+          selectedId
+            ? api<Thread>(
+                `/study/conversations/${selectedId}`,
+                "GET",
+                undefined,
+                undefined,
+                controller.signal,
+              )
+            : Promise.resolve(null),
+          api<Workspace>(
+            "/school/workspace",
+            "GET",
+            undefined,
+            undefined,
+            controller.signal,
+          ),
+        ]);
         if (!current()) return;
+        setWorkspace(nextWorkspace);
         setLessons(nextLessons);
         setConversations(nextConversations);
         setStatus(nextStatus);
@@ -230,6 +246,7 @@ export function useStudy() {
     if (result.ok) expire();
   }
   return {
+    workspace,
     session,
     lessons,
     conversations,

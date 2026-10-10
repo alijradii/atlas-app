@@ -22,6 +22,7 @@ import type { Guide } from "../preview/guidance";
 import { RichMessage } from "../preview/rich-message";
 import { Spotlight } from "../preview/spotlight";
 import type { Session } from "../workspace/types";
+import { roleAssistant } from "./role-context";
 import "./assistant.css";
 
 type Reply = components["schemas"]["AssistantView"];
@@ -32,15 +33,21 @@ type Message = {
   content: string;
   guidance?: Guidance | null;
 };
-type Registration = { token: symbol; session: Session; section: string };
+type Registration = {
+  token: symbol;
+  session: Session;
+  section: string;
+  roles: string[];
+};
 type Context = {
-  register: (session: Session, section: string) => () => void;
+  register: (session: Session, section: string, roles: string[]) => () => void;
   reset: () => void;
   host: HTMLDivElement | null;
   setStudyMount: (element: HTMLDivElement | null) => void;
   setStudy: (active: boolean) => void;
   minimize: () => void;
   openStudy: () => void;
+  openAtlas: (draft?: string) => void;
 };
 const AssistantContext = createContext<Context | null>(null);
 const anchors = new Set([
@@ -55,6 +62,12 @@ const anchors = new Set([
   "students.list",
   "account.security",
   "home.overview",
+  "events.list",
+  "events.manage",
+  "connections.list",
+  "reports.list",
+  "study.explore",
+  "assistant.composer",
 ]);
 const routes = new Set([
   "/workspace",
@@ -63,20 +76,25 @@ const routes = new Set([
   "/workspace?section=messages",
   "/workspace?section=plans",
   "/workspace?section=students",
+  "/workspace?section=assistant",
+  "/workspace?section=events",
+  "/workspace?section=connections",
+  "/workspace?section=reports",
+  "/study?materials=1",
   "/files",
   "/study",
   "/account",
 ]);
-const defaults = [
-  "Upload a document or recording",
-  "Review my transcripts",
-  "Help me understand my lesson",
-];
 function currentScreen() {
   const path = window.location.pathname;
   const section = new URLSearchParams(window.location.search).get("section");
   const candidate =
-    path === "/workspace" && section ? `${path}?section=${section}` : path;
+    new URLSearchParams(window.location.search).get("materials") === "1" &&
+    path === "/study"
+      ? "/study?materials=1"
+      : path === "/workspace" && section
+        ? `${path}?section=${section}`
+        : path;
   return routes.has(candidate) ? candidate : "/workspace";
 }
 function safeGuide(value: Guidance | null | undefined) {
@@ -93,7 +111,7 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
   const identity = useRef<string | null>(null);
   const [draft, setDraft] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
-  const [suggestions, setSuggestions] = useState(defaults);
+  const [suggestions, setSuggestions] = useState<string[] | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [retry, setRetry] = useState("");
@@ -111,7 +129,7 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
     request.current = null;
     setDraft("");
     setMessages([]);
-    setSuggestions(defaults);
+    setSuggestions(null);
     setError("");
     setRetry("");
     setBusy(false);
@@ -121,7 +139,7 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
     setMode("atlas");
   }, []);
   const register = useCallback(
-    (session: Session, section: string) => {
+    (session: Session, section: string, roles: string[]) => {
       if (identity.current !== session.account_id) {
         reset();
         // Child layout effects can register the Study slot before this account
@@ -131,7 +149,7 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
         identity.current = session.account_id;
       }
       const token = Symbol();
-      setRegistration({ token, session, section });
+      setRegistration({ token, session, section, roles });
       return () =>
         setRegistration((current) =>
           current?.token === token ? null : current,
@@ -142,6 +160,13 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
   const setStudy = useCallback((active: boolean) => {
     setStudyActive(active);
     setMode(active ? "study" : "atlas");
+  }, []);
+  const openAtlas = useCallback((nextDraft?: string) => {
+    setMode("atlas");
+    setCollapsed(false);
+    setGuide(null);
+    setPendingGuide(null);
+    if (nextDraft !== undefined) setDraft(nextDraft);
   }, []);
   const minimize = useCallback(() => setCollapsed(true), []);
   const openStudy = useCallback(() => {
@@ -170,7 +195,9 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
     setGuide(null);
     // Guidance takes the stage. Keep the answer saved, but move its panel away
     // before spotlighting a control; the composer itself is the one exception.
-    setCollapsed(safe.anchor !== "study.composer");
+    setCollapsed(
+      !["study.composer", "assistant.composer"].includes(safe.anchor),
+    );
     if (safe.anchor === "study.composer") setMode("study");
     setPendingGuide(safe);
     if (currentScreen() !== safe.route) router.push(safe.route);
@@ -182,7 +209,9 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
     let waiting = false;
     const find = () => {
       if (disposed || waiting || currentScreen() !== pendingGuide.route) return;
-      if (pendingGuide.anchor !== "study.composer") {
+      if (
+        !["study.composer", "assistant.composer"].includes(pendingGuide.anchor)
+      ) {
         const animations = document
           .querySelector(".atlas-global-assistant .atlas-dock-pane")
           ?.getAnimations()
@@ -323,13 +352,17 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
       setStudy,
       minimize,
       openStudy,
+      openAtlas,
     }),
-    [register, reset, host, setStudy, minimize, openStudy],
+    [register, reset, host, setStudy, minimize, openStudy, openAtlas],
   );
+  const role = roleAssistant(registration?.roles ?? []);
   const dock = registration && (
     <div
       className={`atlas-global-assistant atlas-composer-wrap${studyMount ? " atlas-assistant-in-study" : ""}`}
-      data-guide-anchor="study.composer"
+      data-guide-anchor={
+        role.role === "student" ? "study.composer" : "assistant.composer"
+      }
     >
       <AssistantDock
         collapsed={collapsed}
@@ -366,8 +399,12 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
             )}
             <div ref={setHost} hidden={!study || mode !== "study"} />
             <div hidden={study && mode === "study"}>
-              {guide?.id !== "study.composer" &&
-                pendingGuide?.anchor !== "study.composer" &&
+              {!["study.composer", "assistant.composer"].includes(
+                guide?.id ?? "",
+              ) &&
+                !["study.composer", "assistant.composer"].includes(
+                  pendingGuide?.anchor ?? "",
+                ) &&
                 (messages.length > 0 || busy || error) && (
                   <section
                     className="atlas-assistant-replies"
@@ -441,16 +478,21 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
                 onSubmit={(text) => void ask(text)}
                 onMinimize={close}
                 label="Ask the assistant"
-                placeholder="Ask about a lesson, a problem, or your workspace"
+                placeholder={role.placeholder}
                 hint="Ask me where to go or what to do next."
-                suggestions={suggestions}
+                suggestions={suggestions ?? role.suggestions}
                 sendDisabled={busy}
                 moreOptions={[
                   {
                     label: "Upload documents or recordings",
                     href: "/files",
                   },
-                  { label: "Your study library", href: "/study" },
+                  role.role === "student"
+                    ? { label: "Your study library", href: "/study" }
+                    : {
+                        label: "Your role assistant",
+                        href: "/workspace?section=assistant",
+                      },
                 ]}
                 action={
                   busy ? (
@@ -489,12 +531,22 @@ export function useAssistant() {
   if (!value) throw new Error("AssistantProvider is required");
   return value;
 }
-export function useAssistantSession(session: Session, section: string) {
+export function useAssistantSession(
+  session: Session,
+  section: string,
+  roles: string[] = [],
+) {
   const { register, reset } = useAssistant();
   const { account_id, csrf, name, login, kind } = session;
+  const roleKey = roles.join(",");
   useLayoutEffect(
-    () => register({ account_id, csrf, name, login, kind }, section),
-    [register, account_id, csrf, name, login, kind, section],
+    () =>
+      register(
+        { account_id, csrf, name, login, kind },
+        section,
+        roleKey ? roleKey.split(",") : [],
+      ),
+    [register, account_id, csrf, name, login, kind, section, roleKey],
   );
   return reset;
 }

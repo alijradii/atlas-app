@@ -54,6 +54,30 @@ Gemini tutoring request using the recent conversation and encourage the learner 
 reason through a focused next step. This is a prompt-level behavior, not an enforced
 independent-assessment mechanism. Source scope is fixed when a session is created.
 
+## Exploring interests and sharing a report
+
+Student Study offers hobby exploration and research-question starters as genuine
+conversation requests. General exploration needs no lesson selection and never
+searches private material implicitly. After a conversation, **Create a report**
+asks the model for a bounded summary of that conversation alone. The backend
+verifies attributed student quotes against actual user messages and separates AI
+suggestions from possible next steps. It does not infer aptitude, diagnoses or
+hidden interests.
+
+The report editor requires a title, content, selected linked teacher/parent/advisor
+recipients and an explicit review confirmation. Edits remain in memory while Study
+is open; no unsent report enters browser storage. Only **Share report** persists
+the approved text for those recipients in Reports. It never shares the full chat
+or grants lesson access. Role, session, conversation ownership and recipient
+relationships are checked on the server. Revoking a relationship removes future
+recipient access. Provider failures produce a retryable error, not a substitute
+report. Draft attempts are capped at three per minute and the configured daily
+study request allowance.
+
+Adult roles use a separate role-appropriate assistant surface in Workspace.
+Their existing materials can still be reviewed through `/study?materials=1` or a
+direct lesson link, without displaying student tutoring controls.
+
 ## Configure the providers
 
 Use the repository's private root `.env`; do not commit real values:

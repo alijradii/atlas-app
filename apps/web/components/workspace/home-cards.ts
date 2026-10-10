@@ -7,6 +7,7 @@ export function workspaceHomeCards(
   lessons: Lesson[],
 ): HomeCard[] {
   const own = data.account_id;
+  const studentRole = !data.roles.length || data.roles.includes("student");
   const name = (id: string) =>
     id === own
       ? "You"
@@ -89,7 +90,12 @@ export function workspaceHomeCards(
     cards.push({
       id: `lesson-${lesson.id}`,
       kind: lesson.source_kind === "recording" ? "lesson" : "cards",
-      label: lesson.source_kind === "recording" ? "Session" : "Study material",
+      label:
+        lesson.source_kind === "recording"
+          ? "Session"
+          : studentRole
+            ? "Study material"
+            : "Lesson material",
       title: lesson.title,
       sub: lesson.subject,
       group: review || failed ? "needs" : "continue",
@@ -98,7 +104,7 @@ export function workspaceHomeCards(
         extracting: "Preparing transcript",
         review: "Review transcript",
         indexing: "Preparing for study",
-        ready: "Ready to study",
+        ready: studentRole ? "Ready to study" : "Material ready",
         failed: "Preparation failed",
       }[lesson.state],
       action: review
@@ -106,7 +112,9 @@ export function workspaceHomeCards(
         : failed
           ? "Check preparation"
           : lesson.state === "ready"
-            ? "Study this material"
+            ? studentRole
+              ? "Study this material"
+              : "Review material"
             : "View progress",
       href: `/study?lesson=${encodeURIComponent(lesson.id)}`,
     });

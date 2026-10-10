@@ -1,6 +1,6 @@
 """Read-only UI knowledge, never browser selectors or authorization supplied by the model."""
 
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -81,6 +81,9 @@ FEATURES = (
         (
             "Open Study with agent, enter a question and send it to start a saved study session.",
             "Without sources, Atlas tutors from general knowledge with no lesson citations.",
+            "Explore a hobby and Shape a research question start real exploration conversations.",
+            "After a response, Create a report lets you edit a draft and select linked adults.",
+            "Review and explicitly Share report; your private chat is not shared.",
             "For answers grounded in your materials, select ready sources in a new conversation.",
             "Only source-backed answers have numbered citations to inspect.",
             "Stop cancels an active answer. Retry is a new explicit attempt.",
@@ -155,6 +158,81 @@ FEATURES = (
         ("advisor",),
     ),
     Feature(
+        "reports",
+        "Shared reports",
+        "/workspace?section=reports",
+        "reports.list",
+        "Students review conversation summaries and choose which linked adults receive them.",
+        (
+            "Students explore a hobby, research question or lesson in Study with agent.",
+            "After a response, choose Create a report, edit the draft and choose recipients.",
+            "Confirm that you reviewed the report, then choose Share report.",
+            "Only selected teachers, parents or advisors can read the report in Reports.",
+            "The private conversation is never shared by this action; reports are not assessments.",
+        ),
+        ("student", "teacher", "parent", "advisor"),
+    ),
+    Feature(
+        "role_assistant",
+        "Your role assistant",
+        "/workspace?section=assistant",
+        "assistant.composer",
+        "Ask for help finding the tools available to your teaching, family or advising role.",
+        (
+            "Open Teaching assistant, Family assistant or Advisor assistant in the sidebar.",
+            "Ask how to use the workspace; Atlas can explain and highlight a supported control.",
+            "The assistant cannot read private records, grade or make decisions for you.",
+            "New chat clears the assistant conversation; it does not start student tutoring.",
+        ),
+        ("teacher", "parent", "advisor"),
+    ),
+    Feature(
+        "events",
+        "Events",
+        "/workspace?section=events",
+        "events.list",
+        "See upcoming events shared with your school connections.",
+        (
+            "Open Events in the sidebar to see events available to your account.",
+            "Open an event to read its time, location and details.",
+            "Teachers organize events; students, parents and advisors can view shared events.",
+        ),
+        ("student", "teacher", "parent", "advisor"),
+    ),
+    Feature(
+        "manage_events",
+        "Organize an event",
+        "/workspace?section=events",
+        "events.manage",
+        "Teachers can create and manage events for their linked school community.",
+        (
+            "Open Events and use the teacher event controls.",
+            "Enter the event details, schedule and permitted participants, then save.",
+            "Only the teacher who owns the event can edit or cancel it.",
+        ),
+        ("teacher",),
+    ),
+    Feature(
+        "connections",
+        "Connections",
+        "/workspace?section=connections",
+        "connections.list",
+        "Find shared interests and request peer activities managed by your linked teacher.",
+        (
+            "Students use Share an interest to opt into a topic in a linked teacher's group.",
+            "Request an activity creates a pending idea; peers can join or withdraw interest.",
+            "Topic opt-ins and activity participation are separate; "
+            "neither enrolls you in an event.",
+            "Teachers use Suggest an activity after at least three students opt into a topic.",
+            "AI receives only that topic and verified count, never private chats or student names.",
+            "Teachers create an event first, then Review request and Accept and link event, "
+            "or Decline request with a response. The event must include all interested students.",
+            "Parents and advisors see requests involving their linked students. "
+            "Your support circle lists existing linked adults; there is no peer direct messaging.",
+        ),
+        ("student", "teacher", "parent", "advisor"),
+    ),
+    Feature(
         "security",
         "Account security",
         "/account",
@@ -170,7 +248,22 @@ FEATURES = (
 
 
 def available_features(roles: list[str]) -> dict[str, Feature]:
-    return {f.id: f for f in FEATURES if not f.roles or set(roles).intersection(f.roles)}
+    features = {f.id: f for f in FEATURES if not f.roles or set(roles).intersection(f.roles)}
+    if "student" not in roles and set(roles).intersection(("teacher", "parent", "advisor")):
+        # The underlying materials APIs remain available; tutoring is a student screen.
+        features.pop("chat", None)
+        features.pop("sources", None)
+        features["transcript"] = replace(
+            features["transcript"],
+            route="/study?materials=1",
+            description="Review extracted text and approve materials before sharing.",
+            steps=(
+                "Open a lesson from My lessons, or review its transcript after importing a file.",
+                "Correct the extracted text, approve it and wait for preparation to finish.",
+                "Teachers can then share ready lessons from My lessons with linked students.",
+            ),
+        )
+    return features
 
 
 class ContextInput(BaseModel):

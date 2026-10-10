@@ -294,6 +294,17 @@ test("account changes and expired sessions remove private conversations and draf
           kind: "user",
         },
       });
+    if (path.endsWith("/school/workspace"))
+      return route.fulfill({
+        json: {
+          roles: ["student"],
+          people: [],
+          publications: [],
+          assignments: [],
+          messages: [],
+          proposals: [],
+        },
+      });
     if (path.endsWith("/study/status"))
       return route.fulfill({
         json: { rag_configured: true, answer_configured: true },
@@ -361,6 +372,17 @@ test("active study polling pauses when hidden and cancellation supports a fresh 
           name: "Alice",
           login: "alice",
           kind: "user",
+        },
+      });
+    if (path.endsWith("/school/workspace"))
+      return route.fulfill({
+        json: {
+          roles: ["student"],
+          people: [],
+          publications: [],
+          assignments: [],
+          messages: [],
+          proposals: [],
         },
       });
     if (path.endsWith("/study/status"))

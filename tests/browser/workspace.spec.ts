@@ -34,6 +34,16 @@ async function expectRoleSections(page: Page, sections: string[]) {
   const navigation = page
     .getByRole("complementary", { name: "Main navigation" })
     .getByRole("navigation", { name: "Workspace", exact: true });
+  const hasAssistant = await navigation
+    .getByRole("link", { name: /^(Teaching|Family|Advisor) assistant$/ })
+    .count();
+  sections = [
+    ...sections,
+    ...(hasAssistant ? ["assistant"] : []),
+    "events",
+    "connections",
+    "reports",
+  ];
   const links = navigation.locator('a[href^="/workspace?section="]');
   await expect(links).toHaveCount(sections.length);
   expect(

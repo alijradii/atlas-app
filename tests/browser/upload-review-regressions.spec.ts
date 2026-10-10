@@ -90,6 +90,17 @@ test("review corrections survive an authorized focus refresh but disappear after
   await page.route("**/api/v1/**", (route) => {
     const path = new URL(route.request().url()).pathname;
     if (path.endsWith("/auth/me")) return route.fulfill({ json: identity });
+    if (path.endsWith("/school/workspace"))
+      return route.fulfill({
+        json: {
+          roles: ["student"],
+          people: [],
+          publications: [],
+          assignments: [],
+          messages: [],
+          proposals: [],
+        },
+      });
     if (path.endsWith("/study/status"))
       return route.fulfill({
         json: { rag_configured: true, answer_configured: true },

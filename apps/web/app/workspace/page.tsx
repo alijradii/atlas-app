@@ -9,9 +9,18 @@ export default async function WorkspacePage({
   const { section = "home" } = await searchParams;
   if (
     typeof section !== "string" ||
-    !["home", "work", "lessons", "messages", "plans", "students"].includes(
-      section,
-    )
+    ![
+      "home",
+      "work",
+      "lessons",
+      "messages",
+      "plans",
+      "students",
+      "assistant",
+      "events",
+      "connections",
+      "reports",
+    ].includes(section)
   )
     notFound();
   return <WorkspaceApp section={section} />;

@@ -5,6 +5,8 @@ import { BookOpen, FileUp, Flag, MessageCircle, SquarePen } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useAssistant } from "../assistant/provider";
+import { roleAssistant } from "../assistant/role-context";
 import { PearlHome } from "../pearl-home";
 import { PearlHomeHelpers } from "../pearl-home-helpers";
 import { HomePanel, WorkRows } from "../preview/home-sections";
@@ -22,20 +24,29 @@ export function WorkspaceHome({
   lessons: Lesson[];
 }) {
   const router = useRouter();
+  const { openAtlas } = useAssistant();
+  const assistant = roleAssistant(data.roles);
+  const student = assistant.role === "student";
   const [selected, setSelected] = useState<string[]>([]);
-  const studyActions = [
-    {
-      id: "explain",
-      label: "Explain a difficult part of my lesson",
-      icon: BookOpen,
-    },
-    {
-      id: "practice",
-      label: "Make practice questions from my material",
-      icon: SquarePen,
-    },
-    { id: "recap", label: "Summarize the key ideas", icon: Flag },
-  ];
+  const studyActions = student
+    ? [
+        {
+          id: "explain",
+          label: "Explain a difficult part of my lesson",
+          icon: BookOpen,
+        },
+        {
+          id: "practice",
+          label: "Make practice questions from my material",
+          icon: SquarePen,
+        },
+        { id: "recap", label: "Summarize the key ideas", icon: Flag },
+      ]
+    : assistant.suggestions.map((label, index) => ({
+        id: String(index),
+        label,
+        icon: [BookOpen, SquarePen, Flag][index],
+      }));
   const [date, setDate] = useState<Date | null>(null);
   useEffect(() => setDate(new Date()), []);
   const cards = workspaceHomeCards(data, lessons);
@@ -51,7 +62,11 @@ export function WorkspaceHome({
       date={date}
     >
       <PearlHomeHelpers
-        description="Choose what you’d like help with, then send your question. Add lesson sources if you want answers grounded in your material."
+        description={
+          student
+            ? "Choose what you’d like help with, then send your question. Add lesson sources if you want answers grounded in your material."
+            : assistant.description
+        }
         items={studyActions.map((item) => ({
           ...item,
           enabled: selected.includes(item.id),
@@ -64,9 +79,23 @@ export function WorkspaceHome({
           )
         }
         actionLabel={
-          selected.length ? "Start with these" : "Open your study space"
+          selected.length
+            ? "Start with these"
+            : student
+              ? "Open your study space"
+              : `Open your ${assistant.title.toLowerCase()}`
         }
         onAction={() => {
+          if (!student) {
+            openAtlas(
+              studyActions
+                .filter((item) => selected.includes(item.id))
+                .map((item) => item.label)
+                .join(" "),
+            );
+            router.push("/workspace?section=assistant");
+            return;
+          }
           if (selected.length)
             saveStudyDraft(
               session.account_id,
@@ -120,14 +149,14 @@ export function WorkspaceHome({
               rows={lessons.map((item) => ({
                 icon: BookOpen,
                 title: item.title,
-                subtitle: item.subject || "Study material",
+                subtitle: item.subject || "Lesson material",
                 href: `/study?lesson=${item.id}`,
                 action: item.state === "review" ? "Review" : "Open",
               }))}
             />
             {!lessons.length && (
               <p className="p-5 text-sm text-muted-foreground">
-                Upload a document or session to build your study library.
+                Upload a document or session to build your lesson library.
               </p>
             )}
           </HomePanel>

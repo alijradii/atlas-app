@@ -1,5 +1,54 @@
 # Verification — October 10, 2026
 
+## Role assistants, peer activities and exploration reports
+
+Students keep Study; teachers, parents and advisors now use Teaching, Family and
+Advisor assistant screens through the same root Pearl composer. Teacher transcript
+preparation remains available separately. Events, Connections and Reports use the
+shared frame, typography, bare icons, automatic textarea sizing and motion tokens.
+Their records persist in PostgreSQL through additive migrations `g0302036`–`g0502036`.
+
+Students explicitly share interests, propose peer activities and join requests.
+Teachers create/edit/cancel events and review requests. AI suggestions require
+three distinct active students' explicit topic opt-ins and remain pending teacher
+review. This is teacher-triggered generation, not background inference or peer
+direct messaging. Students can explore hobbies/research in Study, generate an
+editable report and explicitly share only that report with selected linked adults.
+Current role, account and relationship checks apply on every backend read/write.
+Focus refresh preserves current content while rechecking access; revoked reports
+and account changes clear private content.
+
+`SCHOOL_TEST_SCANNER=1 make check` passed **64 Bun tests and 247 Python tests**,
+including event authorization, topic evidence, provider failures, report quote
+verification and relationship revocation. Final frontend/contract checks, Ruff,
+production build and application dependency audits passed. The final guidance
+catalog passed its **28 assistant tests** after the peer instructions were expanded.
+The compiled Chrome regression run passed **98 scenarios**; the remaining community
+scenario passed its focused compiled rerun after correcting an exact-label test
+locator for a nested select. Thus all **99 browser scenarios** have passing results.
+No production authentication or rate limit was relaxed for testing.
+
+Browser work caught a real teacher-materials issue: the floating dock could cover
+the transcript action at the bottom of an empty library. That action now sits in
+the page heading. Existing mocked Study fixtures were updated to provide the full
+newly required workspace response, preserving their original privacy and retry
+assertions. Initial build failure came from sandbox-blocked Turbopack worker
+sockets; preserving/replacing its derived cache and building with local socket
+access resolved it. No source workaround or dependency change was needed.
+
+The local app was also checked with database-backed demo accounts and real Gemini
+hobby exploration/report drafting. Saved examples include an astronomy interest,
+a pending student telescope request, a teacher-created makers event and a reviewed
+report shared with teacher and parent. This adds no invented peer votes: the local
+demo still has one student, so AI activity suggestions correctly require more
+opt-ins. Desktop and narrow-screen captures are ignored artifacts in
+`.cache/output/playwright/community/`. Browser capture logged no page errors.
+
+The app is running locally on port 3001; migrations preserve existing records.
+Next acceptance step: the team can exercise Events, Connections and Reports with
+its own provisioned linked accounts. Deployment/security/retention gates in
+`release-status.json` remain unchanged; this is not production approval.
+
 ## Clear guidance and an inline Study composer
 
 Review of the first demo exposed two overlapping surfaces: the saved Atlas reply

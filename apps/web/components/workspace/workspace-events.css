@@ -1,0 +1,159 @@
+.pearl-events {
+  display: grid;
+  gap: 24px;
+}
+.pearl-events-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+.pearl-events-heading > button {
+  flex-shrink: 0;
+}
+.pearl-events-context {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+.pearl-events-context svg,
+.pearl-event-meta svg {
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+  color: var(--cobalt);
+}
+.pearl-event-filters {
+  border: 0;
+  padding: 0;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.pearl-event-filters button {
+  border-radius: 999px;
+  padding: 10px 20px;
+  font-size: 13px;
+  transition:
+    background var(--motion-fast, 180ms),
+    color var(--motion-fast, 180ms);
+}
+.pearl-event-filters button[aria-pressed="true"] {
+  background: var(--foreground);
+  color: var(--background);
+}
+.pearl-event-filters button:focus-visible {
+  outline: 2px solid var(--cobalt);
+  outline-offset: 3px;
+}
+.pearl-event {
+  display: flex;
+  align-items: flex-start;
+  gap: 30px;
+}
+.pearl-event-date {
+  display: grid;
+  gap: 3px;
+  min-width: 54px;
+  text-align: center;
+  color: var(--muted-foreground);
+  font-size: 12px;
+  padding-top: 5px;
+}
+.pearl-event-date strong {
+  font-size: 42px;
+  line-height: 1.2;
+  font-weight: 400;
+  color: var(--foreground);
+}
+.pearl-event-date > span:first-child {
+  color: var(--cobalt);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+.pearl-event-body {
+  min-width: 0;
+  flex: 1;
+}
+.pearl-event-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 22px;
+  color: var(--muted-foreground);
+  font-size: 13px;
+  margin-bottom: 18px;
+}
+.pearl-event-meta > span {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  align-items: center;
+  overflow-wrap: anywhere;
+}
+.pearl-event-actions {
+  margin-top: 22px;
+}
+.pearl-event-fields {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+  border: 0;
+  padding: 0;
+}
+.pearl-event-invites {
+  display: grid;
+  gap: 12px;
+  border: 0;
+  padding: 0;
+}
+.pearl-event-invites legend {
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+.pearl-event-invites p {
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+.pearl-event-editor h2 {
+  font-size: 22px;
+}
+.pearl-event-editor,
+.pearl-event .school-form {
+  animation: school-reveal var(--motion-enter, 360ms)
+    var(--motion-ease-enter, cubic-bezier(0.22, 1, 0.36, 1)) both;
+}
+.pearl-events-notice {
+  color: var(--cobalt);
+  font-size: 13px;
+}
+@media (max-width: 720px) {
+  .pearl-events-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .pearl-event {
+    gap: 16px;
+  }
+  .pearl-event-date {
+    min-width: 38px;
+  }
+  .pearl-event-date strong {
+    font-size: 32px;
+  }
+  .pearl-event-meta {
+    flex-direction: column;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pearl-event-editor,
+  .pearl-event .school-form {
+    animation: none;
+  }
+  .pearl-event-filters button {
+    transition: none;
+  }
+}

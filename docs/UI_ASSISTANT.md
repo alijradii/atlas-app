@@ -13,6 +13,15 @@ conversation ownership continue to use the existing study API. Study starts imme
 without a source prerequisite; private materials are accessed only when explicitly selected.
 Asking Atlas about a lesson should direct the user into Study rather than fabricate lesson access.
 
+The same account-bound dock serves Teaching assistant, Family assistant and
+Advisor assistant on their dedicated Workspace screen. The role comes from the
+authenticated workspace response; suggestions and the backend MCP catalog follow
+that role. New chat resets this interface conversation for adults, while students
+start a Study conversation. Events, Connections and Reports have stable guidance
+anchors; teacher-only event management is absent from other roles' catalogs.
+Role assistance remains read-only interface help, not access to private student
+records or an autonomous school administrator.
+
 ## Actual MCP integration
 
 `school2036.ui_mcp.create_ui_server` creates a read-only server with the official Python MCP SDK

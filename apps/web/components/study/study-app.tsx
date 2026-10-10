@@ -32,8 +32,10 @@ import {
 } from "../pearl-chat";
 import { Composer } from "../preview/composer";
 import { Panel } from "../preview/shared";
+import { WorkspaceLessons } from "../workspace/workspace-lessons";
 import { consumeStudyDraft } from "./draft-handoff";
 import { ImportLesson, LessonDialog } from "./lesson-dialog";
+import { StudyReportComposer } from "./study-report";
 import {
   activeRun,
   type Citation,
@@ -69,21 +71,38 @@ export default function StudyApp({
   embedded = false,
   newConversation = false,
   initialLessonId,
+  materialsOnly = false,
 }: {
+  materialsOnly?: boolean;
   embedded?: boolean;
   newConversation?: boolean;
   initialLessonId?: string;
 }) {
   const study = useStudy();
   const router = useRouter();
+  const roles = study.workspace?.roles ?? [];
+  const adult =
+    roles.some((role) => ["teacher", "advisor", "parent"].includes(role)) &&
+    !roles.includes("student");
+  useEffect(() => {
+    if (adult && !initialLessonId && !materialsOnly)
+      router.replace("/workspace?section=assistant");
+  }, [adult, initialLessonId, materialsOnly, router]);
   const selectThread = study.selectThread;
   const { openStudy } = useAssistant();
   useEffect(() => {
-    if (!newConversation) return;
+    if (!newConversation || !study.workspace || adult) return;
     openStudy();
     selectThread(null);
     router.replace("/study", { scroll: false });
-  }, [newConversation, openStudy, router, selectThread]);
+  }, [
+    newConversation,
+    openStudy,
+    router,
+    selectThread,
+    adult,
+    study.workspace,
+  ]);
   if (study.signedOut)
     return (
       <main id="main-content" className="study-gate">
@@ -95,14 +114,14 @@ export default function StudyApp({
         </Button>
       </main>
     );
-  if (study.loading && !study.session)
+  if (study.loading && (!study.session || !study.workspace))
     return (
       <main id="main-content" className="study-gate">
         <Brand />
         <p role="status">Opening your study workspace…</p>
       </main>
     );
-  if (!study.session)
+  if (!study.session || !study.workspace)
     return (
       <main id="main-content" className="study-gate">
         <Brand />
@@ -111,6 +130,13 @@ export default function StudyApp({
         <Button onClick={study.refresh}>Try again</Button>
       </main>
     );
+  if (adult) {
+    if (!initialLessonId && !materialsOnly)
+      return <p role="status">Opening your assistant…</p>;
+    return (
+      <MaterialsWorkspace study={study} initialLessonId={initialLessonId} />
+    );
+  }
   return (
     <StudyWorkspace
       key={study.session.account_id}
@@ -118,6 +144,74 @@ export default function StudyApp({
       embedded={embedded}
       initialLessonId={initialLessonId}
     />
+  );
+}
+
+/** Adults prepare and review materials here; this is not a tutoring session. */
+function MaterialsWorkspace({
+  study,
+  initialLessonId,
+}: {
+  study: Study;
+  initialLessonId?: string;
+}) {
+  const [inspecting, setInspecting] = useState(initialLessonId ?? null);
+  const [importing, setImporting] = useState(false);
+  const router = useRouter();
+  useEffect(() => {
+    if (initialLessonId) setInspecting(initialLessonId);
+  }, [initialLessonId]);
+  if (!study.session) return null;
+  return (
+    <ConnectedShell
+      session={study.session}
+      data={study.workspace ?? undefined}
+      section="lessons"
+      onSignOut={() => void study.signOut()}
+    >
+      <div className="study-app study-app-embedded">
+        <PageHeading
+          title="Your lesson materials"
+          description="Review extracted text, prepare your resources, and keep the originals in your files."
+        >
+          <Button variant="outline" onClick={() => setImporting(true)}>
+            <FileText />
+            Add a transcript
+          </Button>
+        </PageHeading>
+        {study.error && <p role="alert">{study.error}</p>}
+        <div data-guide-anchor="study.transcript">
+          <WorkspaceLessons
+            materialsOnly
+            teacher={study.workspace?.roles.includes("teacher") ?? false}
+            lessons={study.lessons}
+          />
+        </div>
+        <ImportLesson
+          open={importing}
+          onClose={() => setImporting(false)}
+          mutate={study.mutate}
+          busy={study.busy}
+          apiError={study.error}
+        />
+        {inspecting && (
+          <LessonDialog
+            key={inspecting}
+            id={inspecting}
+            session={study.session}
+            mutate={study.mutate}
+            busy={study.busy}
+            onClose={() => {
+              setInspecting(null);
+              router.replace("/study?materials=1", { scroll: false });
+            }}
+            onExpired={study.expire}
+            onError={study.setError}
+            apiError={study.error}
+          />
+        )}
+      </div>
+    </ConnectedShell>
   );
 }
 
@@ -522,6 +616,32 @@ function StudyWorkspace({
                   </Button>
                 )}
               </div>
+              <fieldset
+                className="atlas-chat-suggestions"
+                data-guide-anchor="study.explore"
+              >
+                <legend className="sr-only">Explore your interests</legend>
+                {[
+                  [
+                    "Explore a hobby",
+                    "Help me explore a hobby I might enjoy. Ask about my interests first, then suggest a small project I can try.",
+                  ],
+                  [
+                    "Shape a research question",
+                    "Help me turn something I am curious about into a research question. Ask what interests me first, then help me plan how to investigate it.",
+                  ],
+                ].map(([label, question]) => (
+                  <Button
+                    key={label}
+                    variant="outline"
+                    size="sm"
+                    disabled={!configured || study.busy}
+                    onClick={() => void startWithMessage(question)}
+                  >
+                    {label}
+                  </Button>
+                ))}
+              </fieldset>
               <StudyAssistantSlot>
                 {(minimize) => (
                   <Composer
@@ -553,6 +673,20 @@ function StudyWorkspace({
                 )}
               </StudyAssistantSlot>
             </PearlChatEmpty>
+          )}
+          {study.session && study.workspace?.roles.includes("student") && (
+            <StudyReportComposer
+              session={study.session}
+              conversationId={study.selectedId ?? undefined}
+              ready={
+                Boolean(
+                  study.thread?.messages.some(
+                    (message) => message.role === "assistant",
+                  ),
+                ) && !activeRun(study.thread?.run)
+              }
+              people={study.workspace.people}
+            />
           )}
           <StudyAssistantMount />
         </section>
@@ -586,6 +720,7 @@ function StudyWorkspace({
     <ConnectedShell
       session={study.session}
       section="study"
+      data={study.workspace ?? undefined}
       onSignOut={() => void study.signOut()}
     >
       {content}

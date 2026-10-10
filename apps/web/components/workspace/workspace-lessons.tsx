@@ -20,8 +20,10 @@ export function WorkspaceLessons({
   teacher,
   lessons,
   sharing,
+  materialsOnly = false,
 }: {
   teacher: boolean;
+  materialsOnly?: boolean;
   lessons: Lesson[];
   sharing?: ReactNode;
 }) {
@@ -32,7 +34,13 @@ export function WorkspaceLessons({
     <div className="grid gap-5">
       <LessonLibrary
         title={teacher ? "My lessons" : "Lessons"}
-        description="Your recordings and documents, together. Revisit a lesson, review its text, and make time to understand."
+        description={
+          materialsOnly && !teacher
+            ? "Your documents and recordings. Review extracted text and keep your materials organized."
+            : teacher
+              ? "Prepare your recordings and documents, review transcripts, and share approved lessons with your students."
+              : "Your recordings and documents, together. Revisit a lesson, review its text, and make time to understand."
+        }
         action={
           <Button asChild>
             <Link href="/files">
@@ -61,7 +69,12 @@ export function WorkspaceLessons({
               {lesson.owned ? "Your material" : "Shared with you"}
             </>
           ),
-          badge: lessonStates[lesson.state],
+          badge:
+            (teacher || materialsOnly) && lesson.state === "ready"
+              ? teacher
+                ? "Ready to share"
+                : "Ready"
+              : lessonStates[lesson.state],
           href: `/study?lesson=${encodeURIComponent(lesson.id)}`,
           icon:
             lesson.state === "ready" ? (

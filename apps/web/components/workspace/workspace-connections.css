@@ -1,0 +1,248 @@
+.connections-page {
+  display: grid;
+  gap: 28px;
+}
+.connections-intro {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  background: linear-gradient(120deg, var(--card), var(--surface));
+}
+.connections-intro > svg {
+  color: var(--cobalt);
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  stroke-width: 1.2;
+}
+.connections-intro > div {
+  flex: 1;
+}
+.connections-intro h2 {
+  font-size: 24px;
+  margin: 8px 0;
+}
+.connections-intro p:not(.eyebrow),
+.connections-explanation {
+  color: var(--muted-foreground);
+  font-size: 13px;
+  line-height: 1.7;
+}
+.connections-intro a {
+  flex-shrink: 0;
+}
+.connections-forms,
+.connections-topics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  align-items: start;
+}
+.connections-forms .school-create {
+  margin: 0;
+}
+.connections-section {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+}
+.connections-section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+.connections-section-heading h2 {
+  font-size: 21px;
+}
+.connections-section-heading span {
+  color: var(--muted-foreground);
+  font-size: 12px;
+}
+.connections-topic {
+  display: grid;
+  gap: 14px;
+}
+.connections-topic h3 {
+  font-size: 21px;
+  text-transform: capitalize;
+  overflow-wrap: anywhere;
+}
+.connections-topic > p:not(.eyebrow),
+.connections-request-meta span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted-foreground);
+  font-size: 13px;
+}
+.connections-topic svg,
+.connections-request-meta svg,
+.connections-people svg {
+  color: var(--cobalt);
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+.connections-topic button {
+  justify-self: start;
+}
+.connections-topic small {
+  color: var(--muted-foreground);
+}
+.connections-request h3 {
+  font-size: 22px;
+  margin-top: 8px;
+  overflow-wrap: anywhere;
+}
+.connections-request-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 24px;
+  margin: 18px 0;
+}
+.connections-request .connections-explanation {
+  margin: 12px 0;
+}
+.connections-teacher-note {
+  border-left: 2px solid var(--cobalt);
+  padding-left: 15px;
+  margin: 18px 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 14px;
+}
+.connections-teacher-note strong {
+  display: block;
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+.connections-review {
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+.connections-review summary {
+  cursor: pointer;
+  font-size: 14px;
+}
+.connections-review a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.connections-review:where([open]) > div {
+  animation: school-reveal var(--motion-enter, 360ms)
+    var(--motion-ease-enter, cubic-bezier(0.22, 1, 0.36, 1)) both;
+}
+.connections-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.connections-empty {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 26px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  color: var(--muted-foreground);
+  font-size: 14px;
+}
+.connections-empty > svg {
+  width: 24px;
+  height: 24px;
+  color: var(--cobalt);
+  flex-shrink: 0;
+}
+.connections-people {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px 24px;
+}
+.connections-people > div {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+  min-width: 0;
+}
+.connections-people strong {
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.connections-people p {
+  color: var(--muted-foreground);
+  text-transform: capitalize;
+  font-size: 12px;
+  margin-top: 4px;
+}
+.connections-feedback {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  color: var(--destructive);
+}
+.connections-notice {
+  color: var(--cobalt);
+  font-size: 14px;
+}
+@media (max-width: 760px) {
+  .connections-intro {
+    flex-wrap: wrap;
+    padding: 22px;
+    gap: 18px;
+  }
+  .connections-intro > div {
+    flex-basis: calc(100% - 64px);
+  }
+  .connections-intro h2 {
+    font-size: 21px;
+  }
+  .connections-intro > a {
+    margin-left: 60px;
+  }
+  .connections-forms,
+  .connections-topics,
+  .connections-people {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .connections-request .school-card-heading {
+    flex-wrap: wrap;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .connections-review:where([open]) > div {
+    animation: none;
+  }
+}
+
+.connections-pending {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted-foreground);
+  font-size: 14px;
+}
+.connections-pending svg {
+  width: 18px;
+  height: 18px;
+  color: var(--cobalt);
+  animation: connections-breathe 1.8s ease-in-out infinite;
+}
+@keyframes connections-breathe {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .connections-pending svg {
+    animation: none;
+  }
+}

@@ -3,6 +3,8 @@
 import { ApiError, api } from "@school2036/api-client";
 import { Button } from "@school2036/ui";
 import {
+  CalendarDays,
+  FileText,
   FileUp,
   Home,
   LogOut,
@@ -16,7 +18,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { type ReactNode, useEffect, useState } from "react";
-import { useAssistantSession } from "./assistant/provider";
+import { useAssistant, useAssistantSession } from "./assistant/provider";
+import { roleAssistant } from "./assistant/role-context";
 import { Brand } from "./pearl";
 import { PearlFrame, pearlNavLinkClass } from "./pearl-frame";
 import { initials } from "./preview/data";
@@ -39,7 +42,7 @@ export function ConnectedShell({
   data?: Workspace;
   headerActions?: ReactNode;
 }) {
-  const resetAssistant = useAssistantSession(session, section);
+  const { openAtlas } = useAssistant();
   const [navigationData, setNavigationData] = useState<Workspace | null>(null);
   const [signingOut, setSigningOut] = useState(false);
   const [error, setError] = useState("");
@@ -91,6 +94,8 @@ export function ConnectedShell({
     data ??
     (navigationData?.account_id === session.account_id ? navigationData : null);
   const roles = workspace?.roles ?? [];
+  const resetAssistant = useAssistantSession(session, section, roles);
+  const assistant = roleAssistant(roles);
   const has = (role: Workspace["roles"][number]) => roles.includes(role);
   const navigation = [
     { id: "home", label: "Home", href: "/workspace", Icon: Home },
@@ -115,9 +120,12 @@ export function ConnectedShell({
         ]
       : []),
     {
-      id: "study",
-      label: "Study with agent",
-      href: "/study",
+      id: assistant.role === "student" ? "study" : "assistant",
+      label: assistant.title,
+      href:
+        assistant.role === "student"
+          ? "/study"
+          : "/workspace?section=assistant",
       Icon: MessageCircle,
     },
     { id: "files", label: "Files & recordings", href: "/files", Icon: FileUp },
@@ -155,6 +163,28 @@ export function ConnectedShell({
           },
         ]
       : []),
+    ...(roles.length
+      ? [
+          {
+            id: "events",
+            label: "Events",
+            href: "/workspace?section=events",
+            Icon: CalendarDays,
+          },
+          {
+            id: "reports",
+            label: "Reports",
+            href: "/workspace?section=reports",
+            Icon: FileText,
+          },
+          {
+            id: "connections",
+            label: "Connections",
+            href: "/workspace?section=connections",
+            Icon: UsersRound,
+          },
+        ]
+      : []),
   ];
   const roleOrder = has("student")
     ? [
@@ -176,11 +206,20 @@ export function ConnectedShell({
           "students",
           "plans",
           "messages",
-          "study",
+          "assistant",
         ]
       : has("advisor")
-        ? ["home", "students", "plans", "messages", "study", "files", "work"]
-        : ["home", "plans", "work", "study", "files"];
+        ? [
+            "home",
+            "students",
+            "plans",
+            "messages",
+            "assistant",
+            "files",
+            "work",
+          ]
+        : ["home", "plans", "work", "assistant", "files"];
+  roleOrder.push("events", "connections", "reports");
   navigation.sort(
     (left, right) => roleOrder.indexOf(left.id) - roleOrder.indexOf(right.id),
   );
@@ -212,7 +251,10 @@ export function ConnectedShell({
                 href={href}
                 className={pearlNavLinkClass}
                 aria-current={section === id ? "page" : undefined}
-                onClick={closeMenu}
+                onClick={() => {
+                  if (id === "assistant") openAtlas();
+                  closeMenu();
+                }}
               >
                 <Icon className="size-4 shrink-0" aria-hidden="true" />
                 {label}
@@ -225,9 +267,14 @@ export function ConnectedShell({
             className="mt-7 w-full bg-transparent"
           >
             <Link
-              href="/study?new=1"
+              href={
+                assistant.role === "student"
+                  ? "/study?new=1"
+                  : "/workspace?section=assistant"
+              }
               onClick={() => {
                 resetAssistant();
+                if (assistant.role !== "student") openAtlas();
                 closeMenu();
               }}
             >

@@ -39,6 +39,18 @@ async function workspace(
       });
     }
     if (path.endsWith("/auth/me")) return route.fulfill({ json: session });
+    if (path.endsWith("/school/workspace"))
+      return route.fulfill({
+        json: {
+          account_id: session.account_id,
+          roles: ["student"],
+          people: [],
+          assignments: [],
+          proposals: [],
+          messages: [],
+          publications: [],
+        },
+      });
     if (path.endsWith("/study/status"))
       return route.fulfill({
         json: { rag_configured: true, answer_configured: true },
@@ -183,6 +195,18 @@ test("returning to an open shared source rechecks access and removes revoked tra
   await page.route("**/api/v1/**", async (route) => {
     const path = new URL(route.request().url()).pathname;
     if (path.endsWith("/auth/me")) return route.fulfill({ json: session });
+    if (path.endsWith("/school/workspace"))
+      return route.fulfill({
+        json: {
+          account_id: session.account_id,
+          roles: ["student"],
+          people: [],
+          assignments: [],
+          proposals: [],
+          messages: [],
+          publications: [],
+        },
+      });
     if (path.endsWith("/study/status"))
       return route.fulfill({
         json: { rag_configured: true, answer_configured: true },

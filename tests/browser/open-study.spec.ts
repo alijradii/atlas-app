@@ -111,7 +111,16 @@ for (const failFirst of [false, true]) {
           },
         });
       if (path.endsWith("/workspace"))
-        return route.fulfill({ json: { roles: ["student"] } });
+        return route.fulfill({
+          json: {
+            roles: ["student"],
+            people: [],
+            publications: [],
+            assignments: [],
+            messages: [],
+            proposals: [],
+          },
+        });
       if (path.endsWith("/study/status"))
         return route.fulfill({
           json: { rag_configured: false, answer_configured: true },

@@ -236,3 +236,40 @@ def test_revoked_session_is_rechecked_after_generation(system, monkeypatch):
 
     monkeypatch.setattr("school_api.assistant_routes.answer_ui", revoke)
     assert client.post(BASE, json={"message": "Help"}).status_code == 401
+
+
+@pytest.mark.parametrize("role", ["teacher", "parent", "advisor"])
+def test_adult_context_has_role_help_and_materials_not_student_tutoring(role):
+    from school2036.ui_guidance import available_features
+
+    features = available_features([role])
+    assert "chat" not in features
+    assert "sources" not in features
+    assert features["role_assistant"].route == "/workspace?section=assistant"
+    assert features["transcript"].route == "/study?materials=1"
+    assert safe_screen("/study", [role]) == "/workspace"
+    assert safe_screen("/study?materials=1", [role]) == "/study?materials=1"
+    with pytest.raises(ProviderUnavailable):
+        parse_answer(reply(target="chat"), [role], {"chat"})
+
+
+@pytest.mark.parametrize("role", ["student", "teacher", "parent", "advisor"])
+def test_event_context_is_role_scoped(role):
+    from school2036.ui_guidance import available_features
+
+    features = available_features([role])
+    assert features["events"].anchor == "events.list"
+    assert features["connections"].anchor == "connections.list"
+    assert features["reports"].anchor == "reports.list"
+    assert safe_screen("/workspace?section=reports", [role]) == "/workspace?section=reports"
+    assert ("manage_events" in features) == (role == "teacher")
+    if role != "teacher":
+        with pytest.raises(ProviderUnavailable):
+            parse_answer(reply(target="manage_events"), [role], {"manage_events"})
+
+
+def test_student_keeps_source_chat_with_multiple_roles():
+    from school2036.ui_guidance import available_features
+
+    assert available_features(["student"])["chat"].route == "/study"
+    assert available_features(["student", "teacher"])["sources"].route == "/study"
