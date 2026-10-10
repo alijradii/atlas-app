@@ -1,5 +1,14 @@
 # Verification — October 10, 2026
 
+## Report checkbox spacing
+
+Corrected the Study form label rule that overrode checkbox rows with block layout.
+Checkbox/radio rows now use a 12px gap, fixed-size controls and first-line alignment
+so wrapped confirmation text stays indented. Frontend checks and 64 Bun tests,
+production build, and both report browser scenarios passed. The report-sharing
+flow checks actual checkbox-to-text spacing on desktop and at 390px, alongside
+review consent and recipient authorization. No backend or dependency changes.
+
 ## Sidebar state across Study navigation
 
 Moved the navigation collapse preference above route-owned frames into the root

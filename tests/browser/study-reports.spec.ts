@@ -51,6 +51,20 @@ test("interest exploration starts real sessions; reviewed reports reach only sel
   await expect(
     dialog.getByLabel("Report content", { exact: true }),
   ).toHaveValue(/Help me explore a hobby/);
+  const expectCheckboxSpacing = async () => {
+    for (const checkbox of await dialog.getByRole("checkbox").all()) {
+      const spacing = await checkbox.evaluate((input) => {
+        const text = input.nextElementSibling;
+        if (!text) throw new Error("Missing checkbox label text");
+        return (
+          text.getBoundingClientRect().left -
+          input.getBoundingClientRect().right
+        );
+      });
+      expect(spacing).toBeGreaterThanOrEqual(10);
+    }
+  };
+  await expectCheckboxSpacing();
   const title = `My astronomy project ${Date.now()}`;
   const body =
     "## My interest\nI want to try observing the Moon and recording what changes.\n\n## A next step to discuss\nCould we plan a short observation project together?";
@@ -104,6 +118,7 @@ test("interest exploration starts real sessions; reviewed reports reach only sel
       (element) => element.getBoundingClientRect().right <= innerWidth,
     ),
   ).toBe(true);
+  await expectCheckboxSpacing();
   await share.click();
   await expect(
     page.getByRole("dialog", { name: "Report shared", exact: true }),

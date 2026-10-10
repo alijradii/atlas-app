@@ -441,6 +441,19 @@
   display: block;
   margin-bottom: 7px;
 }
+.study-form label:has(> input:is([type="checkbox"], [type="radio"])) {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  line-height: 1.5;
+}
+.study-form label > input:is([type="checkbox"], [type="radio"]) {
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+  margin-top: 3px;
+  accent-color: var(--cobalt);
+}
 .study-form-actions {
   display: flex;
   justify-content: flex-end;
