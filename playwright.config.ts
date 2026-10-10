@@ -5,7 +5,15 @@ export default defineConfig({
   outputDir: ".cache/browser-results",
   workers: 1,
   timeout: 60000,
-  use: { baseURL: "http://localhost:3100", headless: true, trace: "off" },
+  use: {
+    baseURL: "http://localhost:3100",
+    headless: true,
+    trace: "retain-on-failure",
+    screenshot: "only-on-failure",
+    launchOptions: process.env.PLAYWRIGHT_CHROME_PATH
+      ? { executablePath: process.env.PLAYWRIGHT_CHROME_PATH }
+      : undefined,
+  },
   webServer: [
     {
       command: "uv run --frozen python scripts/e2e_server.py",

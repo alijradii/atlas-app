@@ -33,6 +33,9 @@ def system(tmp_path):
     config = Settings(
         _env_file=None,
         environment="test",
+        storage_backend="local",
+        scanner_host="",
+        media_quota_bytes=100 * 1024 * 1024,
         database_url=url.update_query_dict({"options": f"-csearch_path={schema}"}).render_as_string(
             hide_password=False
         ),

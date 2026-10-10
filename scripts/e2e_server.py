@@ -29,6 +29,9 @@ with root.begin() as db:
 config = Settings(
     _env_file=None,
     environment="test",
+    storage_backend="local",
+    scanner_host="",
+    media_quota_bytes=100 * 1024 * 1024,
     public_origin="http://localhost:3100",
     database_url=url.update_query_dict({"options": f"-csearch_path={schema}"}).render_as_string(
         hide_password=False

@@ -36,6 +36,9 @@ def test_encrypted_personal_media_restore(tmp_path):
     config = Settings(
         _env_file=None,
         environment="test",
+        storage_backend="local",
+        scanner_host="",
+        media_quota_bytes=100 * 1024 * 1024,
         database_url=url.set(database=source).render_as_string(hide_password=False),
         installation_marker=tmp_path / "source/installation.json",
         encryption_key_file=tmp_path / "source/identity.key",
@@ -60,6 +63,9 @@ def test_encrypted_personal_media_restore(tmp_path):
         restored = Settings(
             _env_file=None,
             environment="test",
+            storage_backend="local",
+            scanner_host="",
+            media_quota_bytes=100 * 1024 * 1024,
             database_url=url.set(database=target).render_as_string(hide_password=False),
             installation_marker=destination / "installation.json",
             encryption_key_file=destination / "identity.key",
