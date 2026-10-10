@@ -1,5 +1,6 @@
 import { cn } from "@school2036/ui";
 import Link from "next/link";
+import { AmbientScene } from "./ambient-scene";
 
 export function Brand({ className = "" }: { className?: string }) {
   return (
@@ -23,17 +24,18 @@ export function Brand({ className = "" }: { className?: string }) {
 export function PearlScene({
   className = "",
   compact = false,
+  children,
 }: {
   className?: string;
   compact?: boolean;
+  children?: React.ReactNode;
 }) {
   return (
-    <div
+    <AmbientScene
       className={cn(
-        "mist-panel relative isolate min-h-64 overflow-hidden",
+        "pearl-scene mist-panel relative isolate min-h-64 overflow-hidden",
         className,
       )}
-      aria-hidden="true"
     >
       <div className="haze right-[-14%] top-[10%] h-[60%] w-[60%]" />
       <div className="prism -bottom-[18%] -left-[6%] h-1/2 w-[70%] -rotate-14" />
@@ -50,34 +52,42 @@ export function PearlScene({
       </svg>
       <span
         className={cn(
-          "obj lens top-[6%] aspect-[.85] w-[34%] -rotate-18 scale-x-60",
+          "obj lens float d2 top-[6%] aspect-[.85] w-[34%] -rotate-18 scale-x-60",
           compact ? "left-[52%]" : "left-[44%]",
         )}
       />
       <span className="obj bubble core rim float left-[22%] top-[10%] aspect-square w-[15%]" />
-      <span className="obj blue rim float d3 left-[20%] top-[38%] aspect-square w-[34%]" />
-      <span className="obj blue rim float d2 left-[74%] top-[56%] aspect-square w-[16%]" />
-      <span className="obj lens left-[68%] top-[44%] aspect-[.95] w-[15%] rotate-18 scale-x-70" />
-    </div>
+      <span
+        className={cn(
+          "obj blue rim float d3 left-[20%] top-[38%] aspect-square",
+          compact ? "w-[30%]" : "w-[34%]",
+        )}
+      />
+      <span className="obj blue rim float d2 left-[74%] top-[56%] aspect-square w-[16%] saturate-[.85]" />
+      <span className="obj lens float left-[68%] top-[44%] aspect-[.95] w-[15%] rotate-18 scale-x-70" />
+      {children}
+    </AmbientScene>
   );
 }
 
 export function PearlObject({
   kind = "blue",
+  core = true,
   className = "",
 }: {
   kind?: "blue" | "lens" | "bubble";
+  core?: boolean;
   className?: string;
 }) {
   return (
     <span
       aria-hidden="true"
       className={cn(
-        "obj relative! inline-block aspect-square",
+        "obj pearl-object inline-block aspect-square",
         kind === "lens"
           ? "lens -rotate-18 scale-x-65"
           : kind === "bubble"
-            ? "bubble core rim"
+            ? `bubble ${core ? "core " : ""}rim`
             : "blue rim",
         className,
       )}

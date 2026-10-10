@@ -15,6 +15,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from school_api.identity_routes import identity_router
 from school_api.media_routes import media_router
+from school_api.study_routes import study_router
 
 
 class Health(BaseModel):
@@ -54,6 +55,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.engine = engine
     app.include_router(identity_router(config, sessions))
     app.include_router(media_router(config, sessions))
+    app.include_router(study_router(config, sessions))
 
     @app.middleware("http")
     async def browser_security(request: Request, call_next):
@@ -65,6 +67,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 if request.method == "PUT"
                 and request.url.path.startswith("/api/v1/uploads/")
                 and request.url.path.endswith("/bytes")
+                else 262144
+                if request.url.path == "/api/v1/study/lessons"
                 else 65536
             )
             chunks = []

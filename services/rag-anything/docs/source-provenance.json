@@ -1,0 +1,26 @@
+{
+  "source_project": "education",
+  "source_commit": "3d99139",
+  "files": {
+    "evaluations/rag-oss/playground.py": "37643d75b6c84166f78bbaa89616a6e549929f592a25da130bc25659aa0ad6e1",
+    "evaluations/rag-oss/parse_pdf.py": "c758ee7d45edec558d53b56b0515f4e037cd802ad7e2521401c774241ff546eb",
+    "evaluations/rag-oss/raganything.lock": "1256bac0b1d7fef7cf9e625003badf729a6394d659ddd0d6c755ea8b551273d4",
+    "evaluations/rag-oss/models.json": "cca61564c020cf623f568e2a3b7de569b864a40987ee16f6a86dbc0d0457f652",
+    "tests/unit/test_source_navigation.py": "f69ae2415ceb621753cdc0fa656ee1ef71af063bcd3ddec1fee240af0f25582b",
+    "evaluations/rag-oss/retrieval_lib/source.py": "ffa56a56087fba2d62f95699aa2942585e9906406bab03ca5764b14530628da7",
+    "evaluations/rag-oss/retrieval_lib/collector.py": "3d782b163ef12f5e04c4517299c6affecc7b41dffe7371b4a99fefe887493453",
+    "evaluations/rag-oss/retrieval_lib/vectors.py": "52042af012d15391b0c736a798d6617d2f391391912748708880e335b5729c92",
+    "evaluations/rag-oss/retrieval_lib/spend.py": "abc12c7f4782a0c383b23452dc97f933a545507b0a0451febe6a98fbd38cd4e5",
+    "evaluations/rag-oss/retrieval_mcp.py": "995ce18ddc575f14005aa3536178079a520d6c4125488316ec17088ce64ddd25",
+    "tests/unit/test_retrieval_mcp.py": "1e21208c891a87719979a6604178f4527078a6ffd8aa2fae1bb603111e1522a6"
+  },
+  "contextual_chunking_reference": {
+    "source_project": "education",
+    "last_change_commit": "2b019db",
+    "adaptation": "Topic planning and exact-source slicing design adapted; service implementation is new and uses parser blocks, page spans and bounded embedding payloads.",
+    "files": {
+      "src/education/rag/chunking.py": "ae8fb5f07138ebe0021dff1afccfca8f3f65d27c0bec1555688185c4852f3217",
+      "docs/contextual-chunking.md": "b276cb57eb1b8912310cd92e3f403afe5807e17e78799e37d8c6370154a5d8d3"
+    }
+  }
+}

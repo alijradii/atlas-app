@@ -38,9 +38,16 @@ create-user:
 	uv run --frozen python -m school2036.operator create-user --login "$(LOGIN)" --name "$(NAME)"
 browser-test:
 	$(BUN) --bun playwright test
+browser-test-production:
+	SCHOOL_E2E_PRODUCTION=1 $(BUN) --bun playwright test
 backup:
 	uv run --frozen python -m school2036.backup backup --key-file "$(KEY_FILE)" --file "$(BACKUP_FILE)" --compose infra/compose.dev.yaml
 restore:
 	uv run --frozen python -m school2036.backup restore --key-file "$(KEY_FILE)" --file "$(BACKUP_FILE)" --database "$(RESTORE_DATABASE)" --output "$(RESTORE_DIR)" --compose infra/compose.dev.yaml
 deploy:
 	$(BUN) scripts/deploy.ts "$(RELEASE)"
+
+rag-install:
+	$(BUN) run scripts/rag-dev.ts --install
+rag-dev:
+	$(BUN) run scripts/rag-dev.ts

@@ -48,7 +48,7 @@ export function Proposals({ accountId }: { accountId: AccountId }) {
     <>
       <PageHeading
         title={parent ? "Subject choices" : "Subject proposals"}
-        description="A choice made together. Student proposes, adviser recommends, family reviews, school confirms."
+        description="A choice made together. Student proposes, advisor recommends, family reviews, school confirms."
       />
       <Notice>
         These decisions update the sample workflow in this browser session only.
@@ -63,7 +63,7 @@ export function Proposals({ accountId }: { accountId: AccountId }) {
                 ? "Changes requested"
                 : p.status === "agreed"
                   ? "Confirmed"
-                  : `With ${p.status}`}
+                  : `With ${p.status === "adviser" ? "advisor" : p.status}`}
             </Status>
           }
         >
@@ -89,10 +89,28 @@ export function Proposals({ accountId }: { accountId: AccountId }) {
                 e.preventDefault();
                 const note = String(
                   new FormData(e.currentTarget).get("note") || "",
-                );
+                ).trim();
+                if (!note) {
+                  const field = e.currentTarget.querySelector("textarea");
+                  field?.setCustomValidity(
+                    "Add a review note before continuing.",
+                  );
+                  field?.reportValidity();
+                  return;
+                }
+                const submitter = (e.nativeEvent as SubmitEvent).submitter;
+                const changesRequested =
+                  submitter instanceof HTMLButtonElement &&
+                  submitter.value === "changes";
                 update(
                   p.subject,
-                  staff ? "agreed" : parent ? "school" : "parent",
+                  changesRequested
+                    ? "changes"
+                    : staff
+                      ? "agreed"
+                      : parent
+                        ? "school"
+                        : "parent",
                   note,
                 );
               }}
@@ -105,10 +123,22 @@ export function Proposals({ accountId }: { accountId: AccountId }) {
                 name="note"
                 placeholder="Add context for the next conversation…"
                 maxLength={1000}
+                onInput={(e) => e.currentTarget.setCustomValidity("")}
                 required
               />
               <div className="flex flex-wrap gap-3">
-                <Button type="submit">
+                <Button
+                  data-guide-anchor={
+                    parent
+                      ? "choice.agree"
+                      : staff
+                        ? "proposal.confirm"
+                        : "proposal.recommend"
+                  }
+                  type="submit"
+                  name="decision"
+                  value="advance"
+                >
                   {staff
                     ? "Confirm choice"
                     : parent
@@ -118,14 +148,9 @@ export function Proposals({ accountId }: { accountId: AccountId }) {
                 </Button>
                 <Button
                   variant="outline"
-                  type="button"
-                  onClick={() =>
-                    update(
-                      p.subject,
-                      "changes",
-                      "Please discuss the subject load with your adviser before resubmitting.",
-                    )
-                  }
+                  type="submit"
+                  name="decision"
+                  value="changes"
                 >
                   Request changes
                 </Button>
@@ -221,7 +246,7 @@ export function StudentDetail({ id }: { id: string }) {
   return (
     <>
       <PageHeading
-        eyebrow={`Grade ${student.grade} · adviser workspace`}
+        eyebrow={`Grade ${student.grade} · advisor workspace`}
         title={student.name}
         description={student.interests.join(" · ")}
       />
@@ -392,7 +417,9 @@ export function Analytics() {
       <Tabs defaultValue="class">
         <TabsList className="h-auto flex-wrap">
           <TabsTrigger value="class">Class evidence</TabsTrigger>
-          <TabsTrigger value="misconceptions">Misconceptions</TabsTrigger>
+          <TabsTrigger data-guide-anchor="analytics.tab" value="misconceptions">
+            Misconceptions
+          </TabsTrigger>
           <TabsTrigger value="teaching">Teaching flags</TabsTrigger>
           <TabsTrigger value="followups">Follow-ups</TabsTrigger>
         </TabsList>
@@ -487,7 +514,12 @@ export function Analytics() {
               <h2 className="text-xl">{m.title}</h2>
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button variant="outline">Examine evidence</Button>
+                  <Button
+                    data-guide-anchor="analytics.inspect"
+                    variant="outline"
+                  >
+                    Examine evidence
+                  </Button>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
@@ -644,7 +676,9 @@ export function StaffActivities() {
                         placeholder="Confirm supervision and a suitable space"
                       />
                       <div className="flex flex-wrap gap-2">
-                        <Button type="submit">Approve sample activity</Button>
+                        <Button data-guide-anchor="acts.approve" type="submit">
+                          Approve sample activity
+                        </Button>
                         <Button
                           variant="outline"
                           type="button"
@@ -713,7 +747,7 @@ export function Access() {
                 ["Recorded lessons", "Available", "School decides"],
                 ["Study assistant", "Available", "Available"],
                 ["Independent practice", "Available", "Available"],
-                ["Human adviser", "Available", "School decides"],
+                ["Human advisor", "Available", "School decides"],
                 ["Teacher analytics", "Available", "School network only"],
                 ["Parent progress", "School decides", "School decides"],
               ].map((row) => (
@@ -762,7 +796,7 @@ export function Settings() {
           ],
           [
             "advisersRemote",
-            "Remote adviser conversations",
+            "Remote advisor conversations",
             "Make space for guidance beyond the school day.",
           ],
           [
@@ -801,7 +835,6 @@ export function Settings() {
           </label>
         ))}
       </Panel>
-      <Proposals accountId="hajj" />
     </>
   );
 }

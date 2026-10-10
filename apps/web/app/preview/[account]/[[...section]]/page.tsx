@@ -11,7 +11,10 @@ export default async function PreviewPage({
   searchParams,
 }: {
   params: Promise<{ account: string; section?: string[] }>;
-  searchParams: Promise<{ prompt?: string | string[] }>;
+  searchParams: Promise<{
+    prompt?: string | string[];
+    guide?: string | string[];
+  }>;
 }) {
   const { account, section = [] } = await params;
   if (!Object.hasOwn(fixture.accounts, account)) notFound();
@@ -33,12 +36,15 @@ export default async function PreviewPage({
     !((lesson || student) && section.length === 2)
   )
     notFound();
-  const { prompt } = await searchParams;
+  const { prompt, guide } = await searchParams;
   return (
     <Workspace
       accountId={accountId}
       section={view}
       item={item}
+      guideRequest={
+        typeof guide === "string" ? guide.slice(0, 1000) : undefined
+      }
       prompt={typeof prompt === "string" ? prompt.slice(0, 1000) : undefined}
     />
   );

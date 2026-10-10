@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "noEmit": true,
+    "types": ["bun"],
+    "resolveJsonModule": true,
+    "skipLibCheck": true
+  },
+  "include": [
+    "tests/browser/**/*.ts",
+    "apps/web/styles.d.ts",
+    "packages/api-client/src/*.test.ts",
+    "apps/web/components/preview/*.test.ts",
+    "playwright*.config.ts"
+  ]
+}

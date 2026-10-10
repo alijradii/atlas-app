@@ -28,7 +28,7 @@ jobs:
       - run: make build
       - run: make audit
       - run: PLAYWRIGHT_BROWSERS_PATH="$PWD/.cache/ms-playwright" bun --bun playwright install --with-deps chromium
-      - run: make browser-test
+      - run: make browser-test-production
       - run: docker build -f infra/Dockerfile.python -t school2036-python:ci .
       - run: docker build -f infra/Dockerfile.web -t school2036-web:ci .
       - if: always()

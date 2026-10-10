@@ -1,0 +1,29 @@
+.atlas-workspace-main {
+  display: grid;
+  gap: 20px;
+  width: 100%;
+  max-width: 1440px;
+  margin-inline: auto;
+  padding: 16px clamp(16px, 4vw, 56px) 64px;
+}
+.atlas-workspace[data-section="home"] .atlas-workspace-main {
+  padding-top: 16px;
+}
+.atlas-workspace header .lucide {
+  flex-shrink: 0;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .atlas-workspace-main > * {
+    animation: workspace-arrive 260ms ease-out both;
+  }
+  @keyframes workspace-arrive {
+    from {
+      opacity: 0;
+      transform: translateY(5px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}

@@ -1,0 +1,3 @@
+-r requirements.in
+# Optional native bridge; included in the Docker image.
+mcp==1.30.0

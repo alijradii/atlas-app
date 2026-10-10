@@ -15,13 +15,15 @@
     "dev": "bun scripts/dev.ts",
     "dev:web": "bun run --cwd apps/web dev",
     "build": "bun run --cwd apps/web build",
-    "typecheck": "bun run --cwd apps/web typecheck && bun --bun tsc -p tsconfig.tools.json",
+    "typecheck": "bun run --cwd apps/web typecheck && bun --bun tsc -p tsconfig.tools.json && bun --bun tsc -p tsconfig.tests.json",
     "lint": "bun --bun biome check .",
     "format": "bun --bun biome check --write .",
     "api:generate": "uv run python scripts/export_openapi.py && bun run --cwd packages/api-client generate",
     "api:check": "bun scripts/check-contract.ts",
-    "check": "bun run lint && bun run typecheck && bun run api:check",
-    "audit:js": "bun audit"
+    "check": "bun run lint && bun run typecheck && bun run api:check && bun run test:unit",
+    "audit:js": "bun audit",
+    "test:unit": "bun test apps/web/components/preview/*.test.ts packages/api-client/src/*.test.ts",
+    "test:preview": "bun --bun playwright test --config playwright.preview.config.ts"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",

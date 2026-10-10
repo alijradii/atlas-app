@@ -10,8 +10,8 @@ app.conf.update(
     task_default_queue="general",
     task_acks_late=True,
     worker_prefetch_multiplier=1,
-    task_time_limit=300,
-    task_soft_time_limit=270,
+    task_time_limit=600,
+    task_soft_time_limit=570,
     broker_connection_retry_on_startup=True,
 )
 

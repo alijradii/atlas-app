@@ -171,7 +171,7 @@ test("subject proposal moves from adviser to parent to school", async ({
     .getByLabel("Your thoughts for Lina")
     .fill("We discussed the weekly workload together.");
   await page.getByRole("button", { name: "Agree and send to school" }).click();
-  await page.goto("/preview/hajj/settings");
+  await page.goto("/preview/hajj/proposals");
   await page
     .getByLabel("Review note", { exact: true })
     .fill("Confirmed for the sample term.");

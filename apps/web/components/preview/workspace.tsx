@@ -1,4 +1,6 @@
 "use client";
+import { usePathname, useRouter } from "next/navigation";
+import { useCallback, useState } from "react";
 import {
   Access,
   Analytics,
@@ -11,21 +13,37 @@ import {
 } from "./adults";
 import { Chat } from "./chat";
 import type { AccountId } from "./data";
+import { resolveGuide } from "./guidance";
 import { WorkspaceHome } from "./home";
 import { Lesson, Lessons, Practice, UploadLesson } from "./learning";
 import { WorkspaceShell } from "./shell";
+import { Spotlight } from "./spotlight";
+import { usePreview } from "./state";
 import { Activities, Adviser, Subjects } from "./student";
 export function Workspace({
   accountId,
   section,
   item,
   prompt,
+  guideRequest,
 }: {
   accountId: AccountId;
   section: string;
   item?: string;
   prompt?: string;
+  guideRequest?: string;
 }) {
+  const { state } = usePreview();
+  const pathname = usePathname();
+  const router = useRouter();
+  const guide = guideRequest
+    ? resolveGuide(accountId, guideRequest, state)
+    : undefined;
+  const closeGuide = useCallback(
+    () => router.replace(pathname, { scroll: false }),
+    [router, pathname],
+  );
+  const [chatRevision, setChatRevision] = useState(0);
   let content: React.ReactNode;
   switch (section) {
     case "subjects":
@@ -80,7 +98,7 @@ export function Workspace({
     case "chat":
       content = (
         <Chat
-          key={`${accountId}-${prompt}`}
+          key={`${accountId}-${prompt}-${chatRevision}`}
           accountId={accountId}
           study={section === "study"}
           prompt={prompt}
@@ -91,8 +109,18 @@ export function Workspace({
       content = <WorkspaceHome accountId={accountId} />;
   }
   return (
-    <WorkspaceShell accountId={accountId} section={section}>
-      {content}
-    </WorkspaceShell>
+    <>
+      <WorkspaceShell
+        key={accountId}
+        accountId={accountId}
+        section={section}
+        onNewChat={() => setChatRevision((revision) => revision + 1)}
+      >
+        {content}
+      </WorkspaceShell>
+      {guide && guide.route === pathname && (
+        <Spotlight guide={guide} onClose={closeGuide} />
+      )}
+    </>
   );
 }

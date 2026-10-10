@@ -37,7 +37,7 @@ export function Subjects({ accountId }: { accountId: AccountId }) {
     <>
       <PageHeading
         title="Subjects & path"
-        description="A common foundation, with room for what interests you. Make choices with your adviser and family."
+        description="A common foundation, with room for what interests you. Make choices with your advisor and family."
       />
       <Tabs defaultValue="mine">
         <TabsList className="h-auto! flex-wrap">
@@ -47,7 +47,11 @@ export function Subjects({ accountId }: { accountId: AccountId }) {
           <TabsTrigger value="common" className="min-h-10">
             Common curriculum
           </TabsTrigger>
-          <TabsTrigger value="optional" className="min-h-10">
+          <TabsTrigger
+            data-guide-anchor="path.options"
+            value="optional"
+            className="min-h-10"
+          >
             Explore options
           </TabsTrigger>
         </TabsList>
@@ -143,7 +147,7 @@ export function Subjects({ accountId }: { accountId: AccountId }) {
                           }
                         >
                           {fresh
-                            ? "Waiting for adviser match"
+                            ? "Waiting for advisor match"
                             : proposal?.status === "changes"
                               ? "Revise proposal"
                               : proposal
@@ -158,7 +162,7 @@ export function Subjects({ accountId }: { accountId: AccountId }) {
                           <DialogTitle>Propose {subject.name}</DialogTitle>
                           <DialogDescription>
                             Explain what interests you. This creates a sample
-                            proposal for the preview adviser.
+                            proposal for the preview advisor.
                           </DialogDescription>
                         </DialogHeader>
                         <form
@@ -184,7 +188,7 @@ export function Subjects({ accountId }: { accountId: AccountId }) {
                             }));
                             setOpen(false);
                             setMessage(
-                              "Sample proposal added for adviser review.",
+                              "Sample proposal added for advisor review.",
                             );
                           }}
                         >
@@ -234,10 +238,10 @@ export function Adviser({ accountId }: { accountId: AccountId }) {
   if (accountId === "sami")
     return (
       <>
-        <PageHeading title="My adviser" />
+        <PageHeading title="My advisor" />
         <Panel title="Your next connection">
           <Empty
-            title="Your adviser is being matched"
+            title="Your advisor is being matched"
             text="The school matches each student with a qualified specialist. Adding interests helps the match."
           />
         </Panel>
@@ -246,11 +250,11 @@ export function Adviser({ accountId }: { accountId: AccountId }) {
   return (
     <>
       <PageHeading
-        title="My adviser"
+        title="My advisor"
         description="A human specialist who follows your interests, goals and choices over the years."
       />
       <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-        <Panel title="Your adviser">
+        <Panel title="Your advisor">
           <div className="flex items-start gap-5">
             <span className="flex size-16 shrink-0 items-center justify-center rounded-full border bg-surface text-xl">
               MN
@@ -344,7 +348,7 @@ export function Adviser({ accountId }: { accountId: AccountId }) {
               {q.reply ? (
                 <blockquote className="rounded-xl bg-accent p-4 text-sm">
                   <span className="mb-2 block text-xs text-cobalt">
-                    Dr. Nassar · human adviser
+                    Dr. Nassar · human advisor
                   </span>
                   {q.reply}
                 </blockquote>
@@ -374,7 +378,12 @@ export function Adviser({ accountId }: { accountId: AccountId }) {
             }}
           >
             <Label htmlFor="adviser-question">Ask Dr. Nassar something</Label>
-            <Textarea name="question" id="adviser-question" required />
+            <Textarea
+              data-guide-anchor="advisor.ask"
+              name="question"
+              id="adviser-question"
+              required
+            />
             <Button type="submit">Add question</Button>
           </form>
           <p role="status" className="text-xs text-muted-foreground">
@@ -464,7 +473,7 @@ export function Activities({ accountId }: { accountId: AccountId }) {
               ) : (
                 <Dialog>
                   <DialogTrigger asChild>
-                    <Button variant="outline">
+                    <Button data-guide-anchor="acts.join" variant="outline">
                       I’d like to join {a.title}
                     </Button>
                   </DialogTrigger>

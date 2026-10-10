@@ -1,36 +1,54 @@
 "use client";
-import { Button, Input } from "@school2036/ui";
-import { ArrowUp, BookOpen, LockKeyhole, RotateCcw } from "lucide-react";
+import { Button } from "@school2036/ui";
+import { LockKeyhole } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { PageHeading, PearlObject } from "../pearl";
+import { Composer } from "./composer";
 import { type AccountId, fixture } from "./data";
-import { Notice, Panel } from "./shared";
+import { resolveGuide } from "./guidance";
+import { CopyText, RichMessage, recallCards, StudyDeck } from "./rich-message";
+import { Panel } from "./shared";
 import { usePreview } from "./state";
 
-const cards = [
-  {
-    q: "How do mass and weight differ?",
-    a: "Mass measures matter in kilograms. Weight is the gravitational force on that mass, measured in newtons: W = mg.",
-  },
-  {
-    q: "Which force goes into F = ma?",
-    a: "The net force: add forces in the same direction and subtract opposing forces.",
-  },
-  {
-    q: "What happens when mass doubles for the same force?",
-    a: "Acceleration halves. Rearranging F = ma gives a = F / m.",
-  },
-];
-function reply(text: string, student: boolean) {
+type Message = {
+  id: string;
+  who: "You" | "Atlas";
+  text: string;
+  deck?: boolean;
+};
+function reply(text: string, student: boolean): Pick<Message, "text" | "deck"> {
+  if (/flash\s?cards?|study cards|quick recall/i.test(text))
+    return {
+      text: "### A little practice, at your pace\n\nTry these three cards on **Newton’s second law**. Think of your answer first, then flip each card to check it. You can switch to Notes for the key relationship.",
+      deck: true,
+    };
   if (!student)
-    return "This is a scripted workspace preview. Use the sidebar to explore your evidence, reviews and next steps. No AI service or school records are connected.";
-  if (/mass|weight|gravity/i.test(text)) return cards[0].a;
+    return {
+      text: "### Where would you like to start?\n\nUse your workspace to review **evidence**, explore lessons, and follow up on next steps.\n\nThis is a sample response; a live assistant is not connected yet.",
+    };
+  if (/mass|weight|gravity/i.test(text))
+    return {
+      text: `### Mass and weight\n\n${recallCards[0].a}\n\n- **Mass** stays the same when you change location.\n- **Weight** changes with gravitational acceleration.\n\n\`\`\`text\nW = m × g\n\`\`\`\n\nWhat would change if you took the same object to the Moon?`,
+    };
   if (/friction|net|force/i.test(text))
-    return "Start by identifying all the forces and their directions. Subtract friction from the applied force to get the net force. Then use a = F / m. Try describing a free-body diagram in your own words.";
-  if (/subject|adviser|choice/i.test(text))
-    return "Subject choices deserve a conversation. Explore the course requirements in Subjects & path, then bring your goals and questions to your human adviser. This sample assistant does not make that decision for you.";
-  return "Let’s start with Newton’s second law. What is the unknown: force, mass or acceleration? Identify that first, then write F = ma. This is a scripted example; try asking about mass and weight, net force, or subject choices.";
+    return {
+      text: "### Start with the net force\n\n1. Identify all the forces and their directions.\n2. Subtract friction from the applied force.\n3. Use **a = F / m** to find acceleration.\n\nTry describing a free-body diagram in your own words.",
+    };
+  if (/subject|advis[eo]r|choice/i.test(text))
+    return {
+      text: "### Bring your questions to your advisor\n\nSubject choices deserve a conversation. Explore the course requirements in **Subjects & path**, then bring your goals and questions to your human advisor.\n\nYour advisor helps you make that decision.",
+    };
+  return {
+    text: "### Let’s work through it\n\nStart with Newton’s second law. What is the unknown: **force**, **mass**, or **acceleration**? Identify that first, then write:\n\n```text\nF = m × a\n```\n\nTry asking about mass and weight, net force, subject choices, or a set of flashcards.",
+  };
+}
+function exchange(text: string, student: boolean): Message[] {
+  return [
+    { id: crypto.randomUUID(), who: "You", text },
+    { id: crypto.randomUUID(), who: "Atlas", ...reply(text, student) },
+  ];
 }
 export function Chat({
   accountId,
@@ -42,37 +60,33 @@ export function Chat({
   prompt?: string;
 }) {
   const { state } = usePreview();
+  const router = useRouter();
   const student = fixture.accounts[accountId].role === "student";
   const paused =
     student &&
     (accountId === "lina" ? state.batch : state.samiBatch) === "active";
-  const [messages, setMessages] = useState<
-    { id: string; who: string; text: string }[]
-  >(() =>
-    prompt && !paused && state.tutor
-      ? [
-          { id: "initial-user", who: "You", text: prompt },
-          {
-            id: crypto.randomUUID(),
-            who: "Atlas · scripted example",
-            text: reply(prompt, student),
-          },
-        ]
-      : [],
+  const [messages, setMessages] = useState<Message[]>(() =>
+    prompt && !paused && state.tutor ? exchange(prompt, student) : [],
   );
   const [input, setInput] = useState("");
-  const [card, setCard] = useState(0);
-  const [flipped, setFlipped] = useState(false);
+  const send = (text: string) => {
+    if (paused || !state.tutor || !text.trim()) return;
+    const guide = resolveGuide(accountId, text, state);
+    if (guide) {
+      setInput("");
+      router.push(`${guide.route}?guide=${encodeURIComponent(text.trim())}`);
+      return;
+    }
+    setMessages((items) => [...items, ...exchange(text.trim(), student)]);
+    setInput("");
+  };
+  const hasDeck = messages.some((message) => message.deck);
   return (
     <>
       <PageHeading
         title={study ? "Study with your agent" : "Your workspace assistant"}
         description="A little direction when you need it. Space to think for yourself."
       />
-      <Notice>
-        Scripted design preview. Messages stay on this page and are not sent to
-        an AI service.
-      </Notice>
       {paused ? (
         <Panel title="Your own work comes first">
           <LockKeyhole className="size-7 text-cobalt" />
@@ -91,25 +105,23 @@ export function Chat({
         <Panel title="Assistant unavailable">
           <p>
             You can still watch lessons, work through practice and talk to your
-            adviser.
+            advisor.
           </p>
           <Button asChild variant="outline">
             <Link href={`/preview/${accountId}/lessons`}>Browse lessons</Link>
           </Button>
         </Panel>
       ) : (
-        <div className="grid gap-6 xl:grid-cols-[1.7fr_1fr]">
-          <Panel
-            title={study ? "Newton’s second law · study session" : "Ask Atlas"}
-          >
+        <div className="atlas-chat-layout">
+          <div className="atlas-chat-conversation">
             <div
-              className="min-h-64 space-y-5"
+              className="min-h-64 space-y-6"
               role="log"
               aria-label="Sample conversation"
               aria-live="polite"
             >
               {!messages.length && (
-                <div className="py-6 text-center">
+                <div className="py-10 text-center">
                   <PearlObject className="w-20" />
                   <h2 className="mt-5 text-2xl">
                     What would you like to work through?
@@ -120,115 +132,62 @@ export function Chat({
                   </p>
                 </div>
               )}
-              {messages.map((m) => (
+              {messages.map((message) => (
                 <div
-                  key={m.id}
-                  className={
-                    m.who === "You"
-                      ? "ml-8 rounded-2xl bg-secondary p-4"
-                      : "mr-4 rounded-2xl border p-4"
-                  }
+                  key={message.id}
+                  className={`atlas-message ${message.who === "You" ? "atlas-message-user" : "atlas-message-assistant"}`}
                 >
-                  <p className="eyebrow mb-3">{m.who}</p>
-                  <p className="text-sm leading-relaxed">{m.text}</p>
+                  <div className="atlas-message-label">
+                    <span>{message.who}</span>
+                    {message.who === "Atlas" && (
+                      <CopyText text={message.text} label="Copy response" />
+                    )}
+                  </div>
+                  {message.who === "You" ? (
+                    <p className="whitespace-pre-wrap text-sm leading-relaxed">
+                      {message.text}
+                    </p>
+                  ) : (
+                    <>
+                      <RichMessage text={message.text} />
+                      {message.deck && <StudyDeck />}
+                    </>
+                  )}
                 </div>
               ))}
             </div>
-            <div className="flex flex-wrap gap-2">
-              {["Mass vs weight", "Net force", "Subject choices"].map((p) => (
+            <div className="atlas-chat-suggestions">
+              {[
+                "Mass vs weight",
+                "Net force",
+                "Subject choices",
+                "Make flashcards",
+              ].map((suggestion) => (
                 <Button
                   variant="outline"
                   size="sm"
-                  key={p}
-                  onClick={() =>
-                    setMessages((m) => [
-                      ...m,
-                      { id: crypto.randomUUID(), who: "You", text: p },
-                      {
-                        id: crypto.randomUUID(),
-                        who: "Atlas · scripted example",
-                        text: reply(p, student),
-                      },
-                    ])
-                  }
+                  key={suggestion}
+                  onClick={() => send(suggestion)}
                 >
-                  {p}
+                  {suggestion}
                 </Button>
               ))}
             </div>
-            <form
-              className="flex gap-2"
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (!input.trim()) return;
-                setMessages((m) => [
-                  ...m,
-                  { id: crypto.randomUUID(), who: "You", text: input.trim() },
-                  {
-                    id: crypto.randomUUID(),
-                    who: "Atlas · scripted example",
-                    text: reply(input, student),
-                  },
-                ]);
-                setInput("");
-              }}
-            >
-              <Input
-                aria-label="Message the assistant"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask about a concept…"
-                maxLength={1000}
-              />
-              <Button
-                size="icon"
-                type="submit"
-                aria-label="Send message"
-                disabled={!input.trim()}
-              >
-                <ArrowUp />
-              </Button>
-            </form>
-          </Panel>
-          <div className="space-y-6">
-            <Panel title="A quick recall">
-              <BookOpen className="size-5 text-cobalt" />
-              <p className="text-xs text-muted-foreground">
-                Card {card + 1} of {cards.length}
-              </p>
-              <button
-                type="button"
-                aria-label={
-                  flipped
-                    ? "Show flashcard question"
-                    : "Reveal flashcard answer"
-                }
-                onClick={() => setFlipped(!flipped)}
-                className="min-h-40 w-full rounded-xl border bg-secondary p-5 text-left text-lg leading-relaxed"
-              >
-                {flipped ? cards[card].a : cards[card].q}
-              </button>
-              <div className="flex justify-between gap-3">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setFlipped(!flipped)}
-                >
-                  <RotateCcw />
-                  Flip
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setCard((card + 1) % cards.length);
-                    setFlipped(false);
-                  }}
-                >
-                  Next card
-                </Button>
-              </div>
-            </Panel>
+            <Composer
+              inline
+              value={input}
+              onChange={setInput}
+              onSubmit={send}
+              label="Message the assistant"
+              placeholder="Ask about a concept…"
+              hint="Sample responses · messages stay on this page"
+            />
+          </div>
+          <aside
+            className="atlas-chat-sidebar space-y-6"
+            aria-label="Study tools"
+          >
+            {!hasDeck && <StudyDeck />}
             <Panel title="Ready to try on your own?">
               <p className="text-sm text-muted-foreground">
                 Your practice evidence stays separate from work with help.
@@ -241,7 +200,10 @@ export function Chat({
                 </Link>
               </Button>
             </Panel>
-          </div>
+            <p className="atlas-chat-boundary">
+              Scripted examples · a live AI service is not connected.
+            </p>
+          </aside>
         </div>
       )}
     </>

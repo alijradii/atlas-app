@@ -26,9 +26,11 @@ import {
   Video,
 } from "lucide-react";
 import Link from "next/link";
-import { PearlObject, PearlScene } from "../pearl";
+import { PearlScene } from "../pearl";
 import { fixture, subjectName } from "./data";
+import type { HomeCard } from "./home-cards";
 import { usePreview } from "./state";
+import { TaskArt } from "./task-art";
 
 export const icons = {
   home: Home,
@@ -122,60 +124,69 @@ export function Hero({
   title,
   eyebrow,
   action,
+  date,
 }: {
   title: React.ReactNode;
   eyebrow: string;
   action?: React.ReactNode;
+  date?: Date | null;
 }) {
   return (
-    <section className="grid overflow-hidden rounded-2xl shadow-pearl lg:grid-cols-[1.15fr_.85fr]">
-      <div className="pearl-panel flex flex-col items-start justify-center gap-6 p-7 sm:p-11">
+    <section className="pearl-home-hero">
+      <div className="pearl-home-hero-copy">
         <p className="eyebrow">{eyebrow}</p>
-        <h1 className="max-w-[31ch] text-[clamp(24px,2.3vw,34px)] leading-[1.28]">
-          {title}
-        </h1>
+        <h1>{title}</h1>
         {action}
       </div>
-      <PearlScene className="min-h-60 lg:min-h-80" compact />
+      <PearlScene className="pearl-home-hero-stage">
+        {date && (
+          <span className="pearl-home-date">
+            {String(date.getDate()).padStart(2, "0")}
+            <small>{date.toLocaleDateString("en", { month: "long" })}</small>
+          </span>
+        )}
+      </PearlScene>
     </section>
   );
 }
 export function ActionCard({
+  id,
   title,
   sub,
   label,
   href,
-  kind = "blue",
-  locked,
-}: {
-  title: string;
-  sub: string;
-  label: string;
-  href: string;
-  kind?: "blue" | "lens" | "bubble";
-  locked?: boolean;
-}) {
+  kind,
+  initials,
+  progress,
+  action,
+  status,
+  group,
+  compact = false,
+}: HomeCard & { compact?: boolean }) {
   return (
     <Link
       href={href}
-      className="mist-panel group relative flex min-h-60 flex-col justify-end overflow-hidden rounded-2xl p-5 shadow-pearl transition-transform hover:-translate-y-1"
+      className={`pearl-home-action${compact ? " pearl-home-action-compact" : ""}`}
+      data-task-kind={kind}
+      data-task-id={id}
+      data-task-group={group}
     >
-      <PearlObject kind={kind} className="absolute! left-7 top-6 w-20" />
-      <div className="absolute inset-x-0 bottom-0 h-2/3 bg-linear-to-t from-slate-950/65 via-slate-950/15 to-transparent" />
-      <div className="relative text-white">
-        <p className="mb-2 text-[10px] font-semibold tracking-[.16em] uppercase">
-          {label}
-        </p>
-        <h2 className="text-base font-medium leading-snug">{title}</h2>
-        <p className="mt-2 text-xs leading-relaxed text-white/90">{sub}</p>
+      <div className="pearl-home-action-art">
+        <TaskArt kind={kind} initials={initials} progress={progress} />
       </div>
-      {locked && (
-        <span className="absolute top-3 right-3 rounded-full bg-slate-950/70 px-2 py-1 text-[10px] text-white">
-          <LockKeyhole className="mr-1 inline size-3" />
-          At school
-        </span>
-      )}
-      <ArrowUpRight className="absolute right-4 bottom-5 size-4 text-white opacity-0 transition-opacity group-hover:opacity-100" />
+      <span className="pearl-home-action-status">
+        <i className="pearl-home-state-dot" aria-hidden="true" />
+        {status}
+      </span>
+      <span className="pearl-home-action-copy">
+        <span className="pearl-home-action-kicker">{label}</span>
+        <strong>{title}</strong>
+        <small>{sub}</small>
+      </span>
+      <span className="pearl-home-action-footer">
+        {action}
+        <ArrowUpRight size={15} aria-hidden="true" />
+      </span>
     </Link>
   );
 }
@@ -264,7 +275,7 @@ export function Pipeline({ status }: { status: string }) {
   const current = stages.indexOf(status);
   return (
     <ol className="grid gap-3 sm:grid-cols-4">
-      {["Adviser review", "Parent review", "School confirms", "Confirmed"].map(
+      {["Advisor review", "Parent review", "School confirms", "Confirmed"].map(
         (stage, i) => (
           <li key={stage} className="flex items-center gap-2 text-xs">
             <span

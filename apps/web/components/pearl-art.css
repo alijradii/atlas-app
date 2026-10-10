@@ -1,3 +1,4 @@
+@import "./preview/home.css";
 /* Glass objects adapted from the supplied Atlas Pearl kit. Layout uses Tailwind. */
 .obj {
   position: absolute;
@@ -179,29 +180,414 @@
     background: rgba(120, 130, 160, 0.22);
   }
 }
-.float {
-  animation: fl 9s ease-in-out infinite;
-}
-.float.d2 {
-  animation-duration: 11s;
-  animation-delay: -3s;
-}
-.float.d3 {
-  animation-duration: 13s;
-  animation-delay: -6s;
-}
-@keyframes fl {
-  50% {
-    transform: translate3d(0, -10px, 0);
-  }
-}
-.lens.float {
-  animation: none;
-}
 .links-svg {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   pointer-events: none;
+}
+
+/* Baked orbit samples interpolate on the compositor, never in a React frame loop. */
+@media (prefers-reduced-motion: no-preference) {
+  .pearl-scene > .float {
+    --pearl-drift-x: 4px;
+    --pearl-drift-y: -11px;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    animation: pearl-glass-drift 12.5s linear infinite;
+    animation-play-state: paused;
+    will-change: translate;
+  }
+  .pearl-scene > .float.blue {
+    animation-name: pearl-blue-orbit;
+    will-change: transform;
+    backface-visibility: hidden;
+  }
+  .pearl-scene > .float.d2 {
+    --pearl-drift-x: -5px;
+    --pearl-drift-y: -8px;
+    animation-duration: 15s;
+    animation-delay: -4s;
+  }
+  .pearl-scene > .float.d3 {
+    --pearl-drift-x: 6px;
+    --pearl-drift-y: -13px;
+    animation-duration: 17s;
+    animation-delay: -7s;
+  }
+  .pearl-scene > .float.lens {
+    --pearl-drift-x: -4px;
+    --pearl-drift-y: -7px;
+    animation-duration: 18s;
+  }
+  .pearl-scene[data-pearl-scene="running"] > .float {
+    animation-play-state: running;
+  }
+}
+@keyframes pearl-glass-drift {
+  0% {
+    translate: calc(var(--pearl-drift-x) * 0) calc(var(--pearl-drift-y) * 0);
+  }
+  3.125% {
+    translate: calc(var(--pearl-drift-x) * 0.19509)
+      calc(var(--pearl-drift-y) * 0.009607);
+  }
+  6.25% {
+    translate: calc(var(--pearl-drift-x) * 0.382683)
+      calc(var(--pearl-drift-y) * 0.03806);
+  }
+  9.375% {
+    translate: calc(var(--pearl-drift-x) * 0.55557)
+      calc(var(--pearl-drift-y) * 0.084265);
+  }
+  12.5% {
+    translate: calc(var(--pearl-drift-x) * 0.707107)
+      calc(var(--pearl-drift-y) * 0.146447);
+  }
+  15.625% {
+    translate: calc(var(--pearl-drift-x) * 0.83147)
+      calc(var(--pearl-drift-y) * 0.222215);
+  }
+  18.75% {
+    translate: calc(var(--pearl-drift-x) * 0.92388)
+      calc(var(--pearl-drift-y) * 0.308658);
+  }
+  21.875% {
+    translate: calc(var(--pearl-drift-x) * 0.980785)
+      calc(var(--pearl-drift-y) * 0.402455);
+  }
+  25% {
+    translate: calc(var(--pearl-drift-x) * 1) calc(var(--pearl-drift-y) * 0.5);
+  }
+  28.125% {
+    translate: calc(var(--pearl-drift-x) * 0.980785)
+      calc(var(--pearl-drift-y) * 0.597545);
+  }
+  31.25% {
+    translate: calc(var(--pearl-drift-x) * 0.92388)
+      calc(var(--pearl-drift-y) * 0.691342);
+  }
+  34.375% {
+    translate: calc(var(--pearl-drift-x) * 0.83147)
+      calc(var(--pearl-drift-y) * 0.777785);
+  }
+  37.5% {
+    translate: calc(var(--pearl-drift-x) * 0.707107)
+      calc(var(--pearl-drift-y) * 0.853553);
+  }
+  40.625% {
+    translate: calc(var(--pearl-drift-x) * 0.55557)
+      calc(var(--pearl-drift-y) * 0.915735);
+  }
+  43.75% {
+    translate: calc(var(--pearl-drift-x) * 0.382683)
+      calc(var(--pearl-drift-y) * 0.96194);
+  }
+  46.875% {
+    translate: calc(var(--pearl-drift-x) * 0.19509)
+      calc(var(--pearl-drift-y) * 0.990393);
+  }
+  50% {
+    translate: calc(var(--pearl-drift-x) * 0) calc(var(--pearl-drift-y) * 1);
+  }
+  53.125% {
+    translate: calc(var(--pearl-drift-x) * -0.19509)
+      calc(var(--pearl-drift-y) * 0.990393);
+  }
+  56.25% {
+    translate: calc(var(--pearl-drift-x) * -0.382683)
+      calc(var(--pearl-drift-y) * 0.96194);
+  }
+  59.375% {
+    translate: calc(var(--pearl-drift-x) * -0.55557)
+      calc(var(--pearl-drift-y) * 0.915735);
+  }
+  62.5% {
+    translate: calc(var(--pearl-drift-x) * -0.707107)
+      calc(var(--pearl-drift-y) * 0.853553);
+  }
+  65.625% {
+    translate: calc(var(--pearl-drift-x) * -0.83147)
+      calc(var(--pearl-drift-y) * 0.777785);
+  }
+  68.75% {
+    translate: calc(var(--pearl-drift-x) * -0.92388)
+      calc(var(--pearl-drift-y) * 0.691342);
+  }
+  71.875% {
+    translate: calc(var(--pearl-drift-x) * -0.980785)
+      calc(var(--pearl-drift-y) * 0.597545);
+  }
+  75% {
+    translate: calc(var(--pearl-drift-x) * -1) calc(var(--pearl-drift-y) * 0.5);
+  }
+  78.125% {
+    translate: calc(var(--pearl-drift-x) * -0.980785)
+      calc(var(--pearl-drift-y) * 0.402455);
+  }
+  81.25% {
+    translate: calc(var(--pearl-drift-x) * -0.92388)
+      calc(var(--pearl-drift-y) * 0.308658);
+  }
+  84.375% {
+    translate: calc(var(--pearl-drift-x) * -0.83147)
+      calc(var(--pearl-drift-y) * 0.222215);
+  }
+  87.5% {
+    translate: calc(var(--pearl-drift-x) * -0.707107)
+      calc(var(--pearl-drift-y) * 0.146447);
+  }
+  90.625% {
+    translate: calc(var(--pearl-drift-x) * -0.55557)
+      calc(var(--pearl-drift-y) * 0.084265);
+  }
+  93.75% {
+    translate: calc(var(--pearl-drift-x) * -0.382683)
+      calc(var(--pearl-drift-y) * 0.03806);
+  }
+  96.875% {
+    translate: calc(var(--pearl-drift-x) * -0.19509)
+      calc(var(--pearl-drift-y) * 0.009607);
+  }
+  100% {
+    translate: calc(var(--pearl-drift-x) * -0) calc(var(--pearl-drift-y) * 0);
+  }
+}
+@keyframes pearl-blue-orbit {
+  0% {
+    transform: translate3d(
+      calc(var(--pearl-drift-x) * 0),
+      calc(var(--pearl-drift-y) * 0),
+      0
+    );
+  }
+  3.125% {
+    transform: translate3d(
+      calc(var(--pearl-drift-x) * 0.19509),
+      calc(var(--pearl-drift-y) * 0.009607),
+      0
+    );
+  }
+  6.25% {
+    transform: translate3d(
+      calc(var(--pearl-drift-x) * 0.382683),
+      calc(var(--pearl-drift-y) * 0.03806),
+      0
+    );
+  }
+  9.375% {
+    transform: translate3d(
+      calc(var(--pearl-drift-x) * 0.55557),
+      calc(var(--pearl-drift-y) * 0.084265),
+      0
+    );
+  }
+  12.5% {
+    transform: translate3d(
+      calc(var(--pearl-drift-x) * 0.707107),
+      calc(var(--pearl-drift-y) * 0.146447),
+      0
+    );
+  }
+  15.625% {
+    transform: translate3d(
+      calc(var(--pearl-drift-x) * 0.83147),
+      calc(var(--pearl-drift-y) * 0.222215),
+      0
+    );
+  }
+  18.75% {
+    transform: translate3d(
+      calc(var(--pearl-drift-x) * 0.92388),
+      calc(var(--pearl-drift-y) * 0.308658),
+      0
+    );
+  }
+  21.875% {
+    transform: translate3d(
+      calc(var(--pearl-drift-x) * 0.980785),
+      calc(var(--pearl-drift-y) * 0.402455),
+      0
+    );
+  }
+  25% {
+    transform: translate3d(
+      calc(var(--pearl-drift-x) * 1),
+      calc(var(--pearl-drift-y) * 0.5),
+      0
+    );
+  }
+  28.125% {
+    transform: translate3d(
+      calc(var(--pearl-drift-x) * 0.980785),
+      calc(var(--pearl-drift-y) * 0.597545),
+      0
+    );
+  }
+  31.25% {
+    transform: translate3d(
+      calc(var(--pearl-drift-x) * 0.92388),
+      calc(var(--pearl-drift-y) * 0.691342),
+      0
+    );
+  }
+  34.375% {
+    transform: translate3d(
+      calc(var(--pearl-drift-x) * 0.83147),
+      calc(var(--pearl-drift-y) * 0.777785),
+      0
+    );
+  }
+  37.5% {
+    transform: translate3d(
+      calc(var(--pearl-drift-x) * 0.707107),
+      calc(var(--pearl-drift-y) * 0.853553),
+      0
+    );
+  }
+  40.625% {
+    transform: translate3d(
+      calc(var(--pearl-drift-x) * 0.55557),
+      calc(var(--pearl-drift-y) * 0.915735),
+      0
+    );
+  }
+  43.75% {
+    transform: translate3d(
+      calc(var(--pearl-drift-x) * 0.382683),
+      calc(var(--pearl-drift-y) * 0.96194),
+      0
+    );
+  }
+  46.875% {
+    transform: translate3d(
+      calc(var(--pearl-drift-x) * 0.19509),
+      calc(var(--pearl-drift-y) * 0.990393),
+      0
+    );
+  }
+  50% {
+    transform: translate3d(
+      calc(var(--pearl-drift-x) * 0),
+      calc(var(--pearl-drift-y) * 1),
+      0
+    );
+  }
+  53.125% {
+    transform: translate3d(
+      calc(var(--pearl-drift-x) * -0.19509),
+      calc(var(--pearl-drift-y) * 0.990393),
+      0
+    );
+  }
+  56.25% {
+    transform: translate3d(
+      calc(var(--pearl-drift-x) * -0.382683),
+      calc(var(--pearl-drift-y) * 0.96194),
+      0
+    );
+  }
+  59.375% {
+    transform: translate3d(
+      calc(var(--pearl-drift-x) * -0.55557),
+      calc(var(--pearl-drift-y) * 0.915735),
+      0
+    );
+  }
+  62.5% {
+    transform: translate3d(
+      calc(var(--pearl-drift-x) * -0.707107),
+      calc(var(--pearl-drift-y) * 0.853553),
+      0
+    );
+  }
+  65.625% {
+    transform: translate3d(
+      calc(var(--pearl-drift-x) * -0.83147),
+      calc(var(--pearl-drift-y) * 0.777785),
+      0
+    );
+  }
+  68.75% {
+    transform: translate3d(
+      calc(var(--pearl-drift-x) * -0.92388),
+      calc(var(--pearl-drift-y) * 0.691342),
+      0
+    );
+  }
+  71.875% {
+    transform: translate3d(
+      calc(var(--pearl-drift-x) * -0.980785),
+      calc(var(--pearl-drift-y) * 0.597545),
+      0
+    );
+  }
+  75% {
+    transform: translate3d(
+      calc(var(--pearl-drift-x) * -1),
+      calc(var(--pearl-drift-y) * 0.5),
+      0
+    );
+  }
+  78.125% {
+    transform: translate3d(
+      calc(var(--pearl-drift-x) * -0.980785),
+      calc(var(--pearl-drift-y) * 0.402455),
+      0
+    );
+  }
+  81.25% {
+    transform: translate3d(
+      calc(var(--pearl-drift-x) * -0.92388),
+      calc(var(--pearl-drift-y) * 0.308658),
+      0
+    );
+  }
+  84.375% {
+    transform: translate3d(
+      calc(var(--pearl-drift-x) * -0.83147),
+      calc(var(--pearl-drift-y) * 0.222215),
+      0
+    );
+  }
+  87.5% {
+    transform: translate3d(
+      calc(var(--pearl-drift-x) * -0.707107),
+      calc(var(--pearl-drift-y) * 0.146447),
+      0
+    );
+  }
+  90.625% {
+    transform: translate3d(
+      calc(var(--pearl-drift-x) * -0.55557),
+      calc(var(--pearl-drift-y) * 0.084265),
+      0
+    );
+  }
+  93.75% {
+    transform: translate3d(
+      calc(var(--pearl-drift-x) * -0.382683),
+      calc(var(--pearl-drift-y) * 0.03806),
+      0
+    );
+  }
+  96.875% {
+    transform: translate3d(
+      calc(var(--pearl-drift-x) * -0.19509),
+      calc(var(--pearl-drift-y) * 0.009607),
+      0
+    );
+  }
+  100% {
+    transform: translate3d(
+      calc(var(--pearl-drift-x) * -0),
+      calc(var(--pearl-drift-y) * 0),
+      0
+    );
+  }
+}
+
+.pearl-object {
+  position: relative;
 }
