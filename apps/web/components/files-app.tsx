@@ -130,7 +130,10 @@ export default function FilesApp() {
     }
   }
 
-  if (loading)
+  const redirecting =
+    !sessionCheckFailed &&
+    ((session && pathname === "/login") || (!session && pathname === "/files"));
+  if (loading || redirecting)
     return (
       <main id="main-content" className="grid min-h-screen place-items-center">
         <p role="status">Loading…</p>

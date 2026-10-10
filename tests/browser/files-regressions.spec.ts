@@ -155,3 +155,51 @@ test("a session lookup outage stays on files and offers a retry instead of signi
   ).toBeVisible();
   await expect(page).toHaveURL(/\/files$/);
 });
+
+test("login waits for the files route before exposing an upload form that would be remounted", async ({
+  page,
+}) => {
+  let signedIn = false;
+  let releaseNavigation = () => {};
+  const navigationGate = new Promise<void>((resolve) => {
+    releaseNavigation = resolve;
+  });
+  await page.route("**/api/v1/auth/me", (route) =>
+    signedIn
+      ? route.fulfill({ json: session })
+      : route.fulfill({
+          status: 401,
+          json: { detail: "Please sign in again" },
+        }),
+  );
+  await page.route("**/api/v1/auth/login", (route) => {
+    signedIn = true;
+    return route.fulfill({ json: session });
+  });
+  await page.route("**/api/v1/files", (route) => route.fulfill({ json: [] }));
+  let routePending = false;
+  await page.route(
+    (url) => url.pathname === "/files" && url.searchParams.has("_rsc"),
+    async (route) => {
+      routePending = true;
+      await navigationGate;
+      await route.continue();
+    },
+  );
+  try {
+    await page.goto("/login");
+    await page.getByLabel("Login", { exact: true }).fill("sample");
+    await page
+      .getByLabel("Password", { exact: true })
+      .fill("synthetic password");
+    await page.getByRole("button", { name: "Sign in", exact: true }).click();
+    await expect.poll(() => routePending).toBe(true);
+    await expect(page.getByLabel("Choose a file")).toHaveCount(0);
+    await expect(page.getByRole("status")).toHaveText("Loading…");
+    releaseNavigation();
+    await expect(page).toHaveURL(/\/files$/);
+    await expect(page.getByLabel("Choose a file")).toBeVisible();
+  } finally {
+    releaseNavigation();
+  }
+});
