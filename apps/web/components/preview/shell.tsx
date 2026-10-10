@@ -25,13 +25,17 @@ import {
   House,
   Menu,
   MoreHorizontal,
+  Pin,
   School,
-  Send,
   SquarePen,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Composer } from "./composer";
+import { resolveGuide } from "./guidance";
+import "./workspace.css";
 import { Brand } from "../pearl";
 import { ThemeToggle } from "../theme-toggle";
 import {
@@ -63,6 +67,63 @@ export function WorkspaceShell({
   const router = useRouter();
   const [menu, setMenu] = useState(false);
   const [prompt, setPrompt] = useState("");
+  const [pinPending, setPinPending] = useState(false);
+  const [wasPinned, setWasPinned] = useState(false);
+  const [toast, setToast] = useState(false);
+  useEffect(() => {
+    if (!toast) return;
+    const timer = window.setTimeout(() => setToast(false), 7000);
+    return () => window.clearTimeout(timer);
+  }, [toast]);
+  const suggestions: Record<Role, string[]> = {
+    student: [
+      "Where do I submit my batch?",
+      "Make flashcards from my mistakes",
+      "Pin Mass vs weight to my home",
+    ],
+    teacher: [
+      "Where do I upload a lesson?",
+      "Show me the evidence for misconceptions",
+    ],
+    adviser: ["Where do I send a recommendation?"],
+    parent: ["Where do I review Lina's choice?"],
+    staff: ["Where do I approve proposals?"],
+  };
+  const hints: Record<Role, string> = {
+    student:
+      "Help here counts as help. Your own work is measured in practice batches.",
+    teacher:
+      "Answers point you to evidence. Analytics stay on the school network.",
+    adviser: "AI answers are marked. Your advice stays your own.",
+    parent: "You see what the school shares with families.",
+    staff: "Answers summarise; decisions stay with staff.",
+  };
+  function ask(text: string) {
+    setPrompt("");
+    const guide = resolveGuide(accountId, text, state);
+    if (guide) {
+      router.push(`${guide.route}?guide=${encodeURIComponent(text)}`);
+    } else if (role === "student" && /\bpin\b/i.test(text)) {
+      setPinPending(true);
+    } else {
+      router.push(
+        `/preview/${accountId}/chat?prompt=${encodeURIComponent(text)}`,
+      );
+    }
+  }
+  function pinLesson() {
+    if (accountId !== "lina" && accountId !== "sami") return;
+    setWasPinned(state.lessonPins[accountId].includes("L1"));
+    setState((s) => ({
+      ...s,
+      lessonPins: {
+        ...s.lessonPins,
+        [accountId]: [...new Set([...s.lessonPins[accountId], "L1"])],
+      },
+    }));
+    setPinPending(false);
+    setToast(true);
+  }
   const base = `/preview/${accountId}/`;
   const pins =
     accountId === "lina" || accountId === "sami"
@@ -179,9 +240,9 @@ export function WorkspaceShell({
     </>
   );
   return (
-    <div className="min-h-screen">
+    <div className="atlas-workspace min-h-screen" data-section={section}>
       <aside
-        className="pearl-panel fixed inset-y-0 left-0 z-20 hidden w-64 flex-col border-r p-3 lg:flex"
+        className="pearl-panel fixed inset-y-0 left-0 z-20 hidden w-64 flex-col overflow-y-auto border-r p-3 lg:flex"
         aria-label="Main navigation"
       >
         {nav}
@@ -212,12 +273,7 @@ export function WorkspaceShell({
               {nav}
             </SheetContent>
           </Sheet>
-          <p className="mr-auto text-xs text-muted-foreground">
-            Design preview{" "}
-            <span className="hidden sm:inline">
-              · sample interactions, no school records
-            </span>
-          </p>
+          <span className="mr-auto" />
           <Dialog>
             <DialogTrigger asChild>
               <Button
@@ -278,58 +334,72 @@ export function WorkspaceShell({
           </Dialog>
           <ThemeToggle />
         </header>
-        <main
-          id="main-content"
-          className="mx-auto grid max-w-[1280px] gap-7 px-5 pt-2 pb-12 sm:px-8 xl:px-14"
-        >
+        <main id="main-content" className="atlas-workspace-main">
           {children}
         </main>
         {section === "home" && !(accountId === "sami" && !state.onboarded) && (
-          <div className="sticky bottom-4 z-10 mx-auto max-w-3xl px-5 pb-1">
-            <form
-              aria-label="Preview assistant"
-              className="rounded-[28px] border border-input bg-surface p-4 shadow-pearl"
-              onSubmit={(event) => {
-                event.preventDefault();
-                if (prompt.trim()) {
-                  router.push(
-                    `${base}chat?prompt=${encodeURIComponent(prompt.trim())}`,
-                  );
-                  setPrompt("");
-                }
-              }}
+          <div className="atlas-composer-wrap">
+            <Composer
+              value={prompt}
+              onChange={setPrompt}
+              onSubmit={ask}
+              label="Ask the assistant"
+              suggestions={suggestions[role]}
+              hint={hints[role]}
+              placeholder={
+                role === "student"
+                  ? "Ask about a lesson, a problem, or your subjects"
+                  : "Ask about your workspace"
+              }
+              moreOptions={[
+                { label: "Your private files", href: "/files" },
+                { label: "New conversation", href: `${base}chat` },
+              ]}
             >
-              <label htmlFor="workspace-prompt" className="sr-only">
-                Ask the preview assistant
-              </label>
-              <input
-                id="workspace-prompt"
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                className="w-full min-w-0 bg-transparent px-1 py-2 outline-none"
-                placeholder={
-                  role === "student"
-                    ? "Ask about a lesson, a problem, or your subjects"
-                    : "Ask about your workspace"
-                }
-              />
-              <div className="mt-2 flex items-center gap-3">
-                <span className="flex-1 px-1 text-xs text-muted-foreground">
-                  Scripted preview · advice and decisions stay with people.
-                </span>
-                <Button
-                  type="submit"
-                  size="icon"
-                  disabled={!prompt.trim()}
-                  aria-label="Send to preview assistant"
-                >
-                  <Send />
-                </Button>
-              </div>
-            </form>
+              {pinPending && (
+                <div className="atlas-pin-tray" role="status">
+                  <Pin size={17} />
+                  <span>
+                    <small className="atlas-ai-label">Suggested shortcut</small>
+                    Pin Mass vs weight to your home?
+                  </span>
+                  <Button onClick={pinLesson}>Pin to home</Button>
+                  <button
+                    type="button"
+                    aria-label="Cancel pin"
+                    onClick={() => setPinPending(false)}
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+              )}
+            </Composer>
           </div>
         )}
       </div>
+      {toast && (
+        <div className="atlas-toast" role="status">
+          Pinned to your home.
+          <button
+            type="button"
+            onClick={() => {
+              if (!wasPinned && (accountId === "lina" || accountId === "sami"))
+                setState((s) => ({
+                  ...s,
+                  lessonPins: {
+                    ...s.lessonPins,
+                    [accountId]: s.lessonPins[accountId].filter(
+                      (id) => id !== "L1",
+                    ),
+                  },
+                }));
+              setToast(false);
+            }}
+          >
+            Undo
+          </button>
+        </div>
+      )}
     </div>
   );
 }

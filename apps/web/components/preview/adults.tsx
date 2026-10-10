@@ -108,7 +108,16 @@ export function Proposals({ accountId }: { accountId: AccountId }) {
                 required
               />
               <div className="flex flex-wrap gap-3">
-                <Button type="submit">
+                <Button
+                  data-guide-anchor={
+                    parent
+                      ? "choice.agree"
+                      : staff
+                        ? undefined
+                        : "proposal.recommend"
+                  }
+                  type="submit"
+                >
                   {staff
                     ? "Confirm choice"
                     : parent
@@ -392,7 +401,9 @@ export function Analytics() {
       <Tabs defaultValue="class">
         <TabsList className="h-auto flex-wrap">
           <TabsTrigger value="class">Class evidence</TabsTrigger>
-          <TabsTrigger value="misconceptions">Misconceptions</TabsTrigger>
+          <TabsTrigger data-guide-anchor="analytics.tab" value="misconceptions">
+            Misconceptions
+          </TabsTrigger>
           <TabsTrigger value="teaching">Teaching flags</TabsTrigger>
           <TabsTrigger value="followups">Follow-ups</TabsTrigger>
         </TabsList>
@@ -487,7 +498,12 @@ export function Analytics() {
               <h2 className="text-xl">{m.title}</h2>
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button variant="outline">Examine evidence</Button>
+                  <Button
+                    data-guide-anchor="analytics.inspect"
+                    variant="outline"
+                  >
+                    Examine evidence
+                  </Button>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
@@ -644,7 +660,9 @@ export function StaffActivities() {
                         placeholder="Confirm supervision and a suitable space"
                       />
                       <div className="flex flex-wrap gap-2">
-                        <Button type="submit">Approve sample activity</Button>
+                        <Button data-guide-anchor="acts.approve" type="submit">
+                          Approve sample activity
+                        </Button>
                         <Button
                           variant="outline"
                           type="button"

@@ -62,6 +62,7 @@ export function Lessons({ accountId }: { accountId: AccountId }) {
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            data-guide-anchor="lessons.search"
             aria-label="Search lessons"
             placeholder="Search lessons or units"
             className="pl-10"
@@ -235,7 +236,7 @@ export function Lesson({
           </Panel>
         </div>
         <Panel title="Chapters">
-          <div className="grid gap-2">
+          <div className="grid gap-2" data-guide-anchor="lesson.chapters">
             {lesson.chapters.map(([time, title], i) => (
               <button
                 type="button"
@@ -307,6 +308,7 @@ export function Practice({ accountId }: { accountId: AccountId }) {
             ))}
           </div>
           <Button
+            data-guide-anchor="batch.start"
             onClick={() =>
               setState((s) => ({
                 ...s,
@@ -400,7 +402,11 @@ export function Practice({ accountId }: { accountId: AccountId }) {
           {batch === "active" ? (
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
-                <Button disabled={ready < 5} className="justify-self-start">
+                <Button
+                  data-guide-anchor="batch.submit"
+                  disabled={ready < 5}
+                  className="justify-self-start"
+                >
                   Submit the whole batch
                 </Button>
               </DialogTrigger>
@@ -433,6 +439,7 @@ export function Practice({ accountId }: { accountId: AccountId }) {
                 </Link>
               </Button>
               <Button
+                data-guide-anchor="batch.new"
                 variant="outline"
                 onClick={() => {
                   setState((s) => ({
@@ -505,6 +512,7 @@ export function UploadLesson() {
           <div className="grid gap-2">
             <Label htmlFor="lesson-video">Session recording</Label>
             <Input
+              data-guide-anchor="lessons.upload"
               id="lesson-video"
               name="video"
               type="file"

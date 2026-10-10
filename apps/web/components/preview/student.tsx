@@ -47,7 +47,11 @@ export function Subjects({ accountId }: { accountId: AccountId }) {
           <TabsTrigger value="common" className="min-h-10">
             Common curriculum
           </TabsTrigger>
-          <TabsTrigger value="optional" className="min-h-10">
+          <TabsTrigger
+            data-guide-anchor="path.options"
+            value="optional"
+            className="min-h-10"
+          >
             Explore options
           </TabsTrigger>
         </TabsList>
@@ -374,7 +378,12 @@ export function Adviser({ accountId }: { accountId: AccountId }) {
             }}
           >
             <Label htmlFor="adviser-question">Ask Dr. Nassar something</Label>
-            <Textarea name="question" id="adviser-question" required />
+            <Textarea
+              data-guide-anchor="advisor.ask"
+              name="question"
+              id="adviser-question"
+              required
+            />
             <Button type="submit">Add question</Button>
           </form>
           <p role="status" className="text-xs text-muted-foreground">
@@ -464,7 +473,7 @@ export function Activities({ accountId }: { accountId: AccountId }) {
               ) : (
                 <Dialog>
                   <DialogTrigger asChild>
-                    <Button variant="outline">
+                    <Button data-guide-anchor="acts.join" variant="outline">
                       I’d like to join {a.title}
                     </Button>
                   </DialogTrigger>

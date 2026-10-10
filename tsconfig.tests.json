@@ -13,6 +13,7 @@
   },
   "include": [
     "tests/browser/**/*.ts",
+    "apps/web/styles.d.ts",
     "packages/api-client/src/*.test.ts",
     "apps/web/components/preview/*.test.ts",
     "playwright*.config.ts"

@@ -1,10 +1,11 @@
 "use client";
-import { Button, Card, Switch } from "@school2036/ui";
-import { Bell, Flag, LineChart } from "lucide-react";
+import { Button, Card } from "@school2036/ui";
+import { Bell, Check, Flag, LineChart, Pin, X } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { type AccountId, fixture, type Role, roleNames } from "./data";
-import { ActionCard, Evidence, Hero, Panel, Steps } from "./shared";
+import { ParentOverview, StudentWeek } from "./home-sections";
+import { ActionCard, Hero, Panel } from "./shared";
 import { usePreview } from "./state";
 
 const copy: Record<
@@ -258,12 +259,33 @@ export function WorkspaceHome({ accountId }: { accountId: AccountId }) {
   const account = fixture.accounts[accountId];
   const role = account.role as Role;
   const content = copy[accountId];
+  const firstName = {
+    lina: "Lina",
+    sami: "Sami",
+    daher: "Elie",
+    nassar: "Maya",
+    karim: "Karim",
+    hajj: "Rita",
+  }[accountId];
+  const greeting = content.title.split(firstName);
   const base = `/preview/${accountId}/`;
+  const [date, setDate] = useState<Date | null>(null);
+  useEffect(() => setDate(new Date()), []);
+  const allHelpersOn = helpers[role].every((_, i) =>
+    state.helpers.includes(accountId + i),
+  );
+  const pins =
+    accountId === "lina" || accountId === "sami"
+      ? fixture.lessons.filter((lesson) =>
+          state.lessonPins[accountId].includes(lesson.id),
+        )
+      : [];
   if (accountId === "sami" && !state.onboarded) return <WelcomeWizard />;
   return (
-    <>
+    <div className="pearl-home">
       <Hero
-        eyebrow={`${roleNames[role]} · your workspace`}
+        date={date}
+        eyebrow={`${roleNames[role]}${date ? ` · ${date.toLocaleDateString("en", { weekday: "long" })}` : ""}`}
         title={
           accountId === "lina" && state.batch === "active" ? (
             <>
@@ -272,11 +294,15 @@ export function WorkspaceHome({ accountId }: { accountId: AccountId }) {
               you submit it.
             </>
           ) : (
-            content.title
+            <>
+              {greeting[0]}
+              <span className="text-cobalt">{firstName}</span>
+              {greeting.slice(1).join(firstName)}
+            </>
           )
         }
         action={
-          <Button asChild size="lg">
+          <Button asChild size="lg" className="pearl-home-primary">
             <Link href={base + content.route}>
               {accountId === "lina" && state.batch === "feedback"
                 ? "See your batch feedback"
@@ -285,7 +311,7 @@ export function WorkspaceHome({ accountId }: { accountId: AccountId }) {
           </Button>
         }
       />
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="pearl-home-cards">
         {content.cards.map(([title, sub, label, href], i) => (
           <ActionCard
             key={title}
@@ -316,45 +342,81 @@ export function WorkspaceHome({ accountId }: { accountId: AccountId }) {
           />
         ))}
       </div>
-      <Card className="mx-auto grid w-full max-w-3xl gap-7 p-7 sm:grid-cols-[.9fr_1.1fr] sm:p-9">
+      {pins.length > 0 && (accountId === "lina" || accountId === "sami") && (
+        <section className="pearl-home-pins" aria-label="My shortcuts">
+          <span className="eyebrow">My shortcuts</span>
+          {pins.map((lesson) => (
+            <span className="pearl-home-pin" key={lesson.id}>
+              <Link href={`${base}lesson/${lesson.id}`}>
+                <Pin />
+                {lesson.title}
+              </Link>
+              <button
+                type="button"
+                aria-label={`Remove ${lesson.title}`}
+                onClick={() =>
+                  setState((s) => ({
+                    ...s,
+                    lessonPins: {
+                      ...s.lessonPins,
+                      [accountId]: s.lessonPins[accountId].filter(
+                        (id) => id !== lesson.id,
+                      ),
+                    },
+                  }))
+                }
+              >
+                <X />
+              </button>
+            </span>
+          ))}
+        </section>
+      )}
+      <Card className="pearl-home-more">
         <div>
-          <h2 className="text-[28px]">More things I can do for you</h2>
-          <p className="mt-3 text-sm text-muted-foreground">
-            Try the helper preferences. Notifications in this preview are not
-            sent.
+          <h2>More things I can do for you</h2>
+          <p>
+            Set up helpers that keep an eye on what matters, and tell you when
+            something changes.
           </p>
         </div>
-        <div className="space-y-4">
+        <div className="pearl-home-helpers">
           {helpers[role].map((label, i) => {
             const Icon = [Bell, Flag, LineChart][i];
             const key = accountId + i;
+            const enabled = state.helpers.includes(key);
             return (
-              <label
-                htmlFor={`helper-${key}`}
+              <button
+                type="button"
                 key={label}
-                className="flex items-center gap-3 text-sm"
+                className="pearl-home-helper"
+                aria-pressed={enabled}
+                onClick={() =>
+                  setState((s) => ({
+                    ...s,
+                    helpers: s.helpers.includes(key)
+                      ? s.helpers.filter((x) => x !== key)
+                      : [...s.helpers, key],
+                  }))
+                }
               >
-                <Icon className="size-4 shrink-0 text-cobalt" />
-                <span className="flex-1">{label}</span>
-                <Switch
-                  id={`helper-${key}`}
-                  size="sm"
-                  aria-label={label}
-                  checked={state.helpers.includes(key)}
-                  onCheckedChange={(checked) =>
-                    setState((s) => ({
-                      ...s,
-                      helpers: checked
-                        ? [...s.helpers, key]
-                        : s.helpers.filter((x) => x !== key),
-                    }))
-                  }
-                />
-              </label>
+                <span className="pearl-home-helper-icon">
+                  <Icon />
+                </span>
+                <span>{label}</span>
+                <span className="pearl-home-helper-tick">
+                  {enabled && <Check />}
+                </span>
+              </button>
             );
           })}
           <Button
-            className="w-full"
+            className={
+              allHelpersOn
+                ? "pearl-home-helpers-all"
+                : "pearl-home-helpers-all pearl-home-primary"
+            }
+            variant={allHelpersOn ? "outline" : "default"}
             onClick={() =>
               setState((s) => ({
                 ...s,
@@ -367,53 +429,14 @@ export function WorkspaceHome({ accountId }: { accountId: AccountId }) {
               }))
             }
           >
-            Put me to work
+            {allHelpersOn ? "All helpers on" : "Put me to work"}
           </Button>
         </div>
       </Card>
-      {accountId === "lina" && (
-        <div className="grid gap-6 lg:grid-cols-2">
-          <Panel title="Your week">
-            <Steps />
-          </Panel>
-          <Panel title="Your subjects">
-            <Evidence compact />
-          </Panel>
-        </div>
+      {(accountId === "lina" || accountId === "sami") && (
+        <StudentWeek accountId={accountId} date={date} />
       )}
-      {role === "parent" && (
-        <div id="guidance" className="grid gap-6 lg:grid-cols-2">
-          <Panel title="Guidance shared with your family">
-            {fixture.students.lina.advice.map((advice) => (
-              <blockquote
-                key={advice.id}
-                className="border-l-2 border-cobalt pl-4 text-sm"
-              >
-                <p>{advice.txt}</p>
-                <footer className="mt-2 text-xs text-muted-foreground">
-                  Dr. Maya Nassar · human advisor
-                </footer>
-              </blockquote>
-            ))}
-          </Panel>
-          <Panel title="Agreed next steps">
-            <Steps />
-          </Panel>
-        </div>
-      )}
-      {role === "parent" && (
-        <div id="interests">
-          <Panel title="Lina’s interests">
-            <p className="text-lg">
-              {state.interests.join(" · ") || "Still exploring"}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Room for activities alongside subject choices. Interests are not a
-              measure of grades.
-            </p>
-          </Panel>
-        </div>
-      )}
+      {role === "parent" && <ParentOverview date={date} />}
       {role === "adviser" && (
         <Panel title="Up next">
           <p className="text-muted-foreground">
@@ -435,6 +458,6 @@ export function WorkspaceHome({ accountId }: { accountId: AccountId }) {
           )}
         </Panel>
       )}
-    </>
+    </div>
   );
 }

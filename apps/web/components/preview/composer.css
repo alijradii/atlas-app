@@ -1,0 +1,207 @@
+.atlas-composer-wrap {
+  position: sticky;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  z-index: 15;
+  display: flex;
+  justify-content: center;
+  padding-inline: 16px;
+  margin-top: 8px;
+  padding-bottom: 4px;
+  pointer-events: none;
+}
+.atlas-composer {
+  position: relative;
+  width: 100%;
+  max-width: 760px;
+  min-width: 0;
+  pointer-events: auto;
+}
+.atlas-composer form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  border: 1px solid var(--input);
+  border-radius: 28px;
+  padding: 12px 12px 10px 18px;
+  background: var(--surface);
+  box-shadow: 0 22px 44px -26px rgb(20 30 60 / 50%);
+  transition: border-color 0.2s;
+}
+.atlas-composer form:focus-within {
+  border-color: var(--muted-foreground);
+}
+.atlas-composer textarea {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  min-height: 32px;
+  max-height: 160px;
+  resize: none;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font: inherit;
+  font-size: 15px;
+  line-height: 24px;
+  padding: 4px 0;
+  color: var(--foreground);
+}
+.atlas-composer textarea::placeholder {
+  color: var(--muted-foreground);
+  opacity: 0.85;
+}
+.atlas-composer-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.atlas-composer-hint {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  color: var(--muted-foreground);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.atlas-round-button {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex: none;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--foreground);
+}
+.atlas-round-button.atlas-send {
+  background: var(--foreground);
+  color: var(--background);
+  border-color: var(--foreground);
+}
+.atlas-send:disabled {
+  cursor: default;
+}
+.atlas-suggestions {
+  min-width: 0;
+  max-width: 100%;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.atlas-suggestions button {
+  border: 1px solid var(--input);
+  background: var(--card);
+  backdrop-filter: blur(8px);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 12.5px;
+  color: var(--muted-foreground);
+}
+.atlas-suggestions button:hover {
+  color: var(--foreground);
+  border-color: var(--cobalt);
+}
+.atlas-pin-tray {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow-pearl);
+  font-size: 13.5px;
+}
+.atlas-pin-tray > span:nth-child(2) {
+  flex: 1;
+  min-width: 160px;
+}
+.atlas-ai-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted-foreground);
+}
+.atlas-ai-label::before {
+  content: "";
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: conic-gradient(
+    #ff9fd2,
+    #ffe38f,
+    #9ff5c6,
+    #8fd6ff,
+    #b9a0ff,
+    #ff9fd2
+  );
+}
+.atlas-toast {
+  position: fixed;
+  z-index: 60;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: calc(100vw - 32px);
+  border-radius: 24px;
+  background: var(--foreground);
+  color: var(--background);
+  padding: 10px 18px;
+  font-size: 13px;
+  box-shadow: var(--shadow-pearl);
+}
+.atlas-toast button {
+  margin-left: 10px;
+  text-decoration: underline;
+}
+.atlas-composer-inline {
+  max-width: none;
+}
+@media (max-width: 600px) {
+  .atlas-suggestions {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+  .atlas-suggestions button {
+    white-space: nowrap;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .atlas-suggestions button,
+  .atlas-round-button {
+    transition:
+      transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+      background 0.2s;
+  }
+  .atlas-suggestions button:hover,
+  .atlas-round-button:hover {
+    transform: translateY(-1px);
+  }
+  .atlas-suggestions button:active,
+  .atlas-round-button:active {
+    transform: translateY(1px) scale(0.98);
+  }
+  .atlas-pin-tray {
+    animation: atlas-tray-in 0.24s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  @keyframes atlas-tray-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}

@@ -1,0 +1,597 @@
+/* Atlas Pearl reference geometry, mapped to the shared UI tokens. */
+.pearl-home {
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+}
+.pearl-home-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  min-height: 300px;
+  margin-top: 6px;
+  overflow: hidden;
+  border-radius: 16px;
+  box-shadow: 0 40px 80px -46px rgb(30 40 60 / 55%);
+}
+.pearl-home-hero-copy {
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  gap: 20px;
+  padding: clamp(24px, 3.4vw, 44px);
+  background: var(--pearl);
+}
+.pearl-home-hero-copy h1 {
+  max-width: 30ch;
+  font-size: clamp(22px, 2.3vw, 32px);
+  font-weight: 400;
+  line-height: 1.28;
+  letter-spacing: -0.02em;
+}
+.pearl-home-hero-copy h1 .text-cobalt {
+  font-weight: 500;
+}
+.pearl-home .pearl-home-primary {
+  height: auto;
+  border-radius: 999px;
+  padding: 12px 20px;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-transform: uppercase;
+  background: var(--foreground);
+  color: var(--background);
+}
+.pearl-home-hero .pearl-home-primary {
+  padding: 17px 30px;
+  font-size: 12px;
+}
+.pearl-home-hero .pearl-home-hero-stage {
+  min-height: 240px;
+}
+.pearl-home-date {
+  position: absolute;
+  left: 24px;
+  bottom: 20px;
+  z-index: 2;
+  color: rgb(255 255 255 / 82%);
+  font-size: 52px;
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.pearl-home-date small {
+  display: block;
+  margin-top: 8px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.pearl-home-cards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+.pearl-home-action {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 14px;
+  min-height: 236px;
+  padding: 18px;
+  overflow: hidden;
+  border-radius: 16px;
+  background: var(--mist);
+  color: #fff;
+  text-align: left;
+  box-shadow: 0 26px 50px -34px rgb(30 40 60 / 60%);
+}
+.pearl-home-action > .haze {
+  width: 80%;
+  height: 70%;
+  right: -30%;
+  top: -20%;
+}
+/* Tile artwork uses the original proportional positioning. */
+.pearl-home-action > .pearl-home-action-object {
+  position: absolute;
+  left: 12%;
+  top: 11%;
+  width: 30%;
+  aspect-ratio: 1;
+}
+.pearl-home-action > .pearl-home-action-object.lens {
+  left: 16%;
+  top: 8%;
+  width: 24%;
+  aspect-ratio: 0.85;
+}
+.pearl-home-action-copy {
+  position: relative;
+  display: grid;
+  gap: 2px;
+}
+.pearl-home-action-kicker {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+.pearl-home-action strong {
+  max-width: 18ch;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.3;
+  text-shadow: 0 1px 14px rgb(20 30 50 / 30%);
+}
+.pearl-home-action small {
+  margin-top: 4px;
+  font-size: 12.5px;
+  opacity: 0.88;
+}
+.pearl-home-action-lock {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: rgb(17 20 27 / 40%);
+  font-size: 11.5px;
+}
+.pearl-home-action-lock svg {
+  width: 12px;
+  height: 12px;
+}
+.pearl-home .pearl-home-more {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  align-items: center;
+  gap: 28px;
+  width: 100%;
+  max-width: 720px;
+  margin: 8px auto 0;
+  padding: 30px 36px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--card);
+  box-shadow: none;
+}
+.pearl-home-more h2 {
+  font-size: 26px;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+.pearl-home-more p {
+  max-width: 26ch;
+  margin-top: 8px;
+  color: var(--muted-foreground);
+  font-size: 12.5px;
+}
+.pearl-home-helpers {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+.pearl-home-helper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 2px 0;
+  border: 0;
+  background: transparent;
+  color: var(--foreground);
+  font-size: 14px;
+  font-weight: 500;
+  text-align: left;
+}
+/* Standalone cobalt line icons: no enclosing boxes. */
+.pearl-home-helper-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  color: var(--cobalt);
+}
+.pearl-home-helper-icon svg {
+  width: 16px;
+  height: 16px;
+}
+.pearl-home-helper-tick {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin-left: auto;
+  border: 1.5px solid var(--input);
+  border-radius: 50%;
+}
+.pearl-home-helper[aria-pressed="true"] .pearl-home-helper-tick {
+  background: var(--foreground);
+  border-color: var(--foreground);
+  color: var(--background);
+}
+.pearl-home-helper-tick svg {
+  width: 11px;
+  height: 11px;
+}
+.pearl-home-helpers .pearl-home-helpers-all {
+  width: 100%;
+  height: auto;
+  min-height: 36px;
+  margin-top: 6px;
+  border-radius: 999px;
+  padding: 12px 20px;
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.pearl-home-pins {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.pearl-home-pin {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--accent-soft);
+}
+.pearl-home-pin a,
+.pearl-home-pin button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 10px;
+  font-size: 13px;
+}
+.pearl-home-pin svg {
+  width: 14px;
+  height: 14px;
+  flex: none;
+}
+.pearl-home-section-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-top: 14px;
+}
+.pearl-home-section-title h2 {
+  font-size: 24px;
+  font-weight: 400;
+}
+.pearl-home-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: 16px;
+  min-width: 0;
+}
+.pearl-home-equal {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.pearl-home-three {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+.pearl-home-panel {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--card);
+}
+.pearl-home-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+}
+.pearl-home-panel-header h3 {
+  color: var(--muted-foreground);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.pearl-home-panel-header > small {
+  font-size: 12.5px;
+  color: var(--muted-foreground);
+}
+.pearl-home-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  border-top: 1px solid var(--border);
+}
+.pearl-home-row:first-child {
+  border-top: 0;
+}
+.pearl-home-row-title {
+  font-weight: 500;
+}
+.pearl-home-row small {
+  display: block;
+  color: var(--muted-foreground);
+  font-size: 12.5px;
+}
+.pearl-home-row-icon {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  color: var(--cobalt);
+  background: transparent;
+}
+.pearl-home-row-icon svg {
+  width: 16px;
+  height: 16px;
+}
+.pearl-home-row-icon.neutral {
+  color: var(--muted-foreground);
+  background: transparent;
+}
+.pearl-home-row-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 10px;
+  border: 1px solid var(--input);
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.pearl-home-chip {
+  padding: 2px 7px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--secondary);
+  color: var(--muted-foreground);
+  font-size: 11px;
+  white-space: nowrap;
+}
+.pearl-home-empty {
+  padding: 30px 20px;
+  text-align: center;
+  color: var(--muted-foreground);
+}
+.pearl-home-step {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 12px;
+  padding: 11px 18px;
+  border-top: 1px solid var(--border);
+}
+.pearl-home-step:first-child {
+  border-top: 0;
+}
+.pearl-home-step input {
+  width: 17px;
+  height: 17px;
+  margin-top: 3px;
+  accent-color: var(--cobalt);
+}
+.pearl-home-step small {
+  display: block;
+  color: var(--muted-foreground);
+  font-size: 12.5px;
+}
+.pearl-home-step:where([data-completed="true"]) > span {
+  color: var(--muted-foreground);
+  text-decoration: line-through;
+}
+.pearl-home-table-wrap {
+  overflow-x: auto;
+}
+.pearl-home-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.pearl-home-table th,
+.pearl-home-table td {
+  padding: 11px 16px;
+  border-top: 1px solid var(--border);
+  text-align: left;
+  white-space: nowrap;
+}
+.pearl-home-table th {
+  border-top: 0;
+  background: var(--secondary);
+  color: var(--muted-foreground);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.pearl-home-table th:last-child,
+.pearl-home-table td:last-child {
+  text-align: right;
+}
+.pearl-home-meter {
+  display: grid;
+  grid-template-columns: minmax(90px, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  min-width: 240px;
+}
+.pearl-home-track {
+  position: relative;
+  display: block;
+  height: 10px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: var(--secondary);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+.pearl-home-track i {
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  border-radius: 99px;
+}
+.pearl-home-track .own {
+  background: var(--cobalt);
+  box-shadow: 2px 0 0 var(--surface);
+}
+.pearl-home-meter-value {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 118px;
+  font-variant-numeric: tabular-nums;
+}
+.pearl-home-meter-value b {
+  font-size: 13.5px;
+  font-weight: 600;
+}
+.pearl-home-meter-value small {
+  font-size: 11.5px;
+  color: var(--muted-foreground);
+}
+.pearl-home-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  color: var(--muted-foreground);
+  font-size: 11px;
+}
+.pearl-home-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.pearl-home-legend i {
+  display: inline-block;
+  width: 12px;
+  height: 7px;
+  border-radius: 3px;
+}
+.pearl-home-legend .own {
+  background: var(--cobalt);
+}
+.pearl-home-summary {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  padding: 18px;
+}
+.pearl-home-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.pearl-home-tags span {
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: var(--accent-soft);
+  font-size: 13px;
+}
+.pearl-home-advice {
+  display: grid;
+  gap: 6px;
+  padding: 14px 18px;
+  border-top: 1px solid var(--border);
+}
+.pearl-home-advice:first-child {
+  border-top: 0;
+}
+.pearl-home-advice small {
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+@media (max-width: 1100px) {
+  .pearl-home-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 1000px) {
+  .pearl-home-columns {
+    grid-template-columns: 1fr;
+  }
+  .pearl-home-three {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 900px) {
+  .pearl-home-hero {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 640px) {
+  .pearl-home .pearl-home-more {
+    grid-template-columns: 1fr;
+    padding: 22px;
+  }
+  .pearl-home-three {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 520px) {
+  .pearl-home-cards {
+    grid-template-columns: 1fr;
+  }
+  .pearl-home-row {
+    gap: 8px;
+    padding: 12px 14px;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .pearl-home-action {
+    transition:
+      transform 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 0.32s;
+  }
+  .pearl-home-helper,
+  .pearl-home-row-action,
+  .pearl-home-primary {
+    transition:
+      transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+      opacity 0.18s;
+  }
+  .pearl-home-helper-tick {
+    transition:
+      background 0.2s,
+      border-color 0.2s;
+  }
+  .pearl-home-action:active {
+    transform: translateY(-1px) scale(0.992);
+  }
+  .pearl-home-helper:active,
+  .pearl-home-row-action:active,
+  .pearl-home-primary:active {
+    transform: translateY(1px) scale(0.985);
+  }
+  @media (hover: hover) {
+    .pearl-home-action:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 30px 56px -30px rgb(30 40 60 / 65%);
+    }
+  }
+}

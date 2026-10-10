@@ -8,7 +8,6 @@ import {
   cn,
 } from "@school2036/ui";
 import {
-  ArrowUpRight,
   BarChart3,
   BookOpen,
   Check,
@@ -122,21 +121,28 @@ export function Hero({
   title,
   eyebrow,
   action,
+  date,
 }: {
   title: React.ReactNode;
   eyebrow: string;
   action?: React.ReactNode;
+  date?: Date | null;
 }) {
   return (
-    <section className="grid overflow-hidden rounded-2xl shadow-pearl lg:grid-cols-[1.15fr_.85fr]">
-      <div className="pearl-panel flex flex-col items-start justify-center gap-6 p-7 sm:p-11">
+    <section className="pearl-home-hero">
+      <div className="pearl-home-hero-copy">
         <p className="eyebrow">{eyebrow}</p>
-        <h1 className="max-w-[31ch] text-[clamp(24px,2.3vw,34px)] leading-[1.28]">
-          {title}
-        </h1>
+        <h1>{title}</h1>
         {action}
       </div>
-      <PearlScene className="min-h-60 lg:min-h-80" compact />
+      <PearlScene className="pearl-home-hero-stage">
+        {date && (
+          <span className="pearl-home-date">
+            {String(date.getDate()).padStart(2, "0")}
+            <small>{date.toLocaleDateString("en", { month: "long" })}</small>
+          </span>
+        )}
+      </PearlScene>
     </section>
   );
 }
@@ -156,26 +162,23 @@ export function ActionCard({
   locked?: boolean;
 }) {
   return (
-    <Link
-      href={href}
-      className="mist-panel group relative flex min-h-60 flex-col justify-end overflow-hidden rounded-2xl p-5 shadow-pearl transition-transform hover:-translate-y-1"
-    >
-      <PearlObject kind={kind} className="absolute! left-7 top-6 w-20" />
-      <div className="absolute inset-x-0 bottom-0 h-2/3 bg-linear-to-t from-slate-950/65 via-slate-950/15 to-transparent" />
-      <div className="relative text-white">
-        <p className="mb-2 text-[10px] font-semibold tracking-[.16em] uppercase">
-          {label}
-        </p>
-        <h2 className="text-base font-medium leading-snug">{title}</h2>
-        <p className="mt-2 text-xs leading-relaxed text-white/90">{sub}</p>
-      </div>
+    <Link href={href} className="pearl-home-action">
+      <span className="haze" />
+      <PearlObject
+        kind={kind}
+        core={label !== "Choices"}
+        className="pearl-home-action-object"
+      />
+      <span className="pearl-home-action-copy">
+        <span className="pearl-home-action-kicker">{label}</span>
+        <strong>{title}</strong>
+        <small>{sub}</small>
+      </span>
       {locked && (
-        <span className="absolute top-3 right-3 rounded-full bg-slate-950/70 px-2 py-1 text-[10px] text-white">
-          <LockKeyhole className="mr-1 inline size-3" />
-          At school
+        <span className="pearl-home-action-lock">
+          <LockKeyhole /> School network only
         </span>
       )}
-      <ArrowUpRight className="absolute right-4 bottom-5 size-4 text-white opacity-0 transition-opacity group-hover:opacity-100" />
     </Link>
   );
 }

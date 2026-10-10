@@ -6,6 +6,10 @@ export default defineConfig({
   ...config,
   testMatch: [
     "pearl.spec.ts",
+    "pearl-motion.spec.ts",
+    "spotlight.spec.ts",
+    "rich-message.spec.ts",
+    "composer.spec.ts",
     "preview-regressions.spec.ts",
     "preview-storage.spec.ts",
     "files-regressions.spec.ts",
