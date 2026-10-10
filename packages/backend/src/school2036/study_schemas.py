@@ -65,7 +65,7 @@ class AccessView(BaseModel):
 
 
 class ConversationInput(StudyInput):
-    lesson_ids: list[UUID] = Field(min_length=1, max_length=8)
+    lesson_ids: list[UUID] = Field(default_factory=list, max_length=8)
 
 
 class ConversationView(BaseModel):

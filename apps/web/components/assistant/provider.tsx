@@ -122,6 +122,10 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
     (session: Session, section: string) => {
       if (identity.current !== session.account_id) {
         reset();
+        // Child layout effects can register the Study slot before this account
+        // registration. Initialize from the screen after resetting private data,
+        // without overriding the user's mode during same-account revalidation.
+        setMode(section === "study" ? "study" : "atlas");
         identity.current = session.account_id;
       }
       const token = Symbol();
@@ -306,7 +310,7 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
                       aria-pressed={mode === "study"}
                       onClick={() => setMode("study")}
                     >
-                      Selected lessons
+                      Study session
                     </button>
                     <button
                       type="button"
@@ -445,7 +449,7 @@ export function useAssistantSession(session: Session, section: string) {
   );
   return reset;
 }
-/** The source-backed conversation uses the same dock, with no duplicate prompt. */
+/** Study uses the same dock, with optional lesson sources and no duplicate prompt. */
 export function StudyAssistantSlot({
   children,
 }: {

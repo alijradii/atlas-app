@@ -1,5 +1,44 @@
 # Verification — October 10, 2026
 
+## Talk-first Study and application demo
+
+Study now creates a saved conversation and sends the first question directly from
+its initial Pearl composer. Zero selected sources means general tutoring, with no
+RAG request, private-library access or citations. One to eight selected sources
+retain strict authorized retrieval and inspectable quotations. A retrieval miss
+never silently falls back to a general answer. Quotas, cancellation, ownership,
+session rechecks and request idempotency apply to both modes.
+
+`SCHOOL_TEST_SCANNER=1 make check` passed **64 Bun tests and 200 Python tests**,
+including eight new backend cases. Lint, types, generated contracts, production
+build and application audits passed. The final complete compiled Chrome suite
+passed **89/89 scenarios**, including three new talk-first cases. Frontend checks
+were repeated after the final mode and test-isolation fixes.
+
+Compiled testing exposed a mount-order issue hidden by development Strict Mode:
+account registration reset the initial Study mode back to Ask Atlas. Initialization
+now selects the mode from the authenticated screen, while same-account refreshes
+preserve the user's choice. New chat explicitly opens Study, including when already
+on its empty page. Tests also exposed the enlarged suite exhausting a shared test
+account's real login throttle; the new scenario now has its own disposable account.
+No production security limit was relaxed.
+
+The actual local app was recorded using populated fictional database accounts,
+with real Gemini UI guidance, general tutoring, scoped RAG answers and source
+inspection. Teacher, advisor and parent views use saved data. The captioned silent
+MP4 is about 1 minute 56 seconds, 1600×900 at 30 fps. One processing wait is edited
+and labeled. Representative output frames were inspected; capture logged no page
+errors. Raw captures, manifest and final video are ignored artifacts under
+`.cache/output/playwright/atlas-demo/`. The supplied unfinished team presentation
+informed the problem/solution titles; no template figures are presented as results.
+
+See [DEMO_BRIEF.md](DEMO_BRIEF.md) for formal framing, narration, claim boundaries,
+submission requirements and corrected technical-slide labels. Before public
+launch, the existing security, retention and deployment gates still require work;
+this change does not claim production approval. The local login page returned 200
+after the final build. The next presentation step is for the team to add narration
+and combine the reel with its slides; no external upload or submission was made.
+
 ## Persistent assistant and database demo sign-in
 
 The root account-bound assistant now survives authenticated navigation, including

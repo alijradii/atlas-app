@@ -188,8 +188,9 @@ def _answer(sessions, providers, run_id, job_attempt, job_id):
             )
         ]
         history.reverse()
-        run.state, run.updated = "retrieving", time.time()
-    passages = providers.retrieve(question, list(sources))
+        run.state, run.updated = ("retrieving" if sources else "answering"), time.time()
+    # An explicit empty scope is general tutoring, never an all-library search.
+    passages = providers.retrieve(question, list(sources)) if sources else []
     # Recheck before a second paid operation; RAG evidence never grants access.
     with sessions.begin() as db:
         _lease(db, job_id, job_attempt)
@@ -203,7 +204,11 @@ def _answer(sessions, providers, run_id, job_attempt, job_id):
             raise ProviderUnavailable(
                 "invalid_scope", "The study service returned invalid sources."
             )
-    answer = providers.answer(question, history, passages)
+    answer = (
+        providers.answer(question, history, passages)
+        if sources
+        else providers.answer_general(question, history)
+    )
     citations = [
         {
             "index": i,

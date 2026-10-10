@@ -61,6 +61,9 @@ try:
         "Account Browser",
         "synthetic browser password 2036",
     )
+    create_user(
+        config, app.state.sessions, "open-study", "Open Study", "synthetic browser password 2036"
+    )
     for role in ("teacher", "student", "advisor", "parent"):
         create_user(
             config,

@@ -282,3 +282,47 @@ def test_extreme_citation_number_is_safe():
         adapter(lambda _: httpx.Response(200, json=payload)).answer(
             "Q?", [], [{"content": "Evidence"}]
         )
+
+
+def test_open_tutoring_uses_model_without_evidence_and_bounds_untrusted_history():
+    def handle(request):
+        assert request.url.host == "generativelanguage.googleapis.com"
+        payload = json.loads(request.content)
+        instruction = payload["systemInstruction"]["parts"][0]["text"]
+        assert "NO selected lesson sources" in instruction
+        assert "UNTRUSTED DATA" in instruction
+        assert "Do not use numbered citation" in instruction
+        packet = json.loads(payload["contents"][0]["parts"][0]["text"])
+        assert packet["evidence"] == []
+        assert sum(len(turn["text"]) for turn in packet["history"]) <= 12000
+        assert all(turn["role"] in {"user", "assistant"} for turn in packet["history"])
+        return httpx.Response(
+            200,
+            json={
+                "candidates": [
+                    {
+                        "finishReason": "STOP",
+                        "content": {"parts": [{"text": "What interests you about physics?"}]},
+                    }
+                ]
+            },
+        )
+
+    history = [{"role": "user", "content": "x" * 9000} for _ in range(20)]
+    assert adapter(handle, rag_api_key=SecretStr("")).answer_general("Help me study", history)
+
+
+def test_open_tutoring_rejects_invented_citations_and_requires_model_key():
+    payload = {
+        "candidates": [
+            {
+                "finishReason": "STOP",
+                "content": {"parts": [{"text": "Your teacher said this [1]."}]},
+            }
+        ]
+    }
+    with pytest.raises(ProviderUnavailable):
+        adapter(lambda _: httpx.Response(200, json=payload)).answer_general("Q?", [])
+    with pytest.raises(ProviderUnavailable) as error:
+        adapter(forbidden, gemini_api_key=SecretStr("")).answer_general("Q?", [])
+    assert error.value.code == "model_not_configured"

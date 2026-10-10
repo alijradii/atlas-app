@@ -51,7 +51,7 @@ export function WorkspaceHome({
       date={date}
     >
       <PearlHomeHelpers
-        description="Choose what you’d like help with. You’ll select your lesson sources and review the question before sending."
+        description="Choose what you’d like help with, then send your question. Add lesson sources if you want answers grounded in your material."
         items={studyActions.map((item) => ({
           ...item,
           enabled: selected.includes(item.id),

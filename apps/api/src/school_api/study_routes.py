@@ -318,7 +318,7 @@ def study_router(config, sessions):
             value = StudyConversation(
                 id=str(uuid4()),
                 owner=user.id,
-                title=selected[0].title,
+                title=selected[0].title if selected else "Study session",
                 lesson_ids=[lesson.id for lesson in selected],
                 created=now,
                 updated=now,
@@ -377,12 +377,11 @@ def study_router(config, sessions):
                         409, "That request key was already used for another message"
                     )
                 return run_view(prior)
-            if (
-                not config.gemini_api_key.get_secret_value()
-                or not config.rag_api_key.get_secret_value()
+            if not config.gemini_api_key.get_secret_value() or (
+                c.lesson_ids and not config.rag_api_key.get_secret_value()
             ):
                 raise HTTPException(
-                    503, "Study providers are not configured. Your transcripts are saved."
+                    503, "Study providers are not configured. Your conversation is saved."
                 )
             if any(lesson_for(db, user.id, key).state != "ready" for key in c.lesson_ids):
                 raise HTTPException(409, "A selected transcript is not ready")
@@ -408,9 +407,7 @@ def study_router(config, sessions):
                 .where(StudyMessage.conversation_id == c.id)
             )
             if length >= 100:
-                raise HTTPException(
-                    409, "Start a new conversation to continue studying these lessons"
-                )
+                raise HTTPException(409, "Start a new conversation to continue studying")
             now = time.time()
             value = StudyMessage(
                 id=str(uuid4()),
@@ -436,6 +433,8 @@ def study_router(config, sessions):
             db.add(run)
             db.flush()
             c.updated = now
+            if not c.lesson_ids and length == 0:
+                c.title = " ".join(data.content.split())[:160]
             enqueue(db, "study.answer", user.id, {"run_id": run.id})
             audit(db, "study.answer_requested", user.id, run.id)
             return run_view(run)

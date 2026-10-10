@@ -73,11 +73,13 @@ export default function StudyApp({
   const study = useStudy();
   const router = useRouter();
   const selectThread = study.selectThread;
+  const { openStudy } = useAssistant();
   useEffect(() => {
     if (!newConversation) return;
+    openStudy();
     selectThread(null);
     router.replace("/study", { scroll: false });
-  }, [newConversation, router, selectThread]);
+  }, [newConversation, openStudy, router, selectThread]);
   if (study.signedOut)
     return (
       <main id="main-content" className="study-gate">
@@ -125,6 +127,10 @@ function StudyWorkspace({
   initialLessonId?: string;
 }) {
   const [pendingDraft, setPendingDraft] = useState("");
+  const [pendingAttempt, setPendingAttempt] = useState<{
+    content: string;
+    id: string;
+  } | null>(null);
   const draftRead = useRef(false);
   useEffect(() => {
     if (draftRead.current || !study.session) return;
@@ -153,14 +159,19 @@ function StudyWorkspace({
     (lesson) =>
       filter === "all" || (filter === "own" ? lesson.owned : !lesson.owned),
   );
+  const needsSources = study.selectedId
+    ? Boolean(study.thread?.lesson_ids.length)
+    : selectedReady.length > 0;
   const configured =
-    study.status?.rag_configured && study.status.answer_configured;
+    study.status?.answer_configured &&
+    (!needsSources || study.status.rag_configured);
+  const starting = useRef(false);
   const openLesson = (lesson: Lesson) => {
     study.setError("");
     setInspecting({ id: lesson.id });
   };
   const start = async () => {
-    if (!selectedReady.length || selectedReady.length > maxConversationLessons)
+    if (selectedReady.length > maxConversationLessons || starting.current)
       return;
     const result = await study.mutate<Conversation>(
       "/study/conversations",
@@ -169,13 +180,46 @@ function StudyWorkspace({
     );
     if (result.ok && result.value) study.selectThread(result.value.id);
   };
+  const startWithMessage = async (content: string) => {
+    const question = content.trim();
+    if (
+      !question ||
+      questionBytes(question) > 2000 ||
+      !configured ||
+      study.busy ||
+      starting.current
+    )
+      return;
+    starting.current = true;
+    setPendingDraft(question);
+    try {
+      const created = await study.mutate<Conversation>(
+        "/study/conversations",
+        "POST",
+        { lesson_ids: selectedReady },
+      );
+      if (!created.ok || !created.value) return;
+      const attempt = { content: question, id: crypto.randomUUID() };
+      const sent = await study.mutate(
+        `/study/conversations/${created.value.id}/messages`,
+        "POST",
+        { content: question, request_id: attempt.id },
+      );
+      setPendingAttempt(sent.ok ? null : attempt);
+      if (sent.ok) setPendingDraft("");
+      // Even if sending fails, reuse the saved session and retain the question.
+      study.selectThread(created.value.id, !sent.ok);
+    } finally {
+      starting.current = false;
+    }
+  };
   const tools = (
     <Panel className="study-sidebar" title="Your learning space">
       <div className="study-sidebar-intro">
         <p className="eyebrow">{study.session?.name}</p>
         <p>
-          Choose the lessons you want to work with. Every answer can lead back
-          to its source.
+          Start with a question, or choose lessons to ground your conversation
+          in your own material.
         </p>
       </div>
       <section
@@ -216,7 +260,7 @@ function StudyWorkspace({
         <p className="study-small">
           {selectedReady.length === maxConversationLessons
             ? "8 of 8 lessons selected. Uncheck one to choose another."
-            : "Select up to 8 ready lessons for a new conversation."}
+            : "Optionally select up to 8 ready lessons for a new conversation."}
         </p>
         <div className="study-lesson-list" data-guide-anchor="study.transcript">
           {lessons.map((lesson) => (
@@ -306,14 +350,14 @@ function StudyWorkspace({
                   ? "Lessons shared with your account will appear here."
                   : filter === "own"
                     ? "You haven’t added a lesson yet."
-                    : "Add your first transcript to begin."}
+                    : "Your lessons will appear here. You can already start talking below."}
               </p>
             </div>
           )}
         </div>
         <Button
           className="study-new-chat"
-          disabled={study.busy || !selectedReady.length}
+          disabled={study.busy}
           onClick={() => void start()}
         >
           <Plus />
@@ -426,9 +470,9 @@ function StudyWorkspace({
             <div className="study-service-notice">
               <p>
                 <strong>Study responses aren’t connected yet.</strong>{" "}
-                {!study.status.rag_configured
-                  ? "The lesson retrieval service needs to be configured."
-                  : "The answer service needs to be configured."}{" "}
+                {!study.status.answer_configured
+                  ? "The answer service needs to be configured."
+                  : "The lesson retrieval service needs to be configured for selected sources."}{" "}
                 Your saved lessons and conversations remain available.
               </p>
             </div>
@@ -439,7 +483,11 @@ function StudyWorkspace({
               study={study}
               thread={study.thread}
               initialDraft={pendingDraft}
-              onDraftConsumed={() => setPendingDraft("")}
+              initialAttempt={pendingAttempt}
+              onDraftConsumed={() => {
+                setPendingDraft("");
+                setPendingAttempt(null);
+              }}
               configured={Boolean(configured)}
               onCitation={(citation) =>
                 setInspecting({ id: citation.lesson_id, citation })
@@ -447,20 +495,7 @@ function StudyWorkspace({
               onLesson={(id) => setInspecting({ id })}
             />
           ) : (
-            <PearlChatEmpty description="Choose the lessons you want to work through, or add a document or recording. We’ll take it one step at a time.">
-              {pendingDraft && (
-                <div className="study-draft-notice">
-                  <strong>Your question is ready</strong>
-                  <p>{pendingDraft}</p>
-                  <span>
-                    Choose ready lessons, then start a conversation to review
-                    and send it.
-                  </span>
-                  <button type="button" onClick={() => setPendingDraft("")}>
-                    Discard question
-                  </button>
-                </div>
-              )}
+            <PearlChatEmpty description="Ask a question and we’ll start a study session. Choose lessons when you want answers grounded in your own material.">
               <div className="study-welcome-actions">
                 <Button asChild>
                   <Link href="/files">
@@ -483,6 +518,36 @@ function StudyWorkspace({
                   </Button>
                 )}
               </div>
+              <StudyAssistantSlot>
+                {(minimize) => (
+                  <Composer
+                    inline
+                    value={pendingDraft}
+                    onChange={setPendingDraft}
+                    onSubmit={(text) => void startWithMessage(text)}
+                    label="Start a study session"
+                    sendLabel="Send study message"
+                    disabled={!configured}
+                    sendDisabled={
+                      study.busy || questionBytes(pendingDraft) > 2000
+                    }
+                    inputInvalid={questionBytes(pendingDraft) > 2000}
+                    placeholder="What would you like to understand?"
+                    hint={
+                      selectedReady.length
+                        ? `Using ${selectedReady.length} selected lesson${selectedReady.length === 1 ? "" : "s"}. Check sources; AI can make mistakes.`
+                        : "Start talking. Add lesson sources whenever you start a new session."
+                    }
+                    onMinimize={minimize}
+                    moreOptions={[
+                      {
+                        label: "Upload documents or recordings",
+                        href: "/files",
+                      },
+                    ]}
+                  />
+                )}
+              </StudyAssistantSlot>
             </PearlChatEmpty>
           )}
         </section>
@@ -528,6 +593,7 @@ function ConversationPane({
   thread,
   configured,
   initialDraft,
+  initialAttempt,
   onDraftConsumed,
   onCitation,
   onLesson,
@@ -536,6 +602,7 @@ function ConversationPane({
   thread: Thread | null;
   configured: boolean;
   initialDraft: string;
+  initialAttempt: { content: string; id: string } | null;
   onDraftConsumed: () => void;
   onCitation: (citation: Citation) => void;
   onLesson: (id: string) => void;
@@ -546,7 +613,7 @@ function ConversationPane({
     if (initialDraft) onDraftConsumed();
   }, [initialDraft, onDraftConsumed]);
   const questionTooLong = questionBytes(draft) > 2000;
-  const attempt = useRef<{ content: string; id: string } | null>(null);
+  const attempt = useRef(initialAttempt);
   const scroll = useRef<HTMLDivElement>(null);
   const composer = useRef<HTMLDivElement>(null);
   const nearEnd = useRef(true);
@@ -585,6 +652,7 @@ function ConversationPane({
         Opening your conversation…
       </div>
     );
+  const grounded = thread.lesson_ids.length > 0;
   const lastQuestion = [...thread.messages]
     .reverse()
     .find((message) => message.role === "user");
@@ -593,6 +661,12 @@ function ConversationPane({
       <header className="study-conversation-header">
         <p className="eyebrow">Saved to your account</p>
         <h2>{thread.title || "New conversation"}</h2>
+        {!grounded && (
+          <p className="study-small">
+            Open study session · No lesson sources attached. AI explanations can
+            make mistakes.
+          </p>
+        )}
         <section
           className="study-source-chips"
           aria-label="Conversation lessons"
@@ -616,7 +690,15 @@ function ConversationPane({
             90;
         }}
       >
-        {!thread.messages.length && <PearlChatEmpty />}
+        {!thread.messages.length && (
+          <PearlChatEmpty
+            description={
+              grounded
+                ? "Try a concept from your lesson. We’ll take it one step at a time."
+                : "Start with a topic, a question, or something you’re curious about."
+            }
+          />
+        )}
 
         <div
           className="space-y-6"
@@ -669,7 +751,9 @@ function ConversationPane({
                 </span>
               )}
               <p>
-                {runState[thread.run.state]}
+                {thread.run.state === "answering" && !grounded
+                  ? "Thinking through your question"
+                  : runState[thread.run.state]}
                 {thread.run.error && <small>{thread.run.error}</small>}
               </p>
               {!running && lastQuestion && (
@@ -687,17 +771,36 @@ function ConversationPane({
       </div>
       <fieldset className="atlas-chat-suggestions">
         <legend className="sr-only">Suggested questions</legend>
-        {[
-          ["Explain the key ideas", "Explain the key ideas in these lessons."],
-          [
-            "Walk me through an example",
-            "Walk me through an example from these lessons, one step at a time.",
-          ],
-          [
-            "Ask me a practice question",
-            "Ask me a practice question based on these lessons. Let me try before showing the answer.",
-          ],
-        ].map(([label, question]) => (
+        {(grounded
+          ? [
+              [
+                "Explain the key ideas",
+                "Explain the key ideas in these lessons.",
+              ],
+              [
+                "Walk me through an example",
+                "Walk me through an example from these lessons, one step at a time.",
+              ],
+              [
+                "Ask me a practice question",
+                "Ask me a practice question based on these lessons. Let me try before showing the answer.",
+              ],
+            ]
+          : [
+              [
+                "Help me get started",
+                "Help me choose a study goal. Ask what I am learning and what feels difficult.",
+              ],
+              [
+                "Walk me through an example",
+                "Help me understand a topic with a worked example. Ask which topic I want to explore first.",
+              ],
+              [
+                "Ask me a practice question",
+                "Help me practice a topic. Ask which topic, then let me try before showing the answer.",
+              ],
+            ]
+        ).map(([label, question]) => (
           <Button
             type="button"
             key={label}
@@ -730,7 +833,9 @@ function ConversationPane({
               value={draft}
               onChange={setDraft}
               onSubmit={(text) => void send(text)}
-              label="Ask about your lessons"
+              label={
+                grounded ? "Ask about your lessons" : "Message your study agent"
+              }
               sendLabel="Send study message"
               disabled={!configured}
               sendDisabled={study.busy || running || questionTooLong}
@@ -740,10 +845,16 @@ function ConversationPane({
               }
               placeholder={
                 configured
-                  ? "Ask about your selected lessons…"
+                  ? grounded
+                    ? "Ask about your selected lessons…"
+                    : "Keep exploring, one question at a time…"
                   : "Responses will be available when the services are connected"
               }
-              hint="Check the sources. AI explanations can make mistakes."
+              hint={
+                grounded
+                  ? "Check the sources. AI explanations can make mistakes."
+                  : "No lesson sources attached. AI explanations can make mistakes."
+              }
               moreOptions={[
                 { label: "Upload documents or recordings", href: "/files" },
               ]}

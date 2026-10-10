@@ -8,9 +8,10 @@ IDs, arbitrary selectors or executable actions are accepted from the client.
 The backend authenticates the cookie, verifies CSRF/origin, derives current roles from the database,
 and calls the configured Gemini provider. The assistant can explain interface actions and return
 one highlight. It cannot click, submit, upload, change settings or read private lesson content.
-Source-based study conversations remain separate: selected sources, retrieval, citations and
-conversation ownership continue to use the existing study API. Asking Atlas about one's lesson
-should direct the user to that source-selection workflow rather than fabricate lesson access.
+Study conversations remain separate: optional selected sources, retrieval, citations and
+conversation ownership continue to use the existing study API. Study starts immediately
+without a source prerequisite; private materials are accessed only when explicitly selected.
+Asking Atlas about a lesson should direct the user into Study rather than fabricate lesson access.
 
 ## Actual MCP integration
 

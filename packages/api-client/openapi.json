@@ -465,14 +465,10 @@
               "type": "string"
             },
             "maxItems": 8,
-            "minItems": 1,
             "title": "Lesson Ids",
             "type": "array"
           }
         },
-        "required": [
-          "lesson_ids"
-        ],
         "title": "ConversationInput",
         "type": "object"
       },

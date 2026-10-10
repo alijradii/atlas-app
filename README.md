@@ -18,7 +18,7 @@ The assistant stays available across authenticated screens, keeping its draft an
 minimized state during navigation. Questions and suggestion buttons call Gemini;
 UI help loads role-aware instructions through the real read-only MCP server and
 highlights the relevant control. See [UI_ASSISTANT.md](docs/UI_ASSISTANT.md).
-Source-backed Study uses the same dock with a Selected lessons mode and citations.
+Study uses the same dock: start talking immediately, or select lesson sources for cited answers.
 Window/workspace switches refresh authorization in the background without blanking
 same-account content. All text areas grow automatically to a capped height.
 
@@ -28,6 +28,9 @@ work and normal session/role authorization; they are not runtime hardcoded users
 [DEMO_ACCOUNTS.md](docs/DEMO_ACCOUNTS.md) describes population and login migration.
 Public fake-account buttons have been removed. The release gates in
 [SECURITY.md](docs/SECURITY.md) still apply before public deployment.
+
+Pitch framing, demo narration and corrected technical labels are in
+[DEMO_BRIEF.md](docs/DEMO_BRIEF.md).
 
 ## Retained infrastructure
 

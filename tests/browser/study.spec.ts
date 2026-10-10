@@ -53,7 +53,7 @@ test("real study API saves a transcript, answers with a source, restores history
   await expect(selection).toBeEnabled({ timeout: 60000 });
   await expect(
     page.getByRole("button", { name: "New conversation", exact: true }),
-  ).toBeDisabled();
+  ).toBeEnabled();
   await selection.check();
   await page
     .getByRole("button", { name: "New conversation · 1 lesson", exact: true })

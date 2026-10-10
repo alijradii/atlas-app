@@ -33,3 +33,9 @@ class BrowserStudyProviders:
         if not passages:
             return "No supporting passages were found in these transcripts."
         return "Here is the relevant lesson passage:\n\n" + passages[0]["content"] + " [1]"
+
+    def answer_general(self, question, history):
+        return (
+            "Let's work through it together. Start with what you already know, "
+            "then try one small step. What part would you like to understand?"
+        )

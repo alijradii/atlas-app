@@ -44,13 +44,16 @@ export function useStudy() {
     setSignedOut(true);
     setBusy(false);
   }, [clearPrivate]);
-  const selectThread = useCallback((id: string | null) => {
-    readAbort.current?.abort();
-    setThread(null);
-    setSelectedId(id);
-    setError("");
-    setRevision((value) => value + 1);
-  }, []);
+  const selectThread = useCallback(
+    (id: string | null, preserveError = false) => {
+      readAbort.current?.abort();
+      setThread(null);
+      setSelectedId(id);
+      if (!preserveError) setError("");
+      setRevision((value) => value + 1);
+    },
+    [],
+  );
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: revision deliberately restarts reads after a mutation or explicit retry.
   useEffect(() => {

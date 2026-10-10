@@ -42,6 +42,12 @@ async function open(page: Page) {
     await page
       .getByRole("button", { name: "Open Atlas assistant", exact: true })
       .click();
+  if (new URL(page.url()).pathname === "/study") {
+    await page
+      .getByRole("group", { name: "Assistant mode", exact: true })
+      .getByRole("button", { name: "Ask Atlas", exact: true })
+      .click();
+  }
   await expect(input(page)).toBeVisible();
 }
 
@@ -130,6 +136,14 @@ test("assistant draft and minimized state survive route changes, with one compos
     await open(page);
     await expect(input(page)).toHaveCount(1);
     await expect(input(page)).toHaveValue(question);
+    if (href === "/study") {
+      const rechecked = page.waitForResponse((response) =>
+        new URL(response.url()).pathname.endsWith("/auth/me"),
+      );
+      await page.evaluate(() => window.dispatchEvent(new Event("focus")));
+      await rechecked;
+      await expect(input(page)).toHaveValue(question);
+    }
     await page.getByRole("button", { name: "Minimize assistant" }).click();
   }
   expect(calls).toBe(0);
@@ -152,7 +166,11 @@ test("failed assistant calls preserve the question and explicit retry makes one 
   await open(page);
   await input(page).fill(question);
   await page.getByRole("button", { name: "Send message", exact: true }).click();
-  await expect(page.getByRole("alert")).toBeVisible();
+  await expect(
+    page
+      .getByRole("region", { name: "Atlas conversation", exact: true })
+      .getByRole("alert"),
+  ).toBeVisible();
   expect(messages).toEqual([question]);
   await page.getByRole("button", { name: /retry|try again/i }).click();
   await expect(page.getByText(response.answer, { exact: true })).toBeVisible();

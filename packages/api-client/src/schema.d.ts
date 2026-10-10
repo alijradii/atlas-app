@@ -873,7 +873,7 @@ export interface components {
         /** ConversationInput */
         ConversationInput: {
             /** Lesson Ids */
-            lesson_ids: string[];
+            lesson_ids?: string[];
         };
         /** ConversationView */
         ConversationView: {

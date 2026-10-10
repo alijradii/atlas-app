@@ -594,3 +594,108 @@ def test_followup_without_hits_does_not_treat_old_answer_as_evidence_or_pay_mode
     assert detail["messages"][-1]["content"] == NO_EVIDENCE
     assert detail["messages"][-1]["citations"] == []
     assert calls == ["/v1/rag/naive"]
+
+
+def test_open_study_persists_without_rag_and_keeps_history_private(study):
+    client, app, config = study
+    config.rag_api_key = SecretStr("")
+    response = client.post(BASE + "/conversations", json={})
+    assert response.status_code == 201
+    cid = response.json()["id"]
+    assert response.json()["lesson_ids"] == []
+    assert response.json()["title"] == "Study session"
+    request_id = str(uuid4())
+    run = send(client, cid, request_id)
+    assert send(client, cid, request_id) == run
+    requests = []
+
+    def tutor(request):
+        requests.append(request)
+        assert request.url.host == "generativelanguage.googleapis.com"
+        body = json.loads(request.content)
+        packet = json.loads(body["contents"][0]["parts"][0]["text"])
+        assert packet["evidence"] == []
+        if len(requests) == 2:
+            assert [turn["role"] for turn in packet["history"]] == ["user", "assistant"]
+        return httpx.Response(
+            200,
+            json={
+                "candidates": [
+                    {
+                        "finishReason": "STOP",
+                        "content": {"parts": [{"text": "Try dividing force by mass."}]},
+                    }
+                ]
+            },
+        )
+
+    provider = StudyProviders(config, transport=httpx.MockTransport(tutor))
+    process(study, "study.answer", run, provider)
+    detail = client.get(BASE + f"/conversations/{cid}").json()
+    assert detail["run"]["state"] == "completed"
+    assert detail["title"] == "How do I find acceleration?"
+    assert [m["role"] for m in detail["messages"]] == ["user", "assistant"]
+    assert all(m["citations"] == [] for m in detail["messages"])
+    assert client.get(BASE + "/conversations").json()[0]["id"] == cid
+    process(study, "study.answer", send(client, cid), provider)
+    assert len(requests) == 2
+    with other_client(study, "bob") as bob:
+        assert bob.get(BASE + f"/conversations/{cid}").status_code == 404
+        assert bob.get(BASE + "/conversations").json() == []
+    assert run_state(app, run)[0] == "completed"
+
+
+@pytest.mark.parametrize("stop", ["cancel", "logout", "expiry", "conversation"])
+def test_open_study_discards_output_after_access_or_run_changes(study, stop):
+    client, app, config = study
+    cid = client.post(BASE + "/conversations", json={"lesson_ids": []}).json()["id"]
+    run = send(client, cid)
+
+    def tutor(request):
+        assert request.url.host == "generativelanguage.googleapis.com"
+        if stop == "cancel":
+            assert client.post(BASE + f"/conversations/{cid}/cancel").status_code == 200
+        elif stop == "logout":
+            assert client.post("/api/v1/auth/logout").status_code == 200
+        elif stop == "expiry":
+            with app.state.sessions.begin() as db:
+                db.get(AuthSession, db.get(StudyRun, run).session_hash).expires = time.time() - 1
+        else:
+            assert client.delete(BASE + f"/conversations/{cid}").status_code == 204
+        return httpx.Response(
+            200,
+            json={
+                "candidates": [
+                    {
+                        "finishReason": "STOP",
+                        "content": {"parts": [{"text": "Discard this answer."}]},
+                    }
+                ]
+            },
+        )
+
+    process(
+        study, "study.answer", run, StudyProviders(config, transport=httpx.MockTransport(tutor))
+    )
+    state, _, count = run_state(app, run)
+    assert state == ("cancelled" if stop in {"cancel", "conversation"} else "failed")
+    assert count == 0
+
+
+def test_open_study_keeps_model_budget_auth_and_csrf_limits(study):
+    client, app, config = study
+    with TestClient(app, headers={"Origin": config.public_origin}) as guest:
+        assert guest.post(BASE + "/conversations", json={}).status_code == 401
+    csrf = client.headers.pop("X-CSRF-Token")
+    assert client.post(BASE + "/conversations", json={}).status_code == 403
+    client.headers["X-CSRF-Token"] = csrf
+    cid = client.post(BASE + "/conversations", json={}).json()["id"]
+    payload = {"content": "Help me study", "request_id": str(uuid4())}
+    config.gemini_api_key = SecretStr("")
+    assert client.post(BASE + f"/conversations/{cid}/messages", json=payload).status_code == 503
+    config.gemini_api_key = SecretStr("test-gemini-placeholder")
+    config.study_daily_requests = 1
+    send(client, cid)
+    assert client.post(BASE + f"/conversations/{cid}/messages", json=payload).status_code == 409
+    client.post(BASE + f"/conversations/{cid}/cancel")
+    assert client.post(BASE + f"/conversations/{cid}/messages", json=payload).status_code == 429

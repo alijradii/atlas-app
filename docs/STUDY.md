@@ -1,34 +1,38 @@
-# Transcript-based study
+# Study sessions and optional lesson sources
 
-`/study` is the real authenticated workspace. `/preview/*` remains a design/sample
-workspace. Preview identities do not grant real access. Teacher-published lessons
+`/study` is the real authenticated workspace. `/preview/*` is available only in the browser-test harness. Fixture identities do not grant real access. Teacher-published lessons
 require an explicit, currently valid student relationship; see [SCHOOL.md](SCHOOL.md).
 
 Study uses the same Pearl sidebar, message renderer, composer and collapsible
 assistant dock as the main interface. The source library stays next to the
 conversation (above it on narrow screens). Home questions transfer as private
-in-memory drafts: choose sources, create a conversation and send explicitly.
+in-memory drafts. Start talking to create a saved session directly; selecting sources
+is optional.
 Nothing is automatically submitted or indexed by opening the screen. The sidebar's
-New chat action returns to source selection without deleting saved conversations.
+New chat action opens a fresh composer without deleting saved conversations.
 
 ## Use it
 
 1. Provision an account with `make create-user`, then sign in at `/login`.
-2. Open `/study` and add a lesson title, optional subject and transcript. Paste text
+2. Open `/study` and send a question to start a general study session immediately.
+   It uses the same saved history, run status and cancellation controls as source-based
+   study, without requiring retrieval configuration or accessing your library.
+   To ground answers in your material, add a lesson title, optional subject and transcript. Paste text
    or import a text/Markdown file. Accepted transcript length is 30–45,000 characters.
    Alternatively upload a document or recording in `/files`, then choose **Use for study**.
    Text/PDF/DOCX extraction and audio/video transcription produce a review draft, not immediate evidence.
    Open it in Study, correct the transcript, then **Approve and prepare lesson**.
 3. Wait for preparation: `queued → indexing → ready`, or an explicit `failed` state.
-4. Select one to eight ready lessons and start a conversation. Selection is fixed
+4. Optionally select one to eight ready lessons and start a conversation. Selection is fixed
    for that conversation; start another to study a different set.
-5. Ask a question. The run progresses through queued, retrieving and answering.
-   Completed replies include numbered references and literal source quotations.
+5. Ask a question. General tutoring progresses from queued to answering and has no
+   source citations. Selected-source sessions also retrieve evidence; grounded replies
+   include numbered references and literal source quotations.
 6. Owners can grant lesson access to another active account by login and revoke it
    later. Shared readers make their own private conversations; sharing a lesson does
    not share its owner's chat history.
 
-Questions are limited to 2,000 UTF-8 bytes. If retrieval finds no supporting passages,
+Questions are limited to 2,000 UTF-8 bytes. For a selected-source session, if retrieval finds no supporting passages,
 the assistant reports that limitation without calling the answer model. A missing
 hit is not proof that the material contains no answer. Answers are AI-generated;
 citations let readers inspect the evidence, not certify every generated claim.
@@ -40,6 +44,11 @@ layer (up to 300 pages); it does not interpret diagrams or perform OCR. DOCX imp
 read the main document body. There is no live recording or class-joining feature.
 The study assistant does not grade official assessments or execute actions suggested by model text. The study model has no executable tools. The supplied service's separate MCP
 adapter is not exposed directly to users; the app uses its authenticated HTTP API.
+
+General sessions never search all private materials implicitly. They make a bounded
+Gemini tutoring request using the recent conversation and encourage the learner to
+reason through a focused next step. This is a prompt-level behavior, not an enforced
+independent-assessment mechanism. Source scope is fixed when a session is created.
 
 ## Configure the providers
 
@@ -173,8 +182,8 @@ claim of transcription accuracy across accents, languages or noisy classrooms.
 ### Persistent assistant integration
 
 The dock lives above page routes and remains available in Files, Account and school
-screens. In an active source-backed conversation, Selected lessons uses the normal
-study API; Ask Atlas switches to the UI-help agent without a second floating input.
+screens. Study session uses the normal study API, with or without selected lessons;
+Ask Atlas switches to the UI-help agent without a second floating input.
 Suggested study questions now send a real request against that conversation's
 selected sources. They are disabled while a request is active. Interface guidance
 uses the separate read-only MCP catalog and cannot retrieve private lesson text.
