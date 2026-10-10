@@ -129,7 +129,9 @@ export function useStudy() {
         if (
           nextLessons.some(
             (lesson) =>
-              lesson.state === "queued" || lesson.state === "indexing",
+              lesson.state === "queued" ||
+              lesson.state === "extracting" ||
+              lesson.state === "indexing",
           ) ||
           activeRun(nextThread?.run)
         )

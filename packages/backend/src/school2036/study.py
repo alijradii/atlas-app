@@ -6,6 +6,7 @@ from fastapi import HTTPException
 from sqlalchemy import or_, select
 
 from school2036.models import StudyAccess, StudyConversation, StudyLesson
+from school2036.school import published_lessons
 
 ACTIVE_RUNS = ("queued", "retrieving", "answering")
 
@@ -15,6 +16,7 @@ def accessible_lessons(account_id):
         StudyLesson.state != "deleted",
         or_(
             StudyLesson.owner == account_id,
+            StudyLesson.id.in_(published_lessons(account_id)),
             StudyLesson.id.in_(
                 select(StudyAccess.lesson_id).where(StudyAccess.account_id == account_id)
             ),
@@ -59,6 +61,8 @@ def lesson_view(lesson, account_id, *, detail=False):
         "created": lesson.created,
         "error": lesson.error,
         "owned": lesson.owner == account_id,
+        "source_kind": lesson.source_kind,
+        "has_file": bool(lesson.file_id),
         **({"transcript": lesson.transcript} if detail else {}),
     }
 

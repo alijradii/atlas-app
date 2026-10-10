@@ -13,7 +13,8 @@ import {
   Textarea,
 } from "@school2036/ui";
 import { BookOpen, Check, FileText, Trash2, UserPlus, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 import type { Access, Citation, Lesson, LessonDetail, Session } from "./types";
 
 export type Mutate = <T>(
@@ -39,6 +40,17 @@ export function ImportLesson({
   const [subject, setSubject] = useState("");
   const [transcript, setTranscript] = useState("");
   const [fileError, setFileError] = useState("");
+  const fileRead = useRef(0);
+  const [reading, setReading] = useState(false);
+  useEffect(() => {
+    if (!open) {
+      ++fileRead.current;
+      setReading(false);
+    }
+    return () => {
+      ++fileRead.current;
+    };
+  }, [open]);
   const transcriptLength = Array.from(transcript.trim()).length;
   const validTranscript =
     transcriptLength >= 30 &&
@@ -64,11 +76,14 @@ export function ImportLesson({
             {apiError}
           </p>
         )}
+        <Button asChild variant="outline">
+          <Link href="/files">Upload a document or recording</Link>
+        </Button>
         <form
           className="study-form"
           onSubmit={async (event) => {
             event.preventDefault();
-            if (!title.trim() || !validTranscript) return;
+            if (busy || reading || !title.trim() || !validTranscript) return;
             const result = await mutate<Lesson>("/study/lessons", "POST", {
               title: title.trim(),
               subject: subject.trim(),
@@ -87,6 +102,7 @@ export function ImportLesson({
             <Label htmlFor="study-title">Lesson title</Label>
             <Input
               id="study-title"
+              disabled={busy}
               required
               maxLength={160}
               value={title}
@@ -98,6 +114,7 @@ export function ImportLesson({
             <Label htmlFor="study-subject">Subject (optional)</Label>
             <Input
               id="study-subject"
+              disabled={busy}
               maxLength={80}
               value={subject}
               onChange={(event) => setSubject(event.target.value)}
@@ -110,11 +127,14 @@ export function ImportLesson({
             </Label>
             <Input
               id="study-text-file"
+              disabled={busy}
               type="file"
               accept="text/plain,.txt,.md,.vtt,.srt"
               onChange={async (event) => {
                 const file = event.target.files?.[0];
                 if (!file) return;
+                const version = ++fileRead.current;
+                setReading(false);
                 setFileError("");
                 if (file.size > 180000) {
                   setFileError(
@@ -122,8 +142,13 @@ export function ImportLesson({
                   );
                   return;
                 }
+                setReading(true);
                 try {
-                  const text = await file.text();
+                  const bytes = await file.arrayBuffer();
+                  if (version !== fileRead.current) return;
+                  const text = new TextDecoder("utf-8", { fatal: true }).decode(
+                    bytes,
+                  );
                   if (
                     Array.from(text.trim()).length > 45000 ||
                     text.includes("\u0000")
@@ -134,16 +159,22 @@ export function ImportLesson({
                     return;
                   }
                   setTranscript(text);
-                  if (!title)
-                    setTitle(file.name.replace(/\.[^.]+$/, "").slice(0, 160));
-                } catch {
-                  setFileError(
-                    "This file could not be read. Paste the transcript below instead.",
+                  setTitle(
+                    (value) =>
+                      value || file.name.replace(/\.[^.]+$/, "").slice(0, 160),
                   );
+                } catch {
+                  if (version === fileRead.current)
+                    setFileError(
+                      "This file could not be read as UTF-8 text. Paste the transcript below instead.",
+                    );
+                } finally {
+                  if (version === fileRead.current) setReading(false);
                 }
               }}
             />
           </div>
+          {reading && <p role="status">Reading your text file…</p>}
           {fileError && (
             <p role="alert" className="study-error">
               {fileError}
@@ -153,12 +184,17 @@ export function ImportLesson({
             <Label htmlFor="study-transcript">Transcript</Label>
             <Textarea
               id="study-transcript"
+              disabled={busy}
               required
               maxLength={90000}
               aria-describedby="study-transcript-length"
               rows={9}
               value={transcript}
-              onChange={(event) => setTranscript(event.target.value)}
+              onChange={(event) => {
+                ++fileRead.current;
+                setReading(false);
+                setTranscript(event.target.value);
+              }}
               placeholder="Paste the lesson transcript here…"
             />
             <small>
@@ -185,7 +221,7 @@ export function ImportLesson({
             </Button>
             <Button
               type="submit"
-              disabled={busy || !title.trim() || !validTranscript}
+              disabled={busy || reading || !title.trim() || !validTranscript}
             >
               <FileText />
               {busy ? "Saving…" : "Add transcript"}
@@ -219,6 +255,10 @@ export function LessonDialog({
   apiError: string;
 }) {
   const [lesson, setLesson] = useState<LessonDetail | null>(null);
+  const [draft, setDraft] = useState("");
+  // Keep unsaved corrections in memory only while rechecking access. Never show
+  // them again until the same owned review source has been reauthorized.
+  const reviewDraft = useRef<{ id: string; text: string } | null>(null);
   const [access, setAccess] = useState<Access[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -232,6 +272,7 @@ export function LessonDialog({
     setLoading(true);
     setError("");
     setLesson(null);
+    setDraft("");
     setAccess([]);
     void (async () => {
       try {
@@ -253,10 +294,19 @@ export function LessonDialog({
           : [];
         if (!controller.signal.aborted) {
           setLesson(detail);
+          setDraft(
+            detail.owned &&
+              detail.state === "review" &&
+              reviewDraft.current?.id === id
+              ? reviewDraft.current.text
+              : detail.transcript,
+          );
           setAccess(grants);
         }
       } catch (cause) {
         if (controller.signal.aborted) return;
+        if (cause instanceof ApiError && [401, 403, 404].includes(cause.status))
+          reviewDraft.current = null;
         if (cause instanceof ApiError && cause.status === 401) onExpired();
         else
           setError(
@@ -271,6 +321,7 @@ export function LessonDialog({
     const revisit = () => {
       controller.abort();
       setLesson(null);
+      setDraft("");
       setAccess([]);
       setLoading(true);
       if (document.visibilityState !== "hidden")
@@ -337,7 +388,64 @@ export function LessonDialog({
                 </Button>
               </section>
             )}
-            {showTranscript && (
+            {lesson.has_file && (
+              <Button asChild variant="outline">
+                <a href={`/api/v1/study/lessons/${id}/file`}>
+                  Download original material
+                </a>
+              </Button>
+            )}
+            {lesson.owned && lesson.state === "review" && (
+              <form
+                className="study-form"
+                onSubmit={async (event) => {
+                  event.preventDefault();
+                  const result = await mutate(
+                    `/study/lessons/${id}/approve`,
+                    "POST",
+                    { transcript: draft.trim() },
+                  );
+                  if (result.ok) onClose();
+                }}
+              >
+                <Label htmlFor="review-transcript">
+                  Review the extracted transcript
+                </Label>
+                <p className="study-input-hint">
+                  Check the words and correct any mistakes before using them as
+                  study sources. Recording timestamps are approximate.
+                </p>
+                <Textarea
+                  id="review-transcript"
+                  disabled={busy}
+                  rows={12}
+                  value={draft}
+                  onChange={(event) => {
+                    const text = event.target.value;
+                    reviewDraft.current = { id, text };
+                    setDraft(text);
+                  }}
+                  maxLength={90000}
+                />
+                <small>
+                  {Array.from(draft.trim()).length.toLocaleString()} / 45,000
+                  characters
+                </small>
+                <Button
+                  type="submit"
+                  disabled={
+                    busy ||
+                    Array.from(draft.trim()).length < 30 ||
+                    Array.from(draft.trim()).length > 45000 ||
+                    draft.includes("\u0000")
+                  }
+                >
+                  <Check />
+                  Approve and prepare lesson
+                </Button>
+              </form>
+            )}
+            {showTranscript && lesson.state !== "review" && (
               <section
                 aria-label="Full transcript"
                 className="study-transcript-text"
@@ -349,9 +457,9 @@ export function LessonDialog({
               <section className="study-access" aria-label="Lesson sharing">
                 <h3>Who can study this lesson?</h3>
                 <p>
-                  Only you{access.length ? " and the people below" : " for now"}
-                  . Sharing gives access to the transcript and its sources, not
-                  your conversations.
+                  Direct sharing gives access to this transcript and its
+                  original file, not your conversations. Published classroom
+                  access is managed in Workspace.
                 </p>
                 {access.map((person) => (
                   <div className="study-access-person" key={person.account_id}>

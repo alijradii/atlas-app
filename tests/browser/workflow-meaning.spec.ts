@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 test.use({ reducedMotion: "reduce", viewport: { width: 1440, height: 1000 } });
 
-test("staff subject guidance highlights confirmation without approving or changing network access", async ({
+test("staff subject guidance highlights confirmation without approving the proposal", async ({
   page,
 }) => {
   await page.goto("/");
@@ -10,7 +10,6 @@ test("staff subject guidance highlights confirmation without approving or changi
     sessionStorage.setItem(
       "atlas-pearl-preview-v1",
       JSON.stringify({
-        school: false,
         proposals: [
           {
             subject: "cs",
@@ -34,7 +33,7 @@ test("staff subject guidance highlights confirmation without approving or changi
   await expect(page.getByText("With school", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Got it", exact: true }).click();
   await expect(
-    page.getByRole("button", { name: "From home", exact: true }),
+    page.getByRole("button", { name: "Preview controls", exact: true }),
   ).toBeVisible();
   await expect(
     page.getByRole("button", { name: "Confirm choice", exact: true }),
@@ -176,3 +175,46 @@ for (const reviewer of [
     ).toBeVisible();
   });
 }
+
+test("old location settings cannot block lessons, advisor requests, or teacher evidence", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.evaluate(() =>
+    sessionStorage.setItem(
+      "atlas-pearl-preview-v1",
+      JSON.stringify({
+        school: false,
+        settings: {
+          recHome: false,
+          advisersRemote: false,
+          studentProposals: true,
+        },
+      }),
+    ),
+  );
+  await page.goto("/preview/lina/lessons");
+  await expect(
+    page.getByRole("heading", { name: "Lessons", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("Newton's second law: force, mass and acceleration", {
+      exact: true,
+    }),
+  ).toBeVisible();
+  await page.goto("/preview/lina/adviser");
+  await expect(
+    page.getByRole("button", { name: "Request a conversation", exact: true }),
+  ).toBeEnabled();
+  await page.goto("/preview/daher/analytics");
+  await expect(page.getByRole("tab", { name: "Misconceptions" })).toBeVisible();
+  await page
+    .getByRole("button", { name: "Preview controls", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "At school", exact: true }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole("button", { name: "From home", exact: true }),
+  ).toHaveCount(0);
+});

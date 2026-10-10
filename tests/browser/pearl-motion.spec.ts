@@ -148,3 +148,39 @@ test("priority home keeps compact artwork and accessible work sections on narrow
     ),
   ).toBe(true);
 });
+
+test("dialogs share the dock's motion and reduced motion removes both", async ({
+  page,
+}) => {
+  await page.goto("/preview/lina/home");
+  const pane = page.locator(".atlas-dock-pane");
+  await expect(pane).toBeVisible();
+  await page
+    .getByRole("button", { name: "Preview controls", exact: true })
+    .click();
+  const dialog = page.getByRole("dialog", { name: "Preview scenario" });
+  await expect(dialog).toBeVisible();
+  const timing = await dialog.evaluate((element) => {
+    const style = getComputedStyle(element);
+    const dockElement = document.querySelector(".atlas-dock-pane");
+    if (!dockElement) throw new Error("Assistant dock is missing");
+    const dock = getComputedStyle(dockElement);
+    return {
+      duration: style.animationDuration,
+      easing: style.animationTimingFunction,
+      dockDuration: dock.transitionDuration.split(",")[0].trim(),
+      dockEasing: dock.transitionTimingFunction.match(
+        /^cubic-bezier\([^)]+\)/,
+      )?.[0],
+    };
+  });
+  expect(timing.duration).toBe(timing.dockDuration);
+  expect(timing.easing).toBe(timing.dockEasing);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect(dialog).toHaveCSS("animation-name", "none");
+  expect(
+    await pane.evaluate(
+      (element) => getComputedStyle(element).transitionDuration,
+    ),
+  ).toMatch(/^0s(?:, 0s)*$/);
+});

@@ -1,9 +1,11 @@
 """Bounded capture, immutable quarantine and current-permission file delivery."""
 
 import hashlib
+import io
 import socket
 import struct
 import time
+import zipfile
 from uuid import uuid4
 
 from fastapi import HTTPException
@@ -28,9 +30,34 @@ def validate_bytes(config, data, file):
         detected = "image/png"
     elif data.startswith(b"\xff\xd8\xff") and data.endswith(b"\xff\xd9"):
         detected = "image/jpeg"
+    elif len(data) >= 12 and data[4:8] == b"ftyp" and file.media_type in {"video/mp4", "audio/mp4"}:
+        detected = file.media_type
+    elif data.startswith(b"\x1a\x45\xdf\xa3") and b"webm" in data[:4096]:
+        detected = "video/webm"
+    elif data.startswith(b"RIFF") and data[8:12] == b"WAVE":
+        detected = "audio/wav"
+    elif data.startswith(b"ID3") or (len(data) > 2 and data[0] == 255 and data[1] & 224 == 224):
+        detected = "audio/mpeg"
+    elif data.startswith(b"PK\x03\x04"):
+        try:
+            with zipfile.ZipFile(io.BytesIO(data)) as archive:
+                entries = archive.infolist()
+                if len(entries) > 1000 or sum(i.file_size for i in entries) > 20 * 1024 * 1024:
+                    raise ValueError("Document expands beyond the supported limit")
+                if (
+                    "word/document.xml" in archive.namelist()
+                    and "[Content_Types].xml" in archive.namelist()
+                ):
+                    if any("vbaProject" in i.filename for i in entries):
+                        raise ValueError("Macro documents are not supported")
+                    detected = (
+                        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    )
+        except zipfile.BadZipFile:
+            raise ValueError("Invalid document archive") from None
     else:
         try:
-            text = data.decode("utf-8")
+            text = data.decode("utf-8-sig")
             if all(c.isprintable() or c in "\n\r\t" for c in text):
                 detected = "text/plain"
         except UnicodeDecodeError:

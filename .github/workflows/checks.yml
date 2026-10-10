@@ -19,6 +19,7 @@ jobs:
           version: "0.11.19"
           python-version: "3.14"
       - run: bun install --frozen-lockfile
+      - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg poppler-utils util-linux
       - run: uv sync --frozen
       - run: make infra-up
       - run: docker compose -f infra/compose.dev.yaml --profile media up -d --wait scanner

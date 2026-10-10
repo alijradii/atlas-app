@@ -17,7 +17,6 @@ export type Proposal = {
   note: string;
 };
 export type PreviewState = {
-  school: boolean;
   tutor: boolean;
   video: boolean;
   onboarded: boolean;
@@ -48,7 +47,6 @@ export type PreviewState = {
 };
 export function initialState(): PreviewState {
   return {
-    school: false,
     tutor: true,
     video: true,
     onboarded: false,
@@ -94,7 +92,7 @@ export function initialState(): PreviewState {
     meeting: false,
     activityDrafts: [],
     lessonDrafts: [],
-    settings: { recHome: true, advisersRemote: true, studentProposals: true },
+    settings: { studentProposals: true, parentProgress: false },
     lessonPins: { lina: [], sami: [] },
     followups: [],
   };

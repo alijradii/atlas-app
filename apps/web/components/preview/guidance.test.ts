@@ -31,30 +31,21 @@ test("guidance does not expose another role's controls", () => {
     resolveGuide("lina", "Show me teacher analytics", initialState()),
   ).toBeUndefined();
 });
-test("school-only guidance explains the boundary without switching network", () => {
+test("role guidance opens evidence and approvals without a location scenario", () => {
   const state = initialState();
   expect(resolveGuide("daher", "Show me analytics", state)).toMatchObject({
-    id: "screen.heading",
+    id: "analytics.overview",
     route: "/preview/daher/analytics",
   });
   expect(
     resolveGuide("hajj", "Where do I approve activities?", state),
-  ).toMatchObject({ id: "screen.heading", route: "/preview/hajj/access" });
-  expect(state.school).toBe(false);
-  state.school = true;
-  expect(resolveGuide("daher", "Show me analytics", state)?.id).toBe(
-    "analytics.inspect",
-  );
-  expect(
-    resolveGuide("hajj", "Where do I approve activities?", state)?.id,
-  ).toBe("acts.approve");
-});
-test("recording restrictions and unmatched advisors use a truthful screen fallback", () => {
-  const state = initialState();
-  state.settings.recHome = false;
+  ).toMatchObject({
+    id: "acts.approve",
+    route: "/preview/hajj/activities",
+  });
   expect(
     resolveGuide("lina", "Where do I find lesson chapters?", state)?.id,
-  ).toBe("screen.heading");
+  ).toBe("lesson.chapters");
   expect(resolveGuide("sami", "How do I ask my advisor?", state)?.id).toBe(
     "screen.heading",
   );
@@ -82,19 +73,28 @@ test("staff subject and generic proposal guidance uses the confirmation workflow
   expect(JSON.stringify(state)).toBe(before);
 });
 
-test("explicit activity proposals keep their own school-only workflow", () => {
-  const state = initialState();
+test("explicit activity proposals retain their separate review destination", () => {
   expect(
-    resolveGuide("hajj", "Where do I approve activity proposals?", state),
-  ).toMatchObject({
-    id: "screen.heading",
-    route: "/preview/hajj/access",
-  });
-  state.school = true;
-  expect(
-    resolveGuide("hajj", "Where do I approve activity proposals?", state),
+    resolveGuide(
+      "hajj",
+      "Where do I approve activity proposals?",
+      initialState(),
+    ),
   ).toMatchObject({
     id: "acts.approve",
     route: "/preview/hajj/activities",
+  });
+});
+
+test("misconception guidance targets the visible tab without assuming hidden evidence is mounted", () => {
+  expect(
+    resolveGuide(
+      "daher",
+      "Show me the evidence for misconceptions",
+      initialState(),
+    ),
+  ).toMatchObject({
+    id: "analytics.tab",
+    route: "/preview/daher/analytics",
   });
 });

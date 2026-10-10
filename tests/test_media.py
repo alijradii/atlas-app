@@ -88,7 +88,7 @@ def test_expiry_quota_and_request_limits(system):
     assert start(client, size=10 * 1024 * 1024 + 1).status_code == 422
     value = start(client).json()
     assert client.put(value["url"], content=b"wrong size").status_code == 422
-    assert client.put(value["url"], content=b"x" * (10 * 1024 * 1024 + 1)).status_code == 413
+    assert client.put(value["url"], content=b"x" * (50 * 1024 * 1024 + 1)).status_code == 413
     with app.state.sessions.begin() as db:
         db.get(FileObject, value["id"]).expires = time.time() - 1
     assert client.put(value["url"], content=DATA).status_code == 409

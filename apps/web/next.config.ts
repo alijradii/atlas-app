@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const config: NextConfig = {
   output: "standalone",
+  experimental: { proxyClientMaxBodySize: "50mb" },
   distDir: process.env.SCHOOL_E2E === "1" ? ".next-e2e" : ".next",
   transpilePackages: ["@school2036/ui", "@school2036/api-client"],
   poweredByHeader: false,

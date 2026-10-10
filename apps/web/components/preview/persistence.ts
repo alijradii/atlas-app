@@ -39,7 +39,6 @@ const strings = list(text);
 const lessonIds = new Set(fixture.lessons.map((lesson) => lesson.id));
 const pins = list((value) => typeof value === "string" && lessonIds.has(value));
 const fields: Record<keyof PreviewState, Validator> = {
-  school: bool,
   tutor: bool,
   video: bool,
   onboarded: bool,
@@ -76,9 +75,8 @@ const fields: Record<keyof PreviewState, Validator> = {
   activityDrafts: list(shape({ title: text, when: text, description: text })),
   lessonDrafts: list(shape({ title: text, filename: text, audience: text })),
   settings: shape({
-    recHome: bool,
-    advisersRemote: bool,
     studentProposals: bool,
+    parentProgress: bool,
   }),
   lessonPins: shape({ lina: pins, sami: pins }),
   followups: strings,
@@ -93,6 +91,18 @@ export function restorePreviewState(
   try {
     const saved: unknown = JSON.parse(raw);
     if (!record(saved)) return defaults;
+    // Migrate location-era preferences without discarding answers or proposals.
+    if (record(saved.settings)) {
+      const settings = saved.settings;
+      saved.settings = {
+        studentProposals: Object.hasOwn(settings, "studentProposals")
+          ? settings.studentProposals
+          : defaults.settings.studentProposals,
+        parentProgress: Object.hasOwn(settings, "parentProgress")
+          ? settings.parentProgress
+          : defaults.settings.parentProgress,
+      };
+    }
     const result = { ...defaults };
     for (const key of Object.keys(fields) as (keyof PreviewState)[]) {
       if (!Object.hasOwn(saved, key)) continue;

@@ -184,7 +184,9 @@ test("teacher evidence and staff activity review are interactive", async ({
   page,
 }) => {
   await page.goto("/preview/daher/analytics");
-  await page.getByRole("button", { name: "Preview at school" }).click();
+  await expect(
+    page.getByRole("button", { name: "Preview at school" }),
+  ).toHaveCount(0);
   await page.getByRole("tab", { name: "Misconceptions", exact: true }).click();
   await page.getByRole("button", { name: "Examine evidence" }).first().click();
   await expect(page.getByRole("dialog")).toContainText(

@@ -36,6 +36,12 @@
   --shadow-pearl: 0 1px 2px #141e320a, 0 24px 50px -30px #1e283c52;
 }
 :root {
+  /* Shared Pearl motion: follow the assistant dock's soft arrival and clean exit. */
+  --motion-enter: 360ms;
+  --motion-exit: 320ms;
+  --motion-fast: 180ms;
+  --motion-ease-enter: cubic-bezier(0.22, 1, 0.36, 1);
+  --motion-ease-exit: cubic-bezier(0.4, 0, 0.2, 1);
   color-scheme: light;
   --background: #e8eaee;
   --foreground: #11141b;
@@ -149,5 +155,23 @@
     animation: none !important;
     /* biome-ignore lint/complexity/noImportantStyles: Respect reduced motion across Radix transitions. */
     transition-duration: 0ms !important;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-slot="dialog-content"][data-state="open"],
+  [data-slot="sheet-content"][data-state="open"] {
+    animation-duration: var(--motion-enter);
+    animation-timing-function: var(--motion-ease-enter);
+  }
+  [data-slot="dialog-content"][data-state="closed"],
+  [data-slot="sheet-content"][data-state="closed"] {
+    animation-duration: var(--motion-exit);
+    animation-timing-function: var(--motion-ease-exit);
+  }
+  [data-slot="dialog-overlay"],
+  [data-slot="sheet-overlay"] {
+    animation-duration: var(--motion-fast);
+    animation-timing-function: var(--motion-ease-enter);
   }
 }

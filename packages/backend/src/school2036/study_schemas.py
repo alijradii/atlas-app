@@ -28,14 +28,26 @@ class LessonInput(StudyInput):
     transcript: str = Field(min_length=30, max_length=45000)
 
 
+class FileLessonInput(StudyInput):
+    file_id: UUID
+    title: str = Field(min_length=1, max_length=160)
+    subject: str = Field(default="", max_length=80)
+
+
+class TranscriptApproval(StudyInput):
+    transcript: str = Field(min_length=30, max_length=45000)
+
+
 class LessonView(BaseModel):
     id: str
     title: str
     subject: str
-    state: Literal["queued", "indexing", "ready", "failed"]
+    state: Literal["queued", "extracting", "review", "indexing", "ready", "failed"]
     error: str
     created: float
     owned: bool
+    source_kind: Literal["transcript", "document", "recording"] = "transcript"
+    has_file: bool = False
 
 
 class LessonDetail(LessonView):

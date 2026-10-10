@@ -714,11 +714,11 @@
   .study-icon-button,
   .study-citations button {
     transition:
-      background 0.2s,
-      border-color 0.2s;
+      background var(--motion-fast),
+      border-color var(--motion-fast);
   }
   .study-message {
-    animation: study-message-in 0.26s ease-out;
+    animation: study-message-in var(--motion-enter) var(--motion-ease-enter);
   }
   @keyframes study-message-in {
     from {
@@ -751,11 +751,15 @@
 }
 @media (max-width: 640px) {
   .study-header {
-    height: 66px;
+    height: auto;
+    min-height: 66px;
+    flex-wrap: wrap;
+    padding-block: 12px;
     padding-inline: 16px;
     gap: 10px;
   }
   .study-header nav {
+    flex-wrap: wrap;
     gap: 7px;
   }
   .study-header nav > a {

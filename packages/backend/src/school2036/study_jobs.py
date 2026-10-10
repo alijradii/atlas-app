@@ -15,6 +15,7 @@ from school2036.identity import audit, locked_state
 from school2036.models import (
     Account,
     AuthSession,
+    FileObject,
     OutboxJob,
     StudyConversation,
     StudyLesson,
@@ -110,6 +111,58 @@ def _ingest(sessions, providers, lesson_id, job_attempt, job_id):
     )
 
 
+def _extract(sessions, config, providers, lesson_id, job_attempt, job_id):
+    from school2036.storage import create_storage
+    from school2036.study_extract import extract_document, transcribe_recording
+
+    with sessions.begin() as db:
+        _lease(db, job_id, job_attempt)
+        lesson = db.get(StudyLesson, lesson_id)
+        if lesson is None or lesson.state in {"deleted", "review", "ready"}:
+            return
+        # Extraction already committed if a transcript is durable. The owner may
+        # have approved it and indexing may now be queued/running/failed. Recovery
+        # of the old extraction acknowledgement must not undo that newer stage.
+        if lesson.transcript:
+            return
+        if job_attempt > 1:
+            raise ProviderUnavailable("interrupted", "Import was interrupted. Please retry.")
+        owner = db.get(Account, lesson.owner)
+        file = db.get(FileObject, lesson.file_id) if lesson.file_id else None
+        if (
+            owner is None
+            or owner.status != "active"
+            or file is None
+            or file.owner != lesson.owner
+            or file.state != "accepted"
+        ):
+            raise HTTPException(404, "The original file is unavailable")
+        key, size, media_type, file_id = (
+            file.final_key,
+            file.expected_size,
+            file.media_type,
+            file.id,
+        )
+        lesson.state, lesson.error = "extracting", ""
+    data = create_storage(config).get(key, size)
+    # Only recordings invoke a paid model. Conversion never receives a browser path.
+    text = (
+        transcribe_recording(providers, data)
+        if media_type.startswith(("audio/", "video/"))
+        else extract_document(data, media_type)
+    )
+    with sessions.begin() as db:
+        _lease(db, job_id, job_attempt)
+        lesson, file = db.get(StudyLesson, lesson_id), db.get(FileObject, file_id)
+        if lesson is None or lesson.state == "deleted":
+            return
+        owner = db.get(Account, lesson.owner)
+        if owner is None or owner.status != "active" or file is None or file.state != "accepted":
+            raise HTTPException(404, "Import access was revoked")
+        lesson.transcript, lesson.state, lesson.error = text, "review", ""
+        audit(db, "study.transcript_extracted", lesson.owner, lesson.id)
+
+
 def _answer(sessions, providers, run_id, job_attempt, job_id):
     with sessions.begin() as db:
         _lease(db, job_id, job_attempt)
@@ -194,7 +247,9 @@ def process_study_job(sessions, config, job_id, lease_attempt, providers=None):
     provider = providers or StudyProviders(config)
     error = None
     try:
-        if kind == "study.ingest":
+        if kind == "study.extract":
+            _extract(sessions, config, provider, payload["lesson_id"], lease_attempt, job_id)
+        elif kind == "study.ingest":
             _ingest(sessions, provider, payload["lesson_id"], lease_attempt, job_id)
         elif kind == "study.answer":
             _answer(sessions, provider, payload["run_id"], lease_attempt, job_id)
@@ -212,7 +267,7 @@ def process_study_job(sessions, config, job_id, lease_attempt, providers=None):
         if job is None or job.state != "running" or job.attempts != lease_attempt:
             return True
         job.state, job.error = ("failed", "study_failed") if error else ("succeeded", None)
-        if error and kind == "study.ingest":
+        if error and kind in {"study.ingest", "study.extract"}:
             lesson = db.get(StudyLesson, payload["lesson_id"])
             if lesson and lesson.state != "deleted":
                 lesson.state, lesson.error = "failed", error

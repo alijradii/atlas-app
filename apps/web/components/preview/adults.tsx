@@ -27,7 +27,6 @@ import {
   Notice,
   Panel,
   Pipeline,
-  Restricted,
   Status,
   Steps,
 } from "./shared";
@@ -380,16 +379,6 @@ export function Analytics() {
   const [group, setGroup] = useState("all");
   const [filter, setFilter] = useState("all");
   const [message, setMessage] = useState("");
-  if (!state.school)
-    return (
-      <>
-        <PageHeading
-          title="Analytics & follow-up"
-          description="Evidence for better teaching, with context."
-        />
-        <Restricted />
-      </>
-    );
   const rows = fixture.analytics.cls.filter(
     (s) =>
       (group === "all" || s.cls === group) &&
@@ -424,7 +413,10 @@ export function Analytics() {
           <TabsTrigger value="followups">Follow-ups</TabsTrigger>
         </TabsList>
         <TabsContent value="class" className="mt-5 space-y-5">
-          <div className="flex flex-wrap gap-3">
+          <div
+            className="flex flex-wrap gap-3"
+            data-guide-anchor="analytics.overview"
+          >
             <select
               aria-label="Class"
               value={group}
@@ -447,7 +439,12 @@ export function Analytics() {
             </select>
           </div>
           <Panel title={`${rows.length} students · sample evidence`}>
-            <div className="overflow-x-auto">
+            <section
+              className="overflow-x-auto"
+              aria-label="Class evidence table"
+              // biome-ignore lint/a11y/noNoninteractiveTabindex: Keyboard users must be able to scroll wide evidence tables.
+              tabIndex={0}
+            >
               <table className="w-full min-w-[560px] text-left text-sm">
                 <caption className="sr-only">
                   Independent and assisted physics evidence
@@ -497,7 +494,7 @@ export function Analytics() {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </section>
           </Panel>
         </TabsContent>
         <TabsContent value="misconceptions" className="mt-5 grid gap-5">
@@ -719,23 +716,24 @@ export function Access() {
     <>
       <PageHeading
         title="Access & availability"
-        description="Clear boundaries for school and home."
+        description="Access follows your account and shared resources, wherever you work."
       />
       <Notice>
-        This matrix describes the kit’s proposed access model. Preview toggles
-        do not grant access to real school data.
+        These role screens use sample data. Real files and study sessions
+        require sign-in and are limited to their owner or explicitly shared
+        accounts.
       </Notice>
-      <Panel title="Proposed availability">
+      <Panel title="Role access preview">
         <section
           className="overflow-x-auto"
-          aria-label="Proposed availability table"
+          aria-label="Role access preview table"
           // biome-ignore lint/a11y/noNoninteractiveTabindex: Keyboard users must be able to scroll the wide table.
           tabIndex={0}
         >
           <table className="w-full min-w-[480px] text-left text-sm">
             <thead>
               <tr>
-                {["Service", "At school", "From home"].map((h) => (
+                {["Service", "Who it is for", "Access"].map((h) => (
                   <th scope="col" className="py-4" key={h}>
                     {h}
                   </th>
@@ -744,12 +742,24 @@ export function Access() {
             </thead>
             <tbody>
               {[
-                ["Recorded lessons", "Available", "School decides"],
-                ["Study assistant", "Available", "Available"],
-                ["Independent practice", "Available", "Available"],
-                ["Human advisor", "Available", "School decides"],
-                ["Teacher analytics", "Available", "School network only"],
-                ["Parent progress", "School decides", "School decides"],
+                ["Recorded lessons", "Selected audience", "Wherever you study"],
+                [
+                  "Study assistant",
+                  "Session owner and shared accounts",
+                  "Sign-in required",
+                ],
+                ["Independent practice", "Student", "Role preview"],
+                [
+                  "Human advisor",
+                  "Student and assigned advisor",
+                  "Role preview",
+                ],
+                ["Teacher analytics", "Teacher", "Role preview"],
+                [
+                  "Parent progress",
+                  "Parent and linked student",
+                  "Role preview",
+                ],
               ].map((row) => (
                 <tr key={row[0]} className="border-t">
                   {row.map((cell, i) =>
@@ -759,7 +769,7 @@ export function Access() {
                       </th>
                     ) : (
                       <td
-                        key={i === 1 ? "school" : "home"}
+                        key={i === 1 ? "audience" : "access"}
                         className="py-4 text-muted-foreground"
                       >
                         {cell}
@@ -789,16 +799,6 @@ export function Settings() {
       </Notice>
       <Panel title="Availability preferences">
         {[
-          [
-            "recHome",
-            "Recorded lessons from home",
-            "Let students revisit school recordings outside campus.",
-          ],
-          [
-            "advisersRemote",
-            "Remote advisor conversations",
-            "Make space for guidance beyond the school day.",
-          ],
           [
             "studentProposals",
             "Student activity proposals",

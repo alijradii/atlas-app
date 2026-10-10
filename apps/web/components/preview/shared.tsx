@@ -1,12 +1,5 @@
 "use client";
-import {
-  Badge,
-  Button,
-  Card,
-  CardContent,
-  CardHeader,
-  cn,
-} from "@school2036/ui";
+import { Badge, Card, CardContent, CardHeader, cn } from "@school2036/ui";
 import {
   ArrowUpRight,
   BarChart3,
@@ -15,7 +8,6 @@ import {
   FileUp,
   Heart,
   Home,
-  LockKeyhole,
   MessageCircle,
   Route,
   Settings2,
@@ -95,29 +87,6 @@ export function Status({
     >
       {children}
     </Badge>
-  );
-}
-export function Restricted({
-  title = "This view stays on the school network",
-}: {
-  title?: string;
-}) {
-  const { setState } = usePreview();
-  return (
-    <Card className="items-center px-6 py-14 text-center">
-      <LockKeyhole className="size-9 text-cobalt" />
-      <h2 className="text-2xl">{title}</h2>
-      <p className="max-w-md text-muted-foreground">
-        Switch the preview to “At school” to explore this view. This setting
-        only changes the design preview.
-      </p>
-      <Button
-        variant="outline"
-        onClick={() => setState((s) => ({ ...s, school: true }))}
-      >
-        Preview at school
-      </Button>
-    </Card>
   );
 }
 export function Hero({

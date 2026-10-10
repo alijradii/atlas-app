@@ -180,7 +180,7 @@
   .atlas-suggestions button,
   .atlas-round-button {
     transition:
-      transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+      transform var(--motion-fast) var(--motion-ease-enter),
       background 0.2s;
   }
   .atlas-suggestions button:hover,
@@ -192,7 +192,7 @@
     transform: translateY(1px) scale(0.98);
   }
   .atlas-pin-tray {
-    animation: atlas-tray-in 0.24s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation: atlas-tray-in var(--motion-enter) var(--motion-ease-enter) both;
   }
   @keyframes atlas-tray-in {
     from {
@@ -286,24 +286,24 @@
 @media (prefers-reduced-motion: no-preference) {
   .atlas-dock-pane {
     transition:
-      transform 360ms cubic-bezier(0.22, 1, 0.36, 1),
-      opacity 180ms ease,
+      transform var(--motion-enter) var(--motion-ease-enter),
+      opacity var(--motion-fast) var(--motion-ease-enter),
       visibility 0s;
   }
   .atlas-assistant-dock[data-collapsed="true"] .atlas-dock-pane {
     transition:
-      transform 320ms cubic-bezier(0.4, 0, 0.2, 1),
-      opacity 180ms 60ms ease,
-      visibility 0s 320ms;
+      transform var(--motion-exit) var(--motion-ease-exit),
+      opacity var(--motion-fast) 60ms var(--motion-ease-exit),
+      visibility 0s var(--motion-exit);
   }
   .atlas-dock-launcher {
     transition:
       opacity 120ms ease,
-      transform 180ms ease;
+      transform var(--motion-fast) var(--motion-ease-enter);
   }
   .atlas-assistant-dock[data-collapsed="true"] .atlas-dock-launcher {
     transition:
-      opacity 160ms 180ms ease,
-      transform 260ms 140ms cubic-bezier(0.22, 1, 0.36, 1);
+      opacity 160ms var(--motion-fast) var(--motion-ease-enter),
+      transform var(--motion-enter) 140ms var(--motion-ease-enter);
   }
 }

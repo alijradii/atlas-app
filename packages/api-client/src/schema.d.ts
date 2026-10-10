@@ -4,6 +4,57 @@
  */
 
 export interface paths {
+    "/api/v1/account/password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Change Password */
+        post: operations["change_password_api_v1_account_password_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/account/sessions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Sessions */
+        get: operations["list_sessions_api_v1_account_sessions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/account/sessions/revoke-others": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Revoke Others */
+        post: operations["revoke_others_api_v1_account_sessions_revoke_others_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/login": {
         parameters: {
             query?: never;
@@ -140,6 +191,193 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/school/assignments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add Assignment */
+        post: operations["add_assignment_api_v1_school_assignments_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/school/assignments/{assignment_id}/feedback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Feedback */
+        post: operations["feedback_api_v1_school_assignments__assignment_id__feedback_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/school/assignments/{assignment_id}/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Submit */
+        post: operations["submit_api_v1_school_assignments__assignment_id__submit_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/school/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add Message */
+        post: operations["add_message_api_v1_school_messages_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/school/proposals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add Proposal */
+        post: operations["add_proposal_api_v1_school_proposals_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/school/proposals/{proposal_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Revise */
+        put: operations["revise_api_v1_school_proposals__proposal_id__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/school/proposals/{proposal_id}/decision": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Decide */
+        post: operations["decide_api_v1_school_proposals__proposal_id__decision_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/school/proposals/{proposal_id}/review": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Review */
+        post: operations["review_api_v1_school_proposals__proposal_id__review_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/school/publications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add Publication */
+        post: operations["add_publication_api_v1_school_publications_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/school/publications/{publication_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove Publication */
+        delete: operations["remove_publication_api_v1_school_publications__publication_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/school/workspace": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Workspace */
+        get: operations["workspace_api_v1_school_workspace_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/setup/status": {
         parameters: {
             query?: never;
@@ -227,6 +465,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/study/imports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Import File */
+        post: operations["import_file_api_v1_study_imports_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/study/lessons": {
         parameters: {
             query?: never;
@@ -293,6 +548,40 @@ export interface paths {
         post?: never;
         /** Revoke */
         delete: operations["revoke_api_v1_study_lessons__lesson_id__access__account_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/study/lessons/{lesson_id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Approve Transcript */
+        post: operations["approve_transcript_api_v1_study_lessons__lesson_id__approve_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/study/lessons/{lesson_id}/file": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Source File */
+        get: operations["source_file_api_v1_study_lessons__lesson_id__file_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -418,6 +707,93 @@ export interface components {
             /** Name */
             name: string;
         };
+        /** AccountSessionView */
+        AccountSessionView: {
+            /** Created */
+            created: number;
+            /** Current */
+            current: boolean;
+            /** Expires */
+            expires: number;
+            /** Last Seen */
+            last_seen: number;
+        };
+        /** AdvisorMessageInput */
+        AdvisorMessageInput: {
+            /**
+             * Advisor Id
+             * Format: uuid
+             */
+            advisor_id: string;
+            /** Content */
+            content: string;
+            /**
+             * Student Id
+             * Format: uuid
+             */
+            student_id: string;
+        };
+        /** AdvisorMessageView */
+        AdvisorMessageView: {
+            /** Advisor Id */
+            advisor_id: string;
+            /** Content */
+            content: string;
+            /** Created */
+            created: number;
+            /** Id */
+            id: string;
+            /** Sender Id */
+            sender_id: string;
+            /** Student Id */
+            student_id: string;
+        };
+        /** AssignmentInput */
+        AssignmentInput: {
+            /** Due At */
+            due_at?: number | null;
+            /** Instructions */
+            instructions: string;
+            /** Lesson Id */
+            lesson_id?: string | null;
+            /**
+             * Student Id
+             * Format: uuid
+             */
+            student_id: string;
+            /** Title */
+            title: string;
+        };
+        /** AssignmentView */
+        AssignmentView: {
+            /** Answer */
+            answer: string;
+            /** Created */
+            created: number;
+            /** Due At */
+            due_at: number | null;
+            /** Feedback */
+            feedback: string;
+            /** Id */
+            id: string;
+            /** Instructions */
+            instructions: string;
+            /** Lesson Id */
+            lesson_id: string | null;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "assigned" | "submitted" | "returned" | "reviewed";
+            /** Student Id */
+            student_id: string;
+            /** Submitted At */
+            submitted_at: number | null;
+            /** Teacher Id */
+            teacher_id: string;
+            /** Title */
+            title: string;
+        };
         /** CitationView */
         CitationView: {
             /** Index */
@@ -472,6 +848,31 @@ export interface components {
             /** Password */
             password: string;
         };
+        /** FeedbackInput */
+        FeedbackInput: {
+            /** Feedback */
+            feedback: string;
+            /**
+             * Return For Revision
+             * @default false
+             */
+            return_for_revision: boolean;
+        };
+        /** FileLessonInput */
+        FileLessonInput: {
+            /**
+             * File Id
+             * Format: uuid
+             */
+            file_id: string;
+            /**
+             * Subject
+             * @default
+             */
+            subject: string;
+            /** Title */
+            title: string;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -497,15 +898,26 @@ export interface components {
             created: number;
             /** Error */
             error: string;
+            /**
+             * Has File
+             * @default false
+             */
+            has_file: boolean;
             /** Id */
             id: string;
             /** Owned */
             owned: boolean;
             /**
+             * Source Kind
+             * @default transcript
+             * @enum {string}
+             */
+            source_kind: "transcript" | "document" | "recording";
+            /**
              * State
              * @enum {string}
              */
-            state: "queued" | "indexing" | "ready" | "failed";
+            state: "queued" | "extracting" | "review" | "indexing" | "ready" | "failed";
             /** Subject */
             subject: string;
             /** Title */
@@ -531,15 +943,26 @@ export interface components {
             created: number;
             /** Error */
             error: string;
+            /**
+             * Has File
+             * @default false
+             */
+            has_file: boolean;
             /** Id */
             id: string;
             /** Owned */
             owned: boolean;
             /**
+             * Source Kind
+             * @default transcript
+             * @enum {string}
+             */
+            source_kind: "transcript" | "document" | "recording";
+            /**
              * State
              * @enum {string}
              */
-            state: "queued" | "indexing" | "ready" | "failed";
+            state: "queued" | "extracting" | "review" | "indexing" | "ready" | "failed";
             /** Subject */
             subject: string;
             /** Title */
@@ -571,6 +994,117 @@ export interface components {
              */
             role: "user" | "assistant";
         };
+        /** PasswordChange */
+        PasswordChange: {
+            /** Current Password */
+            current_password: string;
+            /** New Password */
+            new_password: string;
+        };
+        /** ProposalDecisionInput */
+        ProposalDecisionInput: {
+            /**
+             * Decision
+             * @enum {string}
+             */
+            decision: "approve" | "decline";
+            /** Note */
+            note: string;
+        };
+        /** ProposalEditInput */
+        ProposalEditInput: {
+            /** Description */
+            description: string;
+            /** Title */
+            title: string;
+        };
+        /** ProposalInput */
+        ProposalInput: {
+            /**
+             * Advisor Id
+             * Format: uuid
+             */
+            advisor_id: string;
+            /** Description */
+            description: string;
+            /** Parent Id */
+            parent_id?: string | null;
+            /**
+             * Student Id
+             * Format: uuid
+             */
+            student_id: string;
+            /** Title */
+            title: string;
+        };
+        /** ProposalReviewInput */
+        ProposalReviewInput: {
+            /**
+             * Decision
+             * @enum {string}
+             */
+            decision: "approve" | "revise" | "decline";
+            /** Note */
+            note: string;
+        };
+        /** ProposalView */
+        ProposalView: {
+            /** Advisor Id */
+            advisor_id: string;
+            /** Advisor Note */
+            advisor_note: string;
+            /** Created */
+            created: number;
+            /** Description */
+            description: string;
+            /** Id */
+            id: string;
+            /** Parent Id */
+            parent_id: string | null;
+            /** Parent Note */
+            parent_note: string;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "pending_advisor" | "pending_parent" | "approved" | "declined" | "revision_requested";
+            /** Student Id */
+            student_id: string;
+            /** Title */
+            title: string;
+            /** Updated */
+            updated: number;
+        };
+        /** PublicationInput */
+        PublicationInput: {
+            /**
+             * Lesson Id
+             * Format: uuid
+             */
+            lesson_id: string;
+            /**
+             * Student Id
+             * Format: uuid
+             */
+            student_id: string;
+        };
+        /** PublicationView */
+        PublicationView: {
+            /** Created */
+            created: number;
+            /** Id */
+            id: string;
+            /** Lesson Id */
+            lesson_id: string;
+            /** Student Id */
+            student_id: string;
+            /** Subject */
+            subject: string;
+            /** Teacher Id */
+            teacher_id: string;
+            /** Title */
+            title: string;
+        };
         /** RunView */
         RunView: {
             /** Error */
@@ -582,6 +1116,48 @@ export interface components {
              * @enum {string}
              */
             state: "queued" | "retrieving" | "answering" | "completed" | "failed" | "cancelled";
+        };
+        /** SchoolPersonView */
+        SchoolPersonView: {
+            /** Account Id */
+            account_id: string;
+            /** Login */
+            login: string;
+            /** Name */
+            name: string;
+            /**
+             * Relationship
+             * @enum {string}
+             */
+            relationship: "student" | "teacher" | "advisor" | "parent";
+            /** Responsibilities */
+            responsibilities?: ("teacher" | "advisor" | "parent")[];
+            /** Student Ids */
+            student_ids?: string[];
+        };
+        /** SchoolWorkspace */
+        SchoolWorkspace: {
+            /** Account Id */
+            account_id: string;
+            /** Assignments */
+            assignments: components["schemas"]["AssignmentView"][];
+            /** Messages */
+            messages: components["schemas"]["AdvisorMessageView"][];
+            /** Name */
+            name: string;
+            /** People */
+            people: components["schemas"]["SchoolPersonView"][];
+            /** Proposals */
+            proposals: components["schemas"]["ProposalView"][];
+            /** Publications */
+            publications: components["schemas"]["PublicationView"][];
+            /** Roles */
+            roles: ("student" | "teacher" | "advisor" | "parent")[];
+        };
+        /** SessionRevokeView */
+        SessionRevokeView: {
+            /** Revoked */
+            revoked: number;
         };
         /** SessionView */
         SessionView: {
@@ -624,6 +1200,16 @@ export interface components {
             /** Rag Configured */
             rag_configured: boolean;
         };
+        /** SubmissionInput */
+        SubmissionInput: {
+            /** Answer */
+            answer: string;
+        };
+        /** TranscriptApproval */
+        TranscriptApproval: {
+            /** Transcript */
+            transcript: string;
+        };
         /** UploadInput */
         UploadInput: {
             /** Checksum */
@@ -634,7 +1220,7 @@ export interface components {
              * Media Type
              * @enum {string}
              */
-            media_type: "text/plain" | "application/pdf" | "image/png" | "image/jpeg";
+            media_type: "text/plain" | "application/pdf" | "image/png" | "image/jpeg" | "application/vnd.openxmlformats-officedocument.wordprocessingml.document" | "video/mp4" | "video/webm" | "audio/mpeg" | "audio/wav" | "audio/mp4";
             /** Size */
             size: number;
         };
@@ -651,6 +1237,8 @@ export interface components {
             filename: string;
             /** Id */
             id: string;
+            /** Media Type */
+            media_type: string;
             /** Size */
             size: number;
             /**
@@ -683,6 +1271,79 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    change_password_api_v1_account_password_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PasswordChange"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_sessions_api_v1_account_sessions_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccountSessionView"][];
+                };
+            };
+        };
+    };
+    revoke_others_api_v1_account_sessions_revoke_others_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionRevokeView"];
+                };
+            };
+        };
+    };
     login_api_v1_auth_login_post: {
         parameters: {
             query?: never;
@@ -880,6 +1541,362 @@ export interface operations {
             };
         };
     };
+    add_assignment_api_v1_school_assignments_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssignmentInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssignmentView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    feedback_api_v1_school_assignments__assignment_id__feedback_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                assignment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FeedbackInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssignmentView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    submit_api_v1_school_assignments__assignment_id__submit_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                assignment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SubmissionInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssignmentView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_message_api_v1_school_messages_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdvisorMessageInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdvisorMessageView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_proposal_api_v1_school_proposals_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProposalInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProposalView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    revise_api_v1_school_proposals__proposal_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                proposal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProposalEditInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProposalView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    decide_api_v1_school_proposals__proposal_id__decision_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                proposal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProposalDecisionInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProposalView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    review_api_v1_school_proposals__proposal_id__review_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                proposal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProposalReviewInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProposalView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_publication_api_v1_school_publications_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PublicationInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicationView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_publication_api_v1_school_publications__publication_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                publication_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    workspace_api_v1_school_workspace_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SchoolWorkspace"];
+                };
+            };
+        };
+    };
     setup_status_api_v1_setup_status_get: {
         parameters: {
             query?: never;
@@ -1066,6 +2083,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RunView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    import_file_api_v1_study_imports_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FileLessonInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LessonView"];
                 };
             };
             /** @description Validation Error */
@@ -1276,6 +2326,72 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    approve_transcript_api_v1_study_lessons__lesson_id__approve_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lesson_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TranscriptApproval"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LessonView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    source_file_api_v1_study_lessons__lesson_id__file_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lesson_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
             };
             /** @description Validation Error */
             422: {

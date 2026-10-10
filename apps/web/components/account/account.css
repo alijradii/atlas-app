@@ -1,0 +1,134 @@
+.account-shell {
+  min-height: 100vh;
+}
+.account-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 20px clamp(16px, 4vw, 56px);
+  border-bottom: 1px solid var(--border);
+  background: var(--pearl);
+}
+.account-header nav {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.account-main {
+  display: grid;
+  gap: 22px;
+  max-width: 840px;
+  margin: 0 auto;
+  padding: 44px 20px 80px;
+}
+.account-heading h1 {
+  font-size: clamp(28px, 4vw, 38px);
+  margin: 12px 0;
+}
+.account-heading > p:last-child,
+.account-identity,
+.account-recovery {
+  color: var(--muted-foreground);
+}
+.account-panel {
+  padding: clamp(20px, 3vw, 30px);
+  border-radius: 24px;
+  border: 1px solid var(--glass);
+  background: var(--card);
+  box-shadow: var(--shadow-pearl);
+}
+.account-section-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.account-section-heading > svg {
+  width: 23px;
+  height: 23px;
+  flex-shrink: 0;
+  color: var(--cobalt);
+}
+.account-section-heading h2 {
+  font-size: 23px;
+  margin-bottom: 8px;
+}
+.account-section-heading p,
+.account-field p {
+  font-size: 13px;
+  color: var(--muted-foreground);
+}
+.account-panel form {
+  display: grid;
+  gap: 18px;
+}
+.account-field {
+  display: grid;
+  gap: 8px;
+}
+.account-panel form > button {
+  justify-self: start;
+}
+.account-sessions {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 22px;
+}
+.account-sessions li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+}
+.account-sessions li > div {
+  display: grid;
+  gap: 4px;
+}
+.account-sessions span {
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+.account-error,
+.account-notice {
+  padding: 14px 18px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: var(--card);
+}
+.account-error {
+  color: var(--destructive);
+}
+.account-notice {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.account-notice svg {
+  flex-shrink: 0;
+  width: 20px;
+  color: var(--cobalt);
+}
+.account-recovery {
+  font-size: 13px;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .account-panel,
+  .account-notice {
+    animation: account-arrive var(--motion-enter) var(--motion-ease-enter) both;
+  }
+  @keyframes account-arrive {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}

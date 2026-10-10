@@ -41,6 +41,8 @@ const questionBytes = (text: string) =>
 const lessonState = {
   queued: "Waiting to prepare",
   indexing: "Preparing sources",
+  extracting: "Reading your material",
+  review: "Review transcript",
   ready: "Ready to study",
   failed: "Preparation failed",
 };
@@ -124,7 +126,9 @@ function StudyWorkspace({ study }: { study: Study }) {
         <Brand />
         <span className="study-header-title">Your study workspace</span>
         <nav aria-label="Account">
+          <Link href="/workspace">Workspace</Link>
           <Link href="/files">Your files</Link>
+          <Link href="/account">Account</Link>
           <ThemeToggle />
           <Button
             size="sm"

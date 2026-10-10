@@ -40,6 +40,249 @@
         "title": "AccessView",
         "type": "object"
       },
+      "AccountSessionView": {
+        "properties": {
+          "created": {
+            "title": "Created",
+            "type": "number"
+          },
+          "current": {
+            "title": "Current",
+            "type": "boolean"
+          },
+          "expires": {
+            "title": "Expires",
+            "type": "number"
+          },
+          "last_seen": {
+            "title": "Last Seen",
+            "type": "number"
+          }
+        },
+        "required": [
+          "current",
+          "created",
+          "last_seen",
+          "expires"
+        ],
+        "title": "AccountSessionView",
+        "type": "object"
+      },
+      "AdvisorMessageInput": {
+        "additionalProperties": false,
+        "properties": {
+          "advisor_id": {
+            "format": "uuid",
+            "title": "Advisor Id",
+            "type": "string"
+          },
+          "content": {
+            "maxLength": 4000,
+            "minLength": 1,
+            "title": "Content",
+            "type": "string"
+          },
+          "student_id": {
+            "format": "uuid",
+            "title": "Student Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "student_id",
+          "advisor_id",
+          "content"
+        ],
+        "title": "AdvisorMessageInput",
+        "type": "object"
+      },
+      "AdvisorMessageView": {
+        "properties": {
+          "advisor_id": {
+            "title": "Advisor Id",
+            "type": "string"
+          },
+          "content": {
+            "title": "Content",
+            "type": "string"
+          },
+          "created": {
+            "title": "Created",
+            "type": "number"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "sender_id": {
+            "title": "Sender Id",
+            "type": "string"
+          },
+          "student_id": {
+            "title": "Student Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "student_id",
+          "advisor_id",
+          "sender_id",
+          "content",
+          "created"
+        ],
+        "title": "AdvisorMessageView",
+        "type": "object"
+      },
+      "AssignmentInput": {
+        "additionalProperties": false,
+        "properties": {
+          "due_at": {
+            "anyOf": [
+              {
+                "maximum": 4102444800.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due At"
+          },
+          "instructions": {
+            "maxLength": 8000,
+            "minLength": 1,
+            "title": "Instructions",
+            "type": "string"
+          },
+          "lesson_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lesson Id"
+          },
+          "student_id": {
+            "format": "uuid",
+            "title": "Student Id",
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "student_id",
+          "title",
+          "instructions"
+        ],
+        "title": "AssignmentInput",
+        "type": "object"
+      },
+      "AssignmentView": {
+        "properties": {
+          "answer": {
+            "title": "Answer",
+            "type": "string"
+          },
+          "created": {
+            "title": "Created",
+            "type": "number"
+          },
+          "due_at": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due At"
+          },
+          "feedback": {
+            "title": "Feedback",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "instructions": {
+            "title": "Instructions",
+            "type": "string"
+          },
+          "lesson_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lesson Id"
+          },
+          "state": {
+            "enum": [
+              "assigned",
+              "submitted",
+              "returned",
+              "reviewed"
+            ],
+            "title": "State",
+            "type": "string"
+          },
+          "student_id": {
+            "title": "Student Id",
+            "type": "string"
+          },
+          "submitted_at": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Submitted At"
+          },
+          "teacher_id": {
+            "title": "Teacher Id",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "teacher_id",
+          "student_id",
+          "lesson_id",
+          "title",
+          "instructions",
+          "due_at",
+          "state",
+          "answer",
+          "feedback",
+          "created",
+          "submitted_at"
+        ],
+        "title": "AssignmentView",
+        "type": "object"
+      },
       "CitationView": {
         "properties": {
           "index": {
@@ -207,6 +450,55 @@
         "title": "Credentials",
         "type": "object"
       },
+      "FeedbackInput": {
+        "additionalProperties": false,
+        "properties": {
+          "feedback": {
+            "maxLength": 8000,
+            "minLength": 1,
+            "title": "Feedback",
+            "type": "string"
+          },
+          "return_for_revision": {
+            "default": false,
+            "title": "Return For Revision",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "feedback"
+        ],
+        "title": "FeedbackInput",
+        "type": "object"
+      },
+      "FileLessonInput": {
+        "additionalProperties": false,
+        "properties": {
+          "file_id": {
+            "format": "uuid",
+            "title": "File Id",
+            "type": "string"
+          },
+          "subject": {
+            "default": "",
+            "maxLength": 80,
+            "title": "Subject",
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file_id",
+          "title"
+        ],
+        "title": "FileLessonInput",
+        "type": "object"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -247,6 +539,11 @@
             "title": "Error",
             "type": "string"
           },
+          "has_file": {
+            "default": false,
+            "title": "Has File",
+            "type": "boolean"
+          },
           "id": {
             "title": "Id",
             "type": "string"
@@ -255,9 +552,21 @@
             "title": "Owned",
             "type": "boolean"
           },
+          "source_kind": {
+            "default": "transcript",
+            "enum": [
+              "transcript",
+              "document",
+              "recording"
+            ],
+            "title": "Source Kind",
+            "type": "string"
+          },
           "state": {
             "enum": [
               "queued",
+              "extracting",
+              "review",
               "indexing",
               "ready",
               "failed"
@@ -330,6 +639,11 @@
             "title": "Error",
             "type": "string"
           },
+          "has_file": {
+            "default": false,
+            "title": "Has File",
+            "type": "boolean"
+          },
           "id": {
             "title": "Id",
             "type": "string"
@@ -338,9 +652,21 @@
             "title": "Owned",
             "type": "boolean"
           },
+          "source_kind": {
+            "default": "transcript",
+            "enum": [
+              "transcript",
+              "document",
+              "recording"
+            ],
+            "title": "Source Kind",
+            "type": "string"
+          },
           "state": {
             "enum": [
               "queued",
+              "extracting",
+              "review",
               "indexing",
               "ready",
               "failed"
@@ -431,6 +757,291 @@
         "title": "MessageView",
         "type": "object"
       },
+      "PasswordChange": {
+        "additionalProperties": false,
+        "properties": {
+          "current_password": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Current Password",
+            "type": "string"
+          },
+          "new_password": {
+            "maxLength": 128,
+            "minLength": 15,
+            "title": "New Password",
+            "type": "string"
+          }
+        },
+        "required": [
+          "current_password",
+          "new_password"
+        ],
+        "title": "PasswordChange",
+        "type": "object"
+      },
+      "ProposalDecisionInput": {
+        "additionalProperties": false,
+        "properties": {
+          "decision": {
+            "enum": [
+              "approve",
+              "decline"
+            ],
+            "title": "Decision",
+            "type": "string"
+          },
+          "note": {
+            "maxLength": 4000,
+            "minLength": 1,
+            "title": "Note",
+            "type": "string"
+          }
+        },
+        "required": [
+          "decision",
+          "note"
+        ],
+        "title": "ProposalDecisionInput",
+        "type": "object"
+      },
+      "ProposalEditInput": {
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "maxLength": 8000,
+            "minLength": 1,
+            "title": "Description",
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "description"
+        ],
+        "title": "ProposalEditInput",
+        "type": "object"
+      },
+      "ProposalInput": {
+        "additionalProperties": false,
+        "properties": {
+          "advisor_id": {
+            "format": "uuid",
+            "title": "Advisor Id",
+            "type": "string"
+          },
+          "description": {
+            "maxLength": 8000,
+            "minLength": 1,
+            "title": "Description",
+            "type": "string"
+          },
+          "parent_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Id"
+          },
+          "student_id": {
+            "format": "uuid",
+            "title": "Student Id",
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "description",
+          "student_id",
+          "advisor_id"
+        ],
+        "title": "ProposalInput",
+        "type": "object"
+      },
+      "ProposalReviewInput": {
+        "additionalProperties": false,
+        "properties": {
+          "decision": {
+            "enum": [
+              "approve",
+              "revise",
+              "decline"
+            ],
+            "title": "Decision",
+            "type": "string"
+          },
+          "note": {
+            "maxLength": 4000,
+            "minLength": 1,
+            "title": "Note",
+            "type": "string"
+          }
+        },
+        "required": [
+          "decision",
+          "note"
+        ],
+        "title": "ProposalReviewInput",
+        "type": "object"
+      },
+      "ProposalView": {
+        "properties": {
+          "advisor_id": {
+            "title": "Advisor Id",
+            "type": "string"
+          },
+          "advisor_note": {
+            "title": "Advisor Note",
+            "type": "string"
+          },
+          "created": {
+            "title": "Created",
+            "type": "number"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "parent_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Id"
+          },
+          "parent_note": {
+            "title": "Parent Note",
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "pending_advisor",
+              "pending_parent",
+              "approved",
+              "declined",
+              "revision_requested"
+            ],
+            "title": "State",
+            "type": "string"
+          },
+          "student_id": {
+            "title": "Student Id",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "updated": {
+            "title": "Updated",
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "student_id",
+          "advisor_id",
+          "parent_id",
+          "title",
+          "description",
+          "state",
+          "advisor_note",
+          "parent_note",
+          "created",
+          "updated"
+        ],
+        "title": "ProposalView",
+        "type": "object"
+      },
+      "PublicationInput": {
+        "additionalProperties": false,
+        "properties": {
+          "lesson_id": {
+            "format": "uuid",
+            "title": "Lesson Id",
+            "type": "string"
+          },
+          "student_id": {
+            "format": "uuid",
+            "title": "Student Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "lesson_id",
+          "student_id"
+        ],
+        "title": "PublicationInput",
+        "type": "object"
+      },
+      "PublicationView": {
+        "properties": {
+          "created": {
+            "title": "Created",
+            "type": "number"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "lesson_id": {
+            "title": "Lesson Id",
+            "type": "string"
+          },
+          "student_id": {
+            "title": "Student Id",
+            "type": "string"
+          },
+          "subject": {
+            "title": "Subject",
+            "type": "string"
+          },
+          "teacher_id": {
+            "title": "Teacher Id",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "teacher_id",
+          "student_id",
+          "lesson_id",
+          "title",
+          "subject",
+          "created"
+        ],
+        "title": "PublicationView",
+        "type": "object"
+      },
       "RunView": {
         "properties": {
           "error": {
@@ -460,6 +1071,144 @@
           "error"
         ],
         "title": "RunView",
+        "type": "object"
+      },
+      "SchoolPersonView": {
+        "properties": {
+          "account_id": {
+            "title": "Account Id",
+            "type": "string"
+          },
+          "login": {
+            "title": "Login",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "relationship": {
+            "enum": [
+              "student",
+              "teacher",
+              "advisor",
+              "parent"
+            ],
+            "title": "Relationship",
+            "type": "string"
+          },
+          "responsibilities": {
+            "items": {
+              "enum": [
+                "teacher",
+                "advisor",
+                "parent"
+              ],
+              "type": "string"
+            },
+            "title": "Responsibilities",
+            "type": "array"
+          },
+          "student_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Student Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "account_id",
+          "name",
+          "login",
+          "relationship"
+        ],
+        "title": "SchoolPersonView",
+        "type": "object"
+      },
+      "SchoolWorkspace": {
+        "properties": {
+          "account_id": {
+            "title": "Account Id",
+            "type": "string"
+          },
+          "assignments": {
+            "items": {
+              "$ref": "#/components/schemas/AssignmentView"
+            },
+            "title": "Assignments",
+            "type": "array"
+          },
+          "messages": {
+            "items": {
+              "$ref": "#/components/schemas/AdvisorMessageView"
+            },
+            "title": "Messages",
+            "type": "array"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "people": {
+            "items": {
+              "$ref": "#/components/schemas/SchoolPersonView"
+            },
+            "title": "People",
+            "type": "array"
+          },
+          "proposals": {
+            "items": {
+              "$ref": "#/components/schemas/ProposalView"
+            },
+            "title": "Proposals",
+            "type": "array"
+          },
+          "publications": {
+            "items": {
+              "$ref": "#/components/schemas/PublicationView"
+            },
+            "title": "Publications",
+            "type": "array"
+          },
+          "roles": {
+            "items": {
+              "enum": [
+                "student",
+                "teacher",
+                "advisor",
+                "parent"
+              ],
+              "type": "string"
+            },
+            "title": "Roles",
+            "type": "array"
+          }
+        },
+        "required": [
+          "account_id",
+          "name",
+          "roles",
+          "people",
+          "publications",
+          "assignments",
+          "messages",
+          "proposals"
+        ],
+        "title": "SchoolWorkspace",
+        "type": "object"
+      },
+      "SessionRevokeView": {
+        "properties": {
+          "revoked": {
+            "title": "Revoked",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "revoked"
+        ],
+        "title": "SessionRevokeView",
         "type": "object"
       },
       "SessionView": {
@@ -541,6 +1290,38 @@
         "title": "StudyStatus",
         "type": "object"
       },
+      "SubmissionInput": {
+        "additionalProperties": false,
+        "properties": {
+          "answer": {
+            "maxLength": 8000,
+            "minLength": 1,
+            "title": "Answer",
+            "type": "string"
+          }
+        },
+        "required": [
+          "answer"
+        ],
+        "title": "SubmissionInput",
+        "type": "object"
+      },
+      "TranscriptApproval": {
+        "additionalProperties": false,
+        "properties": {
+          "transcript": {
+            "maxLength": 45000,
+            "minLength": 30,
+            "title": "Transcript",
+            "type": "string"
+          }
+        },
+        "required": [
+          "transcript"
+        ],
+        "title": "TranscriptApproval",
+        "type": "object"
+      },
       "UploadInput": {
         "additionalProperties": false,
         "properties": {
@@ -561,13 +1342,19 @@
               "text/plain",
               "application/pdf",
               "image/png",
-              "image/jpeg"
+              "image/jpeg",
+              "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+              "video/mp4",
+              "video/webm",
+              "audio/mpeg",
+              "audio/wav",
+              "audio/mp4"
             ],
             "title": "Media Type",
             "type": "string"
           },
           "size": {
-            "maximum": 10485760.0,
+            "maximum": 52428800.0,
             "minimum": 1.0,
             "title": "Size",
             "type": "integer"
@@ -601,6 +1388,10 @@
             "title": "Id",
             "type": "string"
           },
+          "media_type": {
+            "title": "Media Type",
+            "type": "string"
+          },
           "size": {
             "title": "Size",
             "type": "integer"
@@ -631,6 +1422,7 @@
           }
         },
         "required": [
+          "media_type",
           "id",
           "filename",
           "size",
@@ -688,6 +1480,93 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/v1/account/password": {
+      "post": {
+        "operationId": "change_password_api_v1_account_password_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PasswordChange"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Change Password",
+        "tags": [
+          "account"
+        ]
+      }
+    },
+    "/api/v1/account/sessions": {
+      "get": {
+        "operationId": "list_sessions_api_v1_account_sessions_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AccountSessionView"
+                  },
+                  "title": "Response List Sessions Api V1 Account Sessions Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Sessions",
+        "tags": [
+          "account"
+        ]
+      }
+    },
+    "/api/v1/account/sessions/revoke-others": {
+      "post": {
+        "operationId": "revoke_others_api_v1_account_sessions_revoke_others_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionRevokeView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Revoke Others",
+        "tags": [
+          "account"
+        ]
+      }
+    },
     "/api/v1/auth/login": {
       "post": {
         "operationId": "login_api_v1_auth_login_post",
@@ -919,6 +1798,486 @@
         "summary": "Ready",
         "tags": [
           "health"
+        ]
+      }
+    },
+    "/api/v1/school/assignments": {
+      "post": {
+        "operationId": "add_assignment_api_v1_school_assignments_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignmentInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssignmentView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Add Assignment",
+        "tags": [
+          "school"
+        ]
+      }
+    },
+    "/api/v1/school/assignments/{assignment_id}/feedback": {
+      "post": {
+        "operationId": "feedback_api_v1_school_assignments__assignment_id__feedback_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "assignment_id",
+            "required": true,
+            "schema": {
+              "title": "Assignment Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FeedbackInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssignmentView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Feedback",
+        "tags": [
+          "school"
+        ]
+      }
+    },
+    "/api/v1/school/assignments/{assignment_id}/submit": {
+      "post": {
+        "operationId": "submit_api_v1_school_assignments__assignment_id__submit_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "assignment_id",
+            "required": true,
+            "schema": {
+              "title": "Assignment Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmissionInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssignmentView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Submit",
+        "tags": [
+          "school"
+        ]
+      }
+    },
+    "/api/v1/school/messages": {
+      "post": {
+        "operationId": "add_message_api_v1_school_messages_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdvisorMessageInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdvisorMessageView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Add Message",
+        "tags": [
+          "school"
+        ]
+      }
+    },
+    "/api/v1/school/proposals": {
+      "post": {
+        "operationId": "add_proposal_api_v1_school_proposals_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProposalInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProposalView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Add Proposal",
+        "tags": [
+          "school"
+        ]
+      }
+    },
+    "/api/v1/school/proposals/{proposal_id}": {
+      "put": {
+        "operationId": "revise_api_v1_school_proposals__proposal_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "proposal_id",
+            "required": true,
+            "schema": {
+              "title": "Proposal Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProposalEditInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProposalView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Revise",
+        "tags": [
+          "school"
+        ]
+      }
+    },
+    "/api/v1/school/proposals/{proposal_id}/decision": {
+      "post": {
+        "operationId": "decide_api_v1_school_proposals__proposal_id__decision_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "proposal_id",
+            "required": true,
+            "schema": {
+              "title": "Proposal Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProposalDecisionInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProposalView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Decide",
+        "tags": [
+          "school"
+        ]
+      }
+    },
+    "/api/v1/school/proposals/{proposal_id}/review": {
+      "post": {
+        "operationId": "review_api_v1_school_proposals__proposal_id__review_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "proposal_id",
+            "required": true,
+            "schema": {
+              "title": "Proposal Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProposalReviewInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProposalView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Review",
+        "tags": [
+          "school"
+        ]
+      }
+    },
+    "/api/v1/school/publications": {
+      "post": {
+        "operationId": "add_publication_api_v1_school_publications_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublicationInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicationView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Add Publication",
+        "tags": [
+          "school"
+        ]
+      }
+    },
+    "/api/v1/school/publications/{publication_id}": {
+      "delete": {
+        "operationId": "remove_publication_api_v1_school_publications__publication_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "publication_id",
+            "required": true,
+            "schema": {
+              "title": "Publication Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Remove Publication",
+        "tags": [
+          "school"
+        ]
+      }
+    },
+    "/api/v1/school/workspace": {
+      "get": {
+        "operationId": "workspace_api_v1_school_workspace_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchoolWorkspace"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Workspace",
+        "tags": [
+          "school"
         ]
       }
     },
@@ -1171,6 +2530,47 @@
           }
         },
         "summary": "Message",
+        "tags": [
+          "study"
+        ]
+      }
+    },
+    "/api/v1/study/imports": {
+      "post": {
+        "operationId": "import_file_api_v1_study_imports_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FileLessonInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LessonView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Import File",
         "tags": [
           "study"
         ]
@@ -1450,6 +2850,98 @@
           }
         },
         "summary": "Revoke",
+        "tags": [
+          "study"
+        ]
+      }
+    },
+    "/api/v1/study/lessons/{lesson_id}/approve": {
+      "post": {
+        "operationId": "approve_transcript_api_v1_study_lessons__lesson_id__approve_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "lesson_id",
+            "required": true,
+            "schema": {
+              "title": "Lesson Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TranscriptApproval"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LessonView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Approve Transcript",
+        "tags": [
+          "study"
+        ]
+      }
+    },
+    "/api/v1/study/lessons/{lesson_id}/file": {
+      "get": {
+        "operationId": "source_file_api_v1_study_lessons__lesson_id__file_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "lesson_id",
+            "required": true,
+            "schema": {
+              "title": "Lesson Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Source File",
         "tags": [
           "study"
         ]

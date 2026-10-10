@@ -23,6 +23,7 @@ describe("preview storage recovery", () => {
     '{"answers":[]}',
     '{"stuck":[false,false,false,false,"false"]}',
     '{"settings":null}',
+    '{"settings":{"studentProposals":null}}',
     '{"proposals":[{"subject":"missing","reason":"x","note":"","status":"adviser"}]}',
     '{"questions":[{"text":42,"reply":""}]}',
     '{"lessonPins":{"lina":["missing"],"sami":[]}}',
@@ -54,4 +55,26 @@ describe("preview storage recovery", () => {
     expect(Object.hasOwn(restored, "session")).toBe(false);
     expect(Object.hasOwn(restored, "__proto__")).toBe(false);
   });
+});
+
+test("location-era snapshots lose network gates and preserve ongoing work", () => {
+  const old = {
+    ...initialState(),
+    school: false,
+    settings: {
+      recHome: false,
+      advisersRemote: false,
+      studentProposals: false,
+    },
+  };
+  old.answers[2] = "3600";
+  old.meeting = true;
+  const restored = restorePreviewState(JSON.stringify(old), initialState());
+  expect(Object.hasOwn(restored, "school")).toBe(false);
+  expect(restored.settings).toEqual({
+    studentProposals: false,
+    parentProgress: false,
+  });
+  expect(restored.answers[2]).toBe("3600");
+  expect(restored.meeting).toBe(true);
 });

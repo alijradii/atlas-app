@@ -174,16 +174,14 @@ function buildHomeCards(accountId: AccountId, state: PreviewState): HomeCard[] {
     ];
   }
   if (accountId === "daher") {
-    const restricted = !state.school;
     return [
       card(
         "class-evidence",
         "evidence",
         "Mass and weight",
         "Inspect example answers and teaching follow-ups",
-        restricted ? "View availability" : "Inspect evidence",
+        "Inspect evidence",
         "analytics",
-        { locked: restricted },
       ),
       card(
         "lesson-L1",
@@ -206,9 +204,8 @@ function buildHomeCards(accountId: AccountId, state: PreviewState): HomeCard[] {
         "evidence",
         "Independent and assisted work",
         "Compare the evidence before drawing conclusions",
-        restricted ? "View availability" : "View class progress",
+        "View class progress",
         "analytics",
-        { locked: restricted },
       ),
     ];
   }
@@ -300,7 +297,7 @@ function buildHomeCards(accountId: AccountId, state: PreviewState): HomeCard[] {
       "access",
       "access",
       "Access & availability",
-      "What works at school and from home",
+      "Who can access each workspace",
       "Review access",
       "access",
     ),
@@ -400,8 +397,6 @@ export function homeCards(
         status: pending ? "Your review" : "Reviewed",
       };
     }
-    if (card.locked)
-      return { ...card, group: "waiting", status: "School network only" };
     if (card.kind === "lesson")
       return {
         ...card,

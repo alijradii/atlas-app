@@ -3,10 +3,10 @@
   inset: 0;
   z-index: 90;
   pointer-events: none;
-  animation: atlas-spotlight-in 240ms ease-out both;
+  animation: atlas-spotlight-in var(--motion-fast) var(--motion-ease-enter) both;
 }
 .atlas-spotlight[data-state="closing"] {
-  animation: atlas-spotlight-out 180ms ease-in both;
+  animation: atlas-spotlight-out var(--motion-fast) var(--motion-ease-exit) both;
 }
 .atlas-spotlight-ring {
   position: fixed;
@@ -37,7 +37,8 @@
   pointer-events: auto;
   font-size: 13.5px;
   line-height: 1.55;
-  animation: atlas-spotlight-tip-in 340ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: atlas-spotlight-tip-in var(--motion-enter) var(--motion-ease-enter)
+    both;
 }
 .atlas-spotlight-tip p {
   margin: 0;

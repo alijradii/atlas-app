@@ -22,11 +22,10 @@ import {
   Switch,
 } from "@school2036/ui";
 import {
-  House,
   Menu,
   MoreHorizontal,
   Pin,
-  School,
+  SlidersHorizontal,
   SquarePen,
   X,
 } from "lucide-react";
@@ -94,7 +93,7 @@ export function WorkspaceShell({
     student:
       "Help here counts as help. Your own work is measured in practice batches.",
     teacher:
-      "Answers point you to evidence. Analytics stay on the school network.",
+      "Answers point you to evidence. Your teaching decisions stay yours.",
     adviser: "AI answers are marked. Your advice stays your own.",
     parent: "You see what the school shares with families.",
     staff: "Answers summarise; decisions stay with staff.",
@@ -281,8 +280,8 @@ export function WorkspaceShell({
                 variant="outline"
                 className="gap-2 text-xs normal-case tracking-normal"
               >
-                {state.school ? <School /> : <House />}
-                {state.school ? "At school" : "From home"}
+                <SlidersHorizontal />
+                Preview controls
               </Button>
             </DialogTrigger>
             <DialogContent>
@@ -293,20 +292,6 @@ export function WorkspaceShell({
                   affect sample screens.
                 </DialogDescription>
               </DialogHeader>
-              <div className="grid grid-cols-2 gap-3">
-                <Button
-                  variant={!state.school ? "default" : "outline"}
-                  onClick={() => setState((s) => ({ ...s, school: false }))}
-                >
-                  From home
-                </Button>
-                <Button
-                  variant={state.school ? "default" : "outline"}
-                  onClick={() => setState((s) => ({ ...s, school: true }))}
-                >
-                  At school
-                </Button>
-              </div>
               {(
                 [
                   ["tutor", "Study agent & feedback"],

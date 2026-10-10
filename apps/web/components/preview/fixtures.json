@@ -1075,10 +1075,8 @@
     }
   ],
   "settings": {
-    "recHome": true,
     "parentProgress": "undecided",
-    "studentProposals": true,
-    "advisersRemote": true
+    "studentProposals": true
   },
   "meetingRequests": []
 }

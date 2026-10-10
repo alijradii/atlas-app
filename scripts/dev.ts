@@ -21,7 +21,11 @@ const infra = Bun.spawn(
     "compose",
     "-f",
     "infra/compose.dev.yaml",
-    ...(full ? ["--profile", "full"] : []),
+    ...(full
+      ? ["--profile", "full"]
+      : process.env.SCHOOL_SCANNER_HOST === "127.0.0.1"
+        ? ["--profile", "media"]
+        : []),
     "up",
     "-d",
     "--wait",

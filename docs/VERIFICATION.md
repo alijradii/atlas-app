@@ -1,5 +1,67 @@
 # Verification — October 10, 2026
 
+## Connected hackathon workspace
+
+The active app now includes `/workspace`, `/files`, `/study` and `/account` with
+persisted API workflows. `/preview/*` remains fictional. See [SCHOOL.md](SCHOOL.md),
+[MEDIA.md](MEDIA.md), [STUDY.md](STUDY.md) and [ACCOUNT.md](ACCOUNT.md) for the current
+scope and provisioning; older entries below describe their original verification
+scope rather than current missing features.
+
+`SCHOOL_TEST_SCANNER=1 make check` passed lint, types, generated-contract checks,
+**55 Bun unit tests and 157 Python tests**, with no skipped tests. The existing
+Starlette test-client deprecation warning remains; no check was suppressed.
+
+The compiled production Chrome suite passed **69/69 scenarios**. It exercises real
+PostgreSQL/API role workflows: teacher publication and assignment, student work,
+teacher feedback, private advisor messages and ordered advisor/parent decisions.
+Upload coverage includes transfer failure/retry, staging cleanup, extraction review,
+approval, indexing and cited study. Provider responses are deterministic in this
+disposable test harness; the browser tests do not spend a provider budget.
+
+QA found and fixed a newly accessible analytics table overflowing a 390px screen,
+guidance targeting a hidden analytics tab, stale tests expecting the removed network
+switch, an ambiguous alert selector, and animated proposal text briefly failing
+contrast. Workspace entrance motion now uses transforms while text stays opaque.
+The former location flags are discarded during preview-state migration without
+discarding saved sample work. Account/role/source revocation and returning-tab
+revalidation remain covered.
+
+A live development screenshot exposed an additional Strict Mode bootstrap race:
+an aborted session check could finish a newer check's loading state and repeatedly
+redirect Files through Login. Slow successful authentication reproduced repeated
+redirects before the fix. A bootstrap generation now guards completion; the same
+development check stays on Files with its heading visible. Privacy revalidation and
+stale-response guards remain intact.
+
+After that fix, `make build` and the complete frontend lint/type/contract/unit checks
+passed again. **13/13 affected production browser tests** passed, including the new
+slow-auth regression and existing account-switch, outage, upload and review cases.
+The new regression also passed against development Strict Mode, where the failure
+was reproduced. This is a focused rerun after the earlier 69-test full run; the
+suite now contains 70 scenarios. Real local desktop/mobile Files screenshots were
+recaptured and inspected after sign-in, alongside the role-workflow screenshots.
+
+A separate real Gemini transcription check used a short synthetic spoken physics
+clip, exercising local ffmpeg conversion and the configured transcription provider.
+No personal or classroom recording was sent. Native PDF extraction and live ClamAV
+checks also passed. The study RAG and cited-answer smoke evidence from the earlier
+implementation remains recorded below.
+
+The local database was migrated without resetting existing records. Four isolated
+local demo accounts were provisioned with only explicit demo relationships; their
+random credentials remain in ignored `.data/hackathon-accounts.json`. No existing
+personal account was linked to them or had its password reset. Private environment
+values and local account passwords were checked against Git-visible files and are
+absent. This is local hackathon delivery, not approval for public deployment.
+
+Known boundaries remain: 20-minute/50-MiB recording imports, text-layer PDFs without
+OCR, no live class recording, no autonomous model tools, and operator-managed account
+and role provisioning. Application dependency audits pass; the separate vendored RAG
+advisories and the other gates in `SECURITY.md`/`release-status.json` remain unresolved.
+Live R2 behavior, production container scans, remote recovery, Firefox/Safari and
+physical mobile devices were not verified by this pass.
+
 ## Post-build QA
 
 QA now runs the complete browser suite against Next's compiled **standalone

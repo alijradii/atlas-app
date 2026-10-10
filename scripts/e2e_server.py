@@ -10,7 +10,7 @@ import uvicorn
 from alembic import command
 from alembic.config import Config
 from school2036.config import Settings
-from school2036.operator import create_user
+from school2036.operator import create_user, set_relationship, set_roles
 from school_api.main import create_app
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import make_url
@@ -54,6 +54,24 @@ try:
     create_user(
         config, app.state.sessions, "study-peer", "Study Peer", "synthetic browser password 2036"
     )
+    create_user(
+        config,
+        app.state.sessions,
+        "account-browser",
+        "Account Browser",
+        "synthetic browser password 2036",
+    )
+    for role in ("teacher", "student", "advisor", "parent"):
+        create_user(
+            config,
+            app.state.sessions,
+            f"school-{role}",
+            f"School {role.title()}",
+            "synthetic browser password 2036",
+        )
+        set_roles(config, app.state.sessions, f"school-{role}", [role])
+    for role in ("teacher", "advisor", "parent"):
+        set_relationship(config, app.state.sessions, f"school-{role}", "school-student", role)
     from e2e_study import BrowserStudyProviders
     from school2036 import study_jobs
     from school2036.jobs import drain_one

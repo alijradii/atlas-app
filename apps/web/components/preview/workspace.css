@@ -1,5 +1,6 @@
 .atlas-workspace-main {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 20px;
   width: 100%;
   max-width: 1440px;
@@ -14,7 +15,8 @@
 }
 @media (prefers-reduced-motion: no-preference) {
   .atlas-workspace-main > * {
-    animation: workspace-arrive 260ms ease-out both;
+    animation: workspace-arrive var(--motion-enter) var(--motion-ease-enter)
+      both;
   }
   @keyframes workspace-arrive {
     from {
@@ -26,4 +28,14 @@
       transform: translateY(0);
     }
   }
+}
+
+/* Wide evidence tables scroll inside their panel, never expand the grid track. */
+.atlas-workspace-main > *,
+.atlas-workspace-main [data-slot="tabs-content"] {
+  min-width: 0;
+}
+.atlas-workspace[data-section="analytics"] [data-slot="tabs-list"] {
+  max-width: 100%;
+  height: auto;
 }

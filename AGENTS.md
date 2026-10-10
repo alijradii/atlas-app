@@ -1,5 +1,11 @@
 # Project instructions
 
+## Git publication
+
+When the user authorizes a push, publish to `origin/main`. Do not publish a feature
+branch instead unless the user explicitly changes this instruction. Fetch and
+integrate upstream changes without overwriting teammates' work; never force-push.
+
 ## Runtime and package managers — required
 
 - **Bun is the JavaScript/TypeScript runtime AND package manager in development, tests, builds, CI, and production.** Use the version pinned in `.bun-version` and `package.json`.

@@ -127,6 +127,10 @@ class StudyLesson(Base):
     title: Mapped[str] = mapped_column(String(160))
     subject: Mapped[str] = mapped_column(String(80))
     transcript: Mapped[str] = mapped_column(Text)
+    file_id: Mapped[str | None] = mapped_column(ForeignKey("personal_file.id"))
+    source_kind: Mapped[str] = mapped_column(
+        String(20), default="transcript", server_default="transcript"
+    )
     state: Mapped[str] = mapped_column(String(20), default="queued")
     source_id: Mapped[str | None] = mapped_column(String(128), unique=True)
     error: Mapped[str] = mapped_column(String(200), default="")
@@ -173,5 +177,84 @@ class StudyRun(Base):
     session_hash: Mapped[str] = mapped_column(String(64))
     state: Mapped[str] = mapped_column(String(20), default="queued")
     error: Mapped[str] = mapped_column(String(200), default="")
+    created: Mapped[float] = mapped_column(Float)
+    updated: Mapped[float] = mapped_column(Float)
+
+
+class SchoolRelationship(Base):
+    """Operator-approved responsibility for one student, never inferred by role alone."""
+
+    __tablename__ = "school_relationship"
+    __table_args__ = (
+        CheckConstraint("staff_id <> student_id", name="school_relationship_not_self"),
+        CheckConstraint(
+            "kind IN ('teacher', 'advisor', 'parent')", name="school_relationship_kind"
+        ),
+    )
+    staff_id: Mapped[str] = mapped_column(ForeignKey("account.id"), primary_key=True)
+    student_id: Mapped[str] = mapped_column(ForeignKey("account.id"), primary_key=True, index=True)
+    kind: Mapped[str] = mapped_column(String(16), primary_key=True)
+
+
+class SchoolPublication(Base):
+    __tablename__ = "school_publication"
+    __table_args__ = (UniqueConstraint("teacher_id", "student_id", "lesson_id"),)
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    teacher_id: Mapped[str] = mapped_column(ForeignKey("account.id"), index=True)
+    student_id: Mapped[str] = mapped_column(ForeignKey("account.id"), index=True)
+    lesson_id: Mapped[str] = mapped_column(ForeignKey("study_lesson.id"))
+    created: Mapped[float] = mapped_column(Float)
+
+
+class SchoolAssignment(Base):
+    __tablename__ = "school_assignment"
+    __table_args__ = (
+        CheckConstraint(
+            "state IN ('assigned', 'submitted', 'returned', 'reviewed')",
+            name="school_assignment_state",
+        ),
+    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    teacher_id: Mapped[str] = mapped_column(ForeignKey("account.id"), index=True)
+    student_id: Mapped[str] = mapped_column(ForeignKey("account.id"), index=True)
+    lesson_id: Mapped[str | None] = mapped_column(ForeignKey("study_lesson.id"))
+    title: Mapped[str] = mapped_column(String(160))
+    instructions: Mapped[str] = mapped_column(Text)
+    due_at: Mapped[float | None] = mapped_column(Float)
+    state: Mapped[str] = mapped_column(String(16), default="assigned")
+    answer: Mapped[str] = mapped_column(Text, default="")
+    feedback: Mapped[str] = mapped_column(Text, default="")
+    created: Mapped[float] = mapped_column(Float)
+    submitted_at: Mapped[float | None] = mapped_column(Float)
+
+
+class SchoolMessage(Base):
+    __tablename__ = "school_message"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    student_id: Mapped[str] = mapped_column(ForeignKey("account.id"), index=True)
+    advisor_id: Mapped[str] = mapped_column(ForeignKey("account.id"), index=True)
+    sender_id: Mapped[str] = mapped_column(ForeignKey("account.id"))
+    content: Mapped[str] = mapped_column(Text)
+    created: Mapped[float] = mapped_column(Float)
+
+
+class SchoolProposal(Base):
+    __tablename__ = "school_proposal"
+    __table_args__ = (
+        CheckConstraint(
+            "state IN ('pending_advisor', 'pending_parent', 'approved', 'declined', "
+            "'revision_requested')",
+            name="school_proposal_state",
+        ),
+    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    student_id: Mapped[str] = mapped_column(ForeignKey("account.id"), index=True)
+    advisor_id: Mapped[str] = mapped_column(ForeignKey("account.id"), index=True)
+    parent_id: Mapped[str | None] = mapped_column(ForeignKey("account.id"), index=True)
+    title: Mapped[str] = mapped_column(String(160))
+    description: Mapped[str] = mapped_column(Text)
+    state: Mapped[str] = mapped_column(String(24), default="pending_advisor")
+    advisor_note: Mapped[str] = mapped_column(Text, default="")
+    parent_note: Mapped[str] = mapped_column(Text, default="")
     created: Mapped[float] = mapped_column(Float)
     updated: Mapped[float] = mapped_column(Float)

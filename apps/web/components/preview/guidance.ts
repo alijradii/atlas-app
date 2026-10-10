@@ -12,6 +12,7 @@ export type GuideAnchor =
   | "lesson.chapters"
   | "lessons.search"
   | "lessons.upload"
+  | "analytics.overview"
   | "analytics.inspect"
   | "analytics.tab"
   | "proposal.recommend"
@@ -114,11 +115,6 @@ export function resolveGuide(
         text,
       )
     ) {
-      if (!state.school && !state.settings.recHome)
-        return unavailable(
-          "lessons",
-          "Recordings are currently restricted to the school network in this preview. The availability screen explains the next step.",
-        );
       if (/chapter|jump|segment|part of.*lesson/.test(text))
         return guide(
           "lesson.chapters",
@@ -139,24 +135,22 @@ export function resolveGuide(
         "upload",
         "Choose a recording here, then add its title and audience. This preview stores sample draft metadata only; private file uploads live in Your files.",
       );
-    if (
-      /evidence|inspect|misconcep|analytic|why.*(students|class)/.test(text)
-    ) {
-      if (!state.school)
-        return unavailable(
-          "analytics",
-          "Teacher analytics stays on the school network. You can review this availability screen; guidance does not change your network setting.",
-        );
+    if (/misconcep|why.*(students|class)/.test(text))
       return guide(
-        "analytics.inspect",
+        "analytics.tab",
         "analytics",
-        "Examine the sample student answers and interpretation here. You can review the evidence before planning a follow-up.",
+        "Open Misconceptions here to inspect sample student answers and review the interpretation before planning a follow-up.",
+      );
+    if (/evidence|inspect|analytic/.test(text))
+      return guide(
+        "analytics.overview",
+        "analytics",
+        "Filter class evidence here. Compare independent and assisted work, then choose a student to follow up with.",
         {
-          id: "analytics.tab",
-          text: "Open Misconceptions here to inspect sample student answers and review the interpretation before planning a follow-up.",
+          id: "screen.heading",
+          text: "Class evidence compares independent and assisted work. Open the Class evidence tab to filter students and plan a follow-up.",
         },
       );
-    }
   }
   if (role === "adviser" && /recommend|parent|approv|review.*propos/.test(text))
     return guide(
@@ -196,11 +190,6 @@ export function resolveGuide(
       },
     );
   if (role === "staff" && /approv|review|activit|propos/.test(text)) {
-    if (!state.school)
-      return unavailable(
-        "access",
-        "Staff activity review is a school-network workflow. Review access and availability here; guidance does not switch the network setting.",
-      );
     return guide(
       "acts.approve",
       "activities",

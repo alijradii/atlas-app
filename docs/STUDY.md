@@ -1,13 +1,17 @@
 # Transcript-based study
 
 `/study` is the real authenticated workspace. `/preview/*` remains a design/sample
-workspace. Preview identities and school-policy switches do not grant real access.
+workspace. Preview identities do not grant real access. Teacher-published lessons
+require an explicit, currently valid student relationship; see [SCHOOL.md](SCHOOL.md).
 
 ## Use it
 
 1. Provision an account with `make create-user`, then sign in at `/login`.
 2. Open `/study` and add a lesson title, optional subject and transcript. Paste text
    or import a text/Markdown file. Accepted transcript length is 30–45,000 characters.
+   Alternatively upload a document or recording in `/files`, then choose **Use for study**.
+   Text/PDF/DOCX extraction and audio/video transcription produce a review draft, not immediate evidence.
+   Open it in Study, correct the transcript, then **Approve and prepare lesson**.
 3. Wait for preparation: `queued → indexing → ready`, or an explicit `failed` state.
 4. Select one to eight ready lessons and start a conversation. Selection is fixed
    for that conversation; start another to study a different set.
@@ -22,9 +26,12 @@ the assistant reports that limitation without calling the answer model. A missin
 hit is not proof that the material contains no answer. Answers are AI-generated;
 citations let readers inspect the evidence, not certify every generated claim.
 
-This release imports **existing transcripts**. It does not record/transcribe audio,
-join live classes, grade official assessments or perform actions suggested by model
-text. The study model has no executable tools. The supplied service's separate MCP
+Recordings up to 20 minutes/50 MiB can be transcribed through Gemini. The server extracts
+mono audio locally; it does not send video frames. Timestamps are approximate and the
+owner reviews the resulting transcript before indexing. PDF extraction reads the text
+layer (up to 300 pages); it does not interpret diagrams or perform OCR. DOCX imports
+read the main document body. There is no live recording or class-joining feature.
+The study assistant does not grade official assessments or execute actions suggested by model text. The study model has no executable tools. The supplied service's separate MCP
 adapter is not exposed directly to users; the app uses its authenticated HTTP API.
 
 ## Configure the providers
@@ -56,11 +63,22 @@ For a compatible existing installation, set `SCHOOL_RAG_PYTHON` instead of insta
 another environment. Do not put a machine-specific absolute path in committed config.
 `make rag-dev` runs only retrieval; avoid starting a second instance on the same data.
 
+File import requires a verified, owned upload. Imports follow `queued → extracting → review`;
+approval then follows `queued → indexing → ready`. Failed extraction or indexing is
+retryable deliberately. A durable completed transcript is retained when extraction
+acknowledgement is recovered after approval. Twenty extraction attempts per account
+per rolling day include retries; repeated import of the same active file returns its
+existing lesson. Only ready material can be selected or published by a teacher.
+
+Conversions run with byte/page/duration limits, a wall-clock timeout and Linux process
+memory/CPU/output limits. These are not a full parser sandbox. Native converters must
+be available on the worker. Temporary conversion directories are removed after use.
+
 The runner uses structural chunks (no paid contextual chunk planner), loopback port
 8081 and `.data/rag`. Text/Markdown needs no OCR weights. Indexing still sends text
 for Gemini embeddings; hybrid questions send an embedding request. Answer generation
 is a separate Gemini request, using the bounded retrieved evidence and recent history.
-The RAG spend ledger does **not** account for answer-generation charges and is not a
+The RAG spend ledger does **not** account for transcription or answer-generation charges and is not a
 provider billing cap. Set account-level budgets/alerts independently.
 
 The vendored service originated at team handoff commit `7a4ebe9`; see its
@@ -127,3 +145,19 @@ Milvus Lite currently uses one process and retrieval/ingestion is serialized. Th
 application's private-source authorization is implemented; it does not make the
 upstream library API safe to expose publicly. See [security](SECURITY.md) and
 [operations](OPERATIONS.md) before using real school records.
+
+## Original files and classroom access
+
+A shared lesson grants access to its reviewed transcript and its attached original file.
+The original is delivered as an attachment only after checking current lesson access
+and accepted file state. Deleting the original removes file access immediately but
+keeps an already extracted transcript; delete that lesson separately if desired.
+Deleting or unpublishing a lesson rechecks source access for conversation history too.
+Teacher publications grant linked students access independently of direct sharing;
+see [SCHOOL.md](SCHOOL.md). School location is never an authorization input.
+
+The transcription adapter uses Gemini's documented inline audio `generateContent`
+interface, with an application limit below the provider's advertised upload limits.
+See [Google's audio input documentation](https://ai.google.dev/gemini-api/docs/audio).
+A short synthetic speech check verified this configured path locally; it is not a
+claim of transcription accuracy across accents, languages or noisy classrooms.

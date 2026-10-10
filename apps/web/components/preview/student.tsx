@@ -285,16 +285,12 @@ export function Adviser({ accountId }: { accountId: AccountId }) {
           </p>
           <Button
             variant="outline"
-            disabled={
-              state.meeting || (!state.school && !state.settings.advisersRemote)
-            }
+            disabled={state.meeting}
             onClick={() => setState((s) => ({ ...s, meeting: true }))}
           >
-            {!state.school && !state.settings.advisersRemote
-              ? "Conversations available at school"
-              : state.meeting
-                ? "Conversation requested in preview"
-                : "Request a conversation"}
+            {state.meeting
+              ? "Conversation requested in preview"
+              : "Request a conversation"}
           </Button>
         </Panel>
       </div>

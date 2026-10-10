@@ -6,7 +6,7 @@ import sys
 from uuid import uuid4
 
 from cryptography.fernet import Fernet
-from sqlalchemy import select
+from sqlalchemy import delete, select
 
 from school2036.backup import secure_write
 from school2036.config import get_settings
@@ -19,7 +19,8 @@ from school2036.identity import (
     revoke,
     write_marker,
 )
-from school2036.models import Account, School
+from school2036.models import Account, School, SchoolRelationship
+from school2036.school import ROLES, STAFF_ROLES
 from school2036.security import password_hash
 
 
@@ -73,6 +74,66 @@ def reset_password(config, sessions, login, password):
         audit(db, "operator.password_reset", target=account.id)
 
 
+def set_roles(config, sessions, login, roles):
+    """Only a trusted machine operator may change application roles."""
+    selected = sorted(set(roles))
+    if not set(selected) <= ROLES:
+        raise ValueError("Roles must be student, teacher, advisor or parent")
+    with sessions.begin() as db:
+        check_marker(config, locked_state(db))
+        account = db.scalar(select(Account).where(Account.login == login.strip().lower()))
+        if account is None or account.status != "active":
+            raise ValueError("An active account is required")
+        account.roles = selected
+        # Do not reactivate old authority if the operator grants a role again later.
+        db.execute(
+            delete(SchoolRelationship).where(
+                SchoolRelationship.staff_id == account.id,
+                SchoolRelationship.kind.not_in(selected),
+            )
+        )
+        if "student" not in selected:
+            db.execute(
+                delete(SchoolRelationship).where(SchoolRelationship.student_id == account.id)
+            )
+        revoke(db, account.id)
+        audit(db, "operator.roles_changed", target=account.id, roles=selected)
+
+
+def set_relationship(config, sessions, staff_login, student_login, kind, *, remove=False):
+    """Approve or revoke responsibility for an explicit student; no IP/network assumptions."""
+    if kind not in STAFF_ROLES:
+        raise ValueError("Relationship must be teacher, advisor or parent")
+    with sessions.begin() as db:
+        check_marker(config, locked_state(db))
+        staff = db.scalar(select(Account).where(Account.login == staff_login.strip().lower()))
+        student = db.scalar(select(Account).where(Account.login == student_login.strip().lower()))
+        if staff is None or student is None or staff.id == student.id:
+            raise ValueError("Two distinct existing accounts are required")
+        key = (staff.id, student.id, kind)
+        existing = db.get(SchoolRelationship, key)
+        if remove:
+            if existing:
+                db.delete(existing)
+        else:
+            if (
+                staff.status != "active"
+                or student.status != "active"
+                or kind not in staff.roles
+                or "student" not in student.roles
+            ):
+                raise ValueError("Active accounts with the matching roles are required")
+            if existing is None:
+                db.add(SchoolRelationship(staff_id=staff.id, student_id=student.id, kind=kind))
+        audit(
+            db,
+            "operator.relationship_revoked" if remove else "operator.relationship_granted",
+            target=student.id,
+            staff=staff.id,
+            kind=kind,
+        )
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
@@ -84,11 +145,25 @@ def main():
     reconcile = commands.add_parser("reconcile-installed")
     reconcile.add_argument("--deployment-id", required=True)
     reconcile.add_argument("--reason", required=True)
+    roles = commands.add_parser("set-roles")
+    roles.add_argument("--login", required=True)
+    roles.add_argument("--roles", nargs="*", choices=sorted(ROLES), required=True)
+    relationship = commands.add_parser("set-relationship")
+    relationship.add_argument("--staff", required=True)
+    relationship.add_argument("--student", required=True)
+    relationship.add_argument("--kind", choices=sorted(STAFF_ROLES), required=True)
+    relationship.add_argument("--remove", action="store_true")
     args = parser.parse_args()
     config = get_settings()
     engine, sessions = create_session_factory(config)
     try:
-        if args.command == "reconcile-installed":
+        if args.command == "set-roles":
+            set_roles(config, sessions, args.login, args.roles)
+        elif args.command == "set-relationship":
+            set_relationship(
+                config, sessions, args.staff, args.student, args.kind, remove=args.remove
+            )
+        elif args.command == "reconcile-installed":
             with sessions.begin() as db:
                 state = locked_state(db)
                 if not state.initialized or state.deployment_id != args.deployment_id:

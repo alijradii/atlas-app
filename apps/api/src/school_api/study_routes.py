@@ -1,6 +1,7 @@
 """Authenticated study routes; the browser never supplies RAG source identifiers."""
 
 import time
+from urllib.parse import quote
 from uuid import uuid4
 
 from fastapi import APIRouter, HTTPException, Request, Response
@@ -9,6 +10,8 @@ from school2036.identity import audit
 from school2036.jobs import enqueue
 from school2036.models import (
     Account,
+    FileObject,
+    OutboxJob,
     Person,
     StudyAccess,
     StudyConversation,
@@ -16,6 +19,7 @@ from school2036.models import (
     StudyMessage,
     StudyRun,
 )
+from school2036.storage import create_storage
 from school2036.study import (
     ACTIVE_RUNS,
     accessible_lessons,
@@ -26,18 +30,21 @@ from school2036.study import (
     require_study_id,
     run_view,
 )
+from school2036.study_extract import STUDY_FILE_TYPES
 from school2036.study_schemas import (
     AccessInput,
     AccessView,
     ConversationDetail,
     ConversationInput,
     ConversationView,
+    FileLessonInput,
     LessonDetail,
     LessonInput,
     LessonView,
     MessageInput,
     RunView,
     StudyStatus,
+    TranscriptApproval,
 )
 from sqlalchemy import delete, func, select
 
@@ -47,6 +54,23 @@ def study_router(config, sessions):
 
     def actor(db, request):
         return authenticate(config, db, request)[1]
+
+    def require_import_capacity(db, account_id):
+        # One outbox job is one explicit extraction attempt. Recovered leases do
+        # not repeat paid transcription; retries create a fresh job and count too.
+        # available is moved forward when leased, conservatively extending the
+        # daily window by the lease duration rather than expiring attempts early.
+        recent = db.scalar(
+            select(func.count())
+            .select_from(OutboxJob)
+            .where(
+                OutboxJob.kind == "study.extract",
+                OutboxJob.actor == account_id,
+                OutboxJob.available > time.time() - 86400,
+            )
+        )
+        if recent >= 20:
+            raise HTTPException(429, "Daily import limit reached. Please return later.")
 
     @router.get("/status", response_model=StudyStatus)
     def status(request: Request):
@@ -97,6 +121,91 @@ def study_router(config, sessions):
             audit(db, "study.lesson_added", user.id, value.id)
             return lesson_view(value, user.id)
 
+    @router.post("/imports", response_model=LessonView, status_code=202)
+    def import_file(data: FileLessonInput, request: Request):
+        with sessions.begin() as db:
+            user = actor(db, request)
+            file = db.get(FileObject, str(data.file_id))
+            if file is None or file.owner != user.id or file.state != "accepted":
+                raise HTTPException(404, "A verified file owned by you is required")
+            if file.media_type not in STUDY_FILE_TYPES:
+                raise HTTPException(422, "Choose a text, PDF, DOCX, audio or video file")
+            existing = db.scalar(
+                select(StudyLesson).where(
+                    StudyLesson.owner == user.id,
+                    StudyLesson.file_id == file.id,
+                    StudyLesson.state != "deleted",
+                )
+            )
+            if existing:
+                return lesson_view(existing, user.id)
+            count = db.scalar(
+                select(func.count())
+                .select_from(StudyLesson)
+                .where(StudyLesson.owner == user.id, StudyLesson.state != "deleted")
+            )
+            if count >= 40:
+                raise HTTPException(429, "Keep at most 40 lessons. Remove an older lesson first.")
+            kind = "recording" if file.media_type.startswith(("audio/", "video/")) else "document"
+            if kind == "recording" and not config.gemini_api_key.get_secret_value():
+                raise HTTPException(
+                    503, "Transcription is not configured. You can paste an existing transcript."
+                )
+            require_import_capacity(db, user.id)
+            value = StudyLesson(
+                id=str(uuid4()),
+                owner=user.id,
+                title=data.title,
+                subject=data.subject,
+                transcript="",
+                state="queued",
+                error="",
+                created=time.time(),
+                file_id=file.id,
+                source_kind=kind,
+            )
+            db.add(value)
+            db.flush()
+            enqueue(db, "study.extract", user.id, {"lesson_id": value.id})
+            audit(db, "study.file_imported", user.id, value.id)
+            return lesson_view(value, user.id)
+
+    @router.post("/lessons/{lesson_id}/approve", response_model=LessonView, status_code=202)
+    def approve_transcript(lesson_id: str, data: TranscriptApproval, request: Request):
+        with sessions.begin() as db:
+            user = actor(db, request)
+            value = lesson_for(db, user.id, lesson_id, owner=True)
+            if value.state != "review":
+                raise HTTPException(409, "Only a transcript awaiting review can be approved")
+            value.transcript, value.state = data.transcript, "queued"
+            enqueue(db, "study.ingest", user.id, {"lesson_id": value.id})
+            audit(db, "study.transcript_approved", user.id, value.id)
+            return lesson_view(value, user.id)
+
+    @router.get("/lessons/{lesson_id}/file")
+    def source_file(lesson_id: str, request: Request):
+        with sessions.begin() as db:
+            user = actor(db, request)
+            lesson = lesson_for(db, user.id, lesson_id)
+            file = db.get(FileObject, lesson.file_id) if lesson.file_id else None
+            if file is None or file.state != "accepted":
+                raise HTTPException(404, "The original file is unavailable")
+            try:
+                data = create_storage(config).get(file.final_key, file.expected_size)
+            except Exception:
+                raise HTTPException(
+                    503, "File storage is unavailable. Try the download again."
+                ) from None
+            return Response(
+                data,
+                media_type="application/octet-stream",
+                headers={
+                    "Content-Disposition": "attachment; filename*=UTF-8''"
+                    + quote(file.filename, safe=""),
+                    "Content-Security-Policy": "sandbox; default-src 'none'",
+                },
+            )
+
     @router.get("/lessons/{lesson_id}", response_model=LessonDetail)
     def lesson_detail(lesson_id: str, request: Request):
         with sessions.begin() as db:
@@ -110,8 +219,11 @@ def study_router(config, sessions):
             value = lesson_for(db, user.id, lesson_id, owner=True)
             if value.state != "failed":
                 raise HTTPException(409, "Only failed preparation can be retried")
+            kind = "study.extract" if value.file_id and not value.transcript else "study.ingest"
+            if kind == "study.extract":
+                require_import_capacity(db, user.id)
             value.state, value.error = "queued", ""
-            enqueue(db, "study.ingest", user.id, {"lesson_id": value.id})
+            enqueue(db, kind, user.id, {"lesson_id": value.id})
             return lesson_view(value, user.id)
 
     @router.delete("/lessons/{lesson_id}", status_code=204)

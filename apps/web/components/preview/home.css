@@ -715,14 +715,14 @@
 @media (prefers-reduced-motion: no-preference) {
   .pearl-home-action {
     transition:
-      transform 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+      transform var(--motion-enter) var(--motion-ease-enter),
       box-shadow 0.32s;
   }
   .pearl-home-helper,
   .pearl-home-row-action,
   .pearl-home-primary {
     transition:
-      transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+      transform var(--motion-fast) var(--motion-ease-enter),
       opacity 0.18s;
   }
   .pearl-home-helper-tick {

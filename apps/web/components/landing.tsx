@@ -112,7 +112,7 @@ const questions = [
   ],
   [
     "Can students use it from home?",
-    "The design makes lessons, practice, guidance and activities available from home. School analytics are shown separately in the workspace preview.",
+    "Yes. Access follows your account and shared resources, wherever you study. The role previews show how lessons, practice, guidance and activities fit together.",
   ],
   [
     "What happens if the AI gets something wrong?",
@@ -174,7 +174,7 @@ export function Landing() {
                 things are, and practice you do on your own stays your own.
               </p>
               <Button asChild size="lg" className="mt-8">
-                <Link href="/login?next=study">
+                <Link href="/login?next=workspace">
                   Explore Atlas <ArrowRight />
                 </Link>
               </Button>
@@ -199,7 +199,7 @@ export function Landing() {
               <div className="flex items-center gap-3">
                 <ThemeToggle />
                 <Button asChild variant="outline">
-                  <Link href="/login?next=study">Sign in</Link>
+                  <Link href="/login?next=workspace">Sign in</Link>
                 </Button>
               </div>
             </nav>
@@ -600,8 +600,8 @@ export function Landing() {
                   "The proposed assistant works within each person’s information boundaries.",
                 ],
                 [
-                  "Analytics stay at school",
-                  "The kit separates school analytics from everyday home learning.",
+                  "Access follows your role",
+                  "Teachers see teaching evidence; students see their own learning. Location does not decide access.",
                 ],
                 [
                   "You press the button",
@@ -717,7 +717,7 @@ export function Landing() {
                 {message}
               </p>
               <Link
-                href="/login?next=study"
+                href="/login?next=workspace"
                 className="mt-3 inline-flex items-center gap-2 text-sm text-cobalt"
               >
                 Open the app <ArrowRight className="size-4" />

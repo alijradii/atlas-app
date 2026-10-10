@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     encryption_key_file: Path = Path(".data/identity.key")
     scanner_host: str = ""
     scanner_port: int = 3310
-    media_quota_bytes: int = 100 * 1024 * 1024
+    media_quota_bytes: int = 500 * 1024 * 1024
     r2_account_id: str = ""
     r2_bucket: str = ""
     r2_access_key_id: SecretStr = SecretStr("")

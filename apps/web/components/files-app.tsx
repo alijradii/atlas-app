@@ -4,133 +4,195 @@ import { ApiError, api, type components } from "@school2036/api-client";
 import { Button, Card, Input } from "@school2036/ui";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AuthFrame } from "./auth-frame";
+import { FileLibrary } from "./file-library";
 import { Brand } from "./pearl";
 import { ThemeToggle } from "./theme-toggle";
 
 type Session = components["schemas"]["SessionView"];
 type FileRecord = components["schemas"]["UploadView"];
-type MediaType = components["schemas"]["UploadInput"]["media_type"];
-const mediaTypes: MediaType[] = [
-  "text/plain",
-  "application/pdf",
-  "image/png",
-  "image/jpeg",
-];
 
 export default function FilesApp({
   afterLogin = "/files",
 }: {
-  afterLogin?: "/files" | "/study";
+  afterLogin?: "/files" | "/study" | "/workspace" | "/account";
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [session, setSession] = useState<Session | null>(null);
+  const identity = useRef<Session | null>(null);
+  const lastFiles = useRef<{ account: string; files: FileRecord[] } | null>(
+    null,
+  );
+  const reads = useRef(0);
+  const sessionChecks = useRef(0);
+  const readAbort = useRef<AbortController | null>(null);
+  const mutation = useRef(false);
+  const writes = useRef(0);
+  const [session, setSessionState] = useState<Session | null>(null);
+  const setSession = useCallback((value: Session | null) => {
+    identity.current = value;
+    if (!value) lastFiles.current = null;
+    setSessionState(value);
+  }, []);
   const [files, setFiles] = useState<FileRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [sessionCheckFailed, setSessionCheckFailed] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
-  const report = useCallback((cause: unknown) => {
-    if (cause instanceof ApiError && cause.status === 401) {
-      setSession(null);
-      setFiles([]);
-    }
-    setError(
-      cause instanceof Error ? cause.message : "The request failed. Try again.",
-    );
+  const invalidateReads = useCallback(() => {
+    ++reads.current;
+    readAbort.current?.abort();
   }, []);
-
-  const refresh = useCallback(
-    async () => setFiles(await api<FileRecord[]>("/files")),
-    [],
+  const report = useCallback(
+    (cause: unknown) => {
+      if (cause instanceof ApiError && cause.status === 401) {
+        invalidateReads();
+        setSession(null);
+        setFiles([]);
+      }
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : "The request failed. Try again.",
+      );
+    },
+    [invalidateReads, setSession],
   );
 
-  const checkSession = useCallback(() => {
-    setLoading(true);
-    setSessionCheckFailed(false);
-    setError("");
-    return api<Session>("/auth/me")
-      .then(setSession)
-      .catch((cause) => {
-        if (cause instanceof ApiError && cause.status === 401) {
-          setSession(null);
-        } else {
-          setSessionCheckFailed(true);
-          report(cause);
-        }
-      })
-      .finally(() => setLoading(false));
-  }, [report]);
-
-  useEffect(() => {
-    void checkSession();
-  }, [checkSession]);
-
-  useEffect(() => {
-    if (!session) return;
-    let active = true;
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    let pending: AbortController | undefined;
-    const pause = () => {
-      clearTimeout(timer);
-      pending?.abort();
-      pending = undefined;
-    };
-    const update = () => {
-      pause();
-      if (!active || document.visibilityState === "hidden") return;
-      const controller = new AbortController();
-      pending = controller;
-      void api<FileRecord[]>(
+  const refresh = useCallback(async () => {
+    invalidateReads();
+    const version = reads.current;
+    const controller = new AbortController();
+    readAbort.current = controller;
+    const current = () =>
+      version === reads.current && !controller.signal.aborted;
+    try {
+      const next = await api<Session>(
+        "/auth/me",
+        "GET",
+        undefined,
+        undefined,
+        controller.signal,
+      );
+      if (!current()) return;
+      const previous = identity.current;
+      if (previous?.account_id !== next.account_id) {
+        ++writes.current;
+        mutation.current = false;
+        setBusy(false);
+        lastFiles.current = null;
+        setFiles([]);
+        setError("");
+      } else if (lastFiles.current?.account === next.account_id) {
+        setFiles(lastFiles.current.files);
+      }
+      if (
+        !previous ||
+        previous.account_id !== next.account_id ||
+        previous.csrf !== next.csrf ||
+        previous.name !== next.name
+      )
+        setSession(next);
+      const values = await api<FileRecord[]>(
         "/files",
         "GET",
         undefined,
         undefined,
         controller.signal,
-      )
-        .then((value) => {
-          if (active && !controller.signal.aborted) setFiles(value);
-        })
-        .catch((cause) => {
-          if (active && !controller.signal.aborted) report(cause);
-        })
-        .finally(() => {
-          if (active && pending === controller && !controller.signal.aborted) {
-            pending = undefined;
-            timer = setTimeout(update, 5000);
-          }
-        });
+      );
+      if (current() && identity.current?.account_id === next.account_id) {
+        lastFiles.current = { account: next.account_id, files: values };
+        setFiles(values);
+      }
+    } catch (cause) {
+      if (current()) throw cause;
+    }
+  }, [invalidateReads, setSession]);
+
+  const checkSession = useCallback(async () => {
+    const check = ++sessionChecks.current;
+    setLoading(true);
+    setSessionCheckFailed(false);
+    setError("");
+    try {
+      await refresh();
+    } catch (cause) {
+      if (check !== sessionChecks.current) return;
+      if (cause instanceof ApiError && cause.status === 401) {
+        setSession(null);
+        setFiles([]);
+      } else {
+        setSessionCheckFailed(true);
+        report(cause);
+      }
+    } finally {
+      if (check === sessionChecks.current) setLoading(false);
+    }
+  }, [refresh, report, setSession]);
+
+  useEffect(() => {
+    void checkSession();
+    return () => {
+      ++sessionChecks.current;
+      invalidateReads();
     };
-    // Background polling must not continually renew an unattended session.
-    // Resume immediately on return, letting the API enforce session expiry.
-    document.addEventListener("visibilitychange", update);
-    update();
+  }, [checkSession, invalidateReads]);
+
+  useEffect(() => {
+    if (!session) return;
+    let active = true;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const update = async () => {
+      clearTimeout(timer);
+      if (!active || document.visibilityState === "hidden") return;
+      if (!mutation.current) await refresh().catch(report);
+      if (active) timer = setTimeout(update, 5000);
+    };
+    const revisit = () => {
+      clearTimeout(timer);
+      invalidateReads();
+      setFiles([]);
+      if (document.visibilityState !== "hidden") void update();
+    };
+    document.addEventListener("visibilitychange", revisit);
+    window.addEventListener("focus", revisit);
+    timer = setTimeout(update, 5000);
     return () => {
       active = false;
-      document.removeEventListener("visibilitychange", update);
-      pause();
+      clearTimeout(timer);
+      document.removeEventListener("visibilitychange", revisit);
+      window.removeEventListener("focus", revisit);
     };
-  }, [session, report]);
+  }, [session, refresh, report, invalidateReads]);
 
   useEffect(() => {
     if (!loading && !sessionCheckFailed) {
       if (session && pathname === "/login") router.replace(afterLogin);
-      if (!session && pathname === "/files") router.replace("/login");
+      if (!session && pathname === "/files")
+        router.replace("/login?next=files");
     }
   }, [session, loading, sessionCheckFailed, pathname, router, afterLogin]);
 
   async function run(action: () => Promise<void>) {
+    if (mutation.current) return;
+    mutation.current = true;
+    const write = ++writes.current;
+    const actor = identity.current?.account_id;
+    invalidateReads();
     setBusy(true);
     setError("");
     try {
       await action();
     } catch (cause) {
-      report(cause);
+      if (write === writes.current && actor === identity.current?.account_id)
+        report(cause);
     } finally {
-      setBusy(false);
+      if (write === writes.current) {
+        mutation.current = false;
+        setBusy(false);
+      }
     }
   }
 
@@ -211,7 +273,7 @@ export default function FilesApp({
               type="password"
               autoComplete="current-password"
               required
-              maxLength={128}
+              maxLength={256}
             />
           </label>
           <Button type="submit" disabled={busy}>
@@ -226,10 +288,13 @@ export default function FilesApp({
         <Brand />
         <div className="ml-auto flex max-w-full flex-wrap items-center justify-end gap-3">
           <Button asChild variant="ghost">
-            <Link href="/preview/lina/home">Explore preview</Link>
+            <Link href="/workspace">Workspace</Link>
           </Button>
           <Button asChild variant="ghost">
             <Link href="/study">Study workspace</Link>
+          </Button>
+          <Button asChild variant="ghost">
+            <Link href="/account">Account</Link>
           </Button>
           <ThemeToggle />
           <Button
@@ -254,161 +319,15 @@ export default function FilesApp({
         </div>
         {errorMessage}
         <p>Signed in as {session.name}. Files are private to your account.</p>
-        <Card className="p-6 sm:p-8">
-          <form
-            className="grid gap-4"
-            onSubmit={(event) => {
-              event.preventDefault();
-              const form = event.currentTarget;
-              const file = new FormData(form).get("file");
-              if (!(file instanceof File) || !file.size) {
-                setError("Choose a non-empty file.");
-                return;
-              }
-              void run(async () => {
-                if (file.size > 10 * 1024 * 1024)
-                  throw new Error("Files must be 10 MB or smaller.");
-                const mediaType = file.type as MediaType;
-                if (!mediaTypes.includes(mediaType))
-                  throw new Error("Choose a TXT, PDF, PNG or JPEG file.");
-                const bytes = await file.arrayBuffer();
-                const hash = await crypto.subtle.digest("SHA-256", bytes);
-                const checksum = Array.from(new Uint8Array(hash), (byte) =>
-                  byte.toString(16).padStart(2, "0"),
-                ).join("");
-                const upload = await api<FileRecord>(
-                  "/uploads",
-                  "POST",
-                  {
-                    filename: file.name,
-                    media_type: mediaType,
-                    size: file.size,
-                    checksum,
-                  },
-                  session.csrf,
-                );
-                if (!upload.url) throw new Error("No upload URL was returned.");
-                const local = upload.url.startsWith("/api/v1/uploads/");
-                const response = await fetch(upload.url, {
-                  method: "PUT",
-                  body: bytes,
-                  credentials: local ? "same-origin" : "omit",
-                  headers: {
-                    "Content-Type": mediaType,
-                    ...(local ? { "X-CSRF-Token": session.csrf } : {}),
-                  },
-                });
-                if (!response.ok)
-                  throw new Error(
-                    "Upload failed. Remove the pending file and try again.",
-                  );
-                await api(
-                  `/uploads/${upload.id}/complete`,
-                  "POST",
-                  undefined,
-                  session.csrf,
-                );
-                form.reset();
-                await refresh();
-              });
-            }}
-          >
-            <label
-              htmlFor="auth-file"
-              className="grid gap-2 text-sm font-medium"
-            >
-              Choose a file
-              <Input
-                id="auth-file"
-                name="file"
-                type="file"
-                accept=".txt,.pdf,.png,.jpg,.jpeg"
-                required
-                aria-describedby="file-help"
-              />
-            </label>
-            <small id="file-help" className="text-muted-foreground">
-              TXT, PDF, PNG or JPEG, up to 10 MB. Files are available after
-              verification.
-            </small>
-            <Button type="submit" disabled={busy}>
-              {busy ? "Working…" : "Upload"}
-            </Button>
-          </form>
-        </Card>
-        {!files.length && (
-          <Card className="p-10 text-center">
-            <h2 className="text-xl">No files yet.</h2>
-            <p className="text-sm text-muted-foreground">
-              Add a document or image to get started.
-            </p>
-          </Card>
-        )}
-        <ul aria-label="Your files" className="space-y-3">
-          {files.map((file) => (
-            <li
-              key={file.id}
-              className="glass-panel flex flex-wrap items-center justify-between gap-4 p-5"
-            >
-              <div className="grid min-w-0 flex-1 basis-48 gap-1 break-all">
-                <strong>{file.filename}</strong>
-                <small>
-                  {Math.ceil(file.size / 1024)} KB · {file.state}
-                </small>
-                {file.error && (
-                  <span className="text-sm text-destructive">{file.error}</span>
-                )}
-              </div>
-              <div className="flex flex-wrap items-center gap-3">
-                {file.state === "accepted" && (
-                  <a
-                    className="text-sm text-cobalt underline underline-offset-4"
-                    href={`/api/v1/files/${file.id}/download`}
-                  >
-                    Download {file.filename}
-                  </a>
-                )}
-                {["pending", "queued", "quarantined"].includes(file.state) && (
-                  <Button
-                    disabled={busy}
-                    onClick={() =>
-                      void run(async () => {
-                        await api(
-                          `/uploads/${file.id}/complete`,
-                          "POST",
-                          undefined,
-                          session.csrf,
-                        );
-                        await refresh();
-                      })
-                    }
-                  >
-                    Retry verification
-                  </Button>
-                )}
-                {file.state !== "deleting" && (
-                  <Button
-                    disabled={busy}
-                    aria-label={`Delete ${file.filename}`}
-                    onClick={() =>
-                      void run(async () => {
-                        await api(
-                          `/files/${file.id}`,
-                          "DELETE",
-                          undefined,
-                          session.csrf,
-                        );
-                        await refresh();
-                      })
-                    }
-                  >
-                    Delete
-                  </Button>
-                )}
-              </div>
-            </li>
-          ))}
-        </ul>
+        <FileLibrary
+          key={session.account_id}
+          session={session}
+          files={files}
+          refresh={refresh}
+          report={report}
+          busy={busy}
+          run={run}
+        />
       </main>
     </div>
   );

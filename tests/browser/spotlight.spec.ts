@@ -101,20 +101,17 @@ test("spotlight stays inside narrow and resized viewports with reduced motion", 
   );
 });
 
-test("school-only guidance describes the restriction without enabling teacher analytics", async ({
+test("teacher guidance points directly to available evidence without a network gate", async ({
   page,
 }) => {
   await guided(page, "daher", "analytics", "Show me analytics");
   await expect(
-    page.locator('.atlas-spotlight-ring[data-target="screen.heading"]'),
+    page.getByRole("dialog", { name: "Assistant tip" }),
   ).toBeVisible();
   await expect(
-    page.getByRole("dialog", { name: "Assistant tip" }),
-  ).toContainText("school network");
-  await expect(
-    page.getByRole("button", { name: "Examine evidence" }),
-  ).toHaveCount(0);
+    page.locator('.atlas-spotlight-ring[data-target="analytics.overview"]'),
+  ).toBeVisible();
   await expect(
     page.getByRole("button", { name: "Preview at school" }),
-  ).toBeVisible();
+  ).toHaveCount(0);
 });

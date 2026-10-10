@@ -9,6 +9,7 @@ from school2036.media import can_file, new_upload, process_upload
 from school2036.models import FileObject, OutboxJob
 from school2036.schemas import UploadInput, UploadView
 from school2036.storage import R2Storage, create_storage
+from school2036.study import require_study_id
 from sqlalchemy import select
 
 
@@ -19,6 +20,7 @@ def media_router(config, sessions):
         return authenticate(config, db, request)[1]
 
     def get(db, model, file_id):
+        require_study_id(file_id, "File not found")
         value = db.get(model, file_id)
         if value is None:
             raise HTTPException(404, "File not found")
@@ -34,6 +36,7 @@ def media_router(config, sessions):
         return {
             "id": value.id,
             "filename": value.filename,
+            "media_type": value.media_type,
             "size": value.expected_size,
             "state": value.state,
             "expires": value.expires,

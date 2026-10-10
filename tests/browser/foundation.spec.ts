@@ -5,7 +5,7 @@ test("sign in, upload a private file, download, and sign out", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/login");
+  await page.goto("/login?next=files");
   await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible();
   expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
   await page.getByLabel("Login").fill("browser");
@@ -24,7 +24,6 @@ test("sign in, upload a private file, download, and sign out", async ({
     mimeType: "text/plain",
     buffer: Buffer.from("Hello from the foundation"),
   });
-  await page.getByRole("button", { name: "Upload", exact: true }).click();
   const download = page.getByRole("link", { name: "Download hello.txt" });
   await expect(download).toBeVisible();
   const response = await page.request.get(
@@ -38,6 +37,10 @@ test("sign in, upload a private file, download, and sign out", async ({
     ),
   ).toBe(true);
   await page.getByRole("button", { name: "Delete hello.txt" }).click();
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "Delete file", exact: true })
+    .click();
   await expect(download).toBeHidden();
   await page.getByRole("button", { name: "Sign out" }).click();
   await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible();

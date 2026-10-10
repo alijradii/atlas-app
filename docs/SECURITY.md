@@ -1,5 +1,28 @@
 # Security and release status
 
+## Connected hackathon workflows — October 10, 2026
+
+The authenticated application now includes `/workspace` school workflows and
+`/account` password/session controls. Roles and teacher/advisor/parent relationships
+are operator-provisioned; no browser endpoint grants them. Every school request
+rechecks active accounts, roles and explicit relationships. A role alone does not
+grant access to students or transcripts. Teacher publication adds a separate lesson
+grant tied to a current student relationship; revocation also affects source reads
+and study history. Advisor conversations remain private to the student and advisor.
+No access decision depends on a school network. See [SCHOOL.md](SCHOOL.md) and
+[ACCOUNT.md](ACCOUNT.md) for lifecycle and recovery details.
+
+Verified owned documents and recordings can produce review drafts through bounded
+local converters and Gemini audio transcription. The owner must approve the text
+before indexing. Conversion process limits are not a full parser sandbox. Sharing
+or publishing a lesson also permits its accepted original-file download; deleting
+that original does not delete the separately reviewed transcript. Provider billing,
+retention, native parser updates and the release blockers below remain applicable.
+No real school or personal recording was used in the provider smoke check.
+
+The dated sections below preserve earlier verification scope; they do not override
+the current explicit publication grants or newly implemented workflows.
+
 ## October 10, 2026 foundation reset
 
 The active application exposes password login, session lookup/logout, health/status, owner-only personal files and authenticated transcript-based study. Public setup, default passwords, demo login and public registration remain unavailable. School domain previews do not authorize real study access. Accounts are provisioned locally by an operator. Existing database records and migration history remain intact.

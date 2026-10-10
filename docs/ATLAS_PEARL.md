@@ -9,7 +9,9 @@ The supplied `../atlas-pearl-kit/atlas-pearl` landing and workspace prototypes h
 | `/` | Pearl landing page, interactive assistant examples, flashcards, role tabs, FAQ and explicitly local pilot-form preview |
 | `/login` | Real backend sign-in and links to six fictional preview accounts |
 | `/files` | Authenticated personal upload, verification, download and deletion |
-| `/study` | Authenticated transcript library and Gemini-backed conversations with source passages |
+| `/study` | Authenticated transcript library, imported-material review and Gemini-backed conversations with source passages |
+| `/workspace` | Real linked school roles: publishing, assignments, feedback, messages and proposals |
+| `/account` | Real password changes and active-session controls |
 | `/preview/lina/home` | Returning student: subjects, lessons/chapters, study, practice, human adviser, activities |
 | `/preview/sami/home` | New student onboarding, interests, adviser-matching empty state, independent practice |
 | `/preview/daher/home` | Teacher lessons, publishing form preview, class evidence, misconceptions, teaching flags and follow-ups |
@@ -21,11 +23,11 @@ Invalid accounts, sections and detail IDs render the framework not-found screen.
 
 ## Working services versus samples
 
-Login, sessions, private files and the separate `/study` workspace connect to the Python API. Preview accounts do not create sessions or grant access to files or transcripts. See [Study workspace](STUDY.md) for the real inference path and authorization boundaries.
+Login, sessions, private files, `/study`, `/workspace` and `/account` connect to the Python API. Preview accounts do not create sessions or grant access to files or transcripts. See [Study workspace](STUDY.md) for the real inference path and authorization boundaries.
 
-School records come from the kit's fictional fixtures. Preview actions persist in **sessionStorage for the current tab**, so a proposal can move from student/adviser to parent to staff by switching sample accounts. Practice answers, working and completion survive navigation. Help is paused during an active sample batch. Teacher analytics can be explored with the “At school” scenario. Settings only change preview behavior, never API policy. Reset everything in the scenario dialog.
+School records come from the kit's fictional fixtures. Preview actions persist in **sessionStorage for the current tab**, so a proposal can move from student/adviser to parent to staff by switching sample accounts. Practice answers, working and completion survive navigation. Help is paused during an active sample batch. Teacher analytics, recorded lessons and advisor requests do not depend on a school/home scenario. Access follows the account and resource sharing, not the user’s network. Preview controls simulate service availability and reset sample data; they never grant real API access. Older saved previews discard location flags while keeping answers, proposals and pins.
 
-Within `/preview`, assistant responses and flashcards are scripted. Feedback uses the kit's fixed example answers. No inference, adviser notification, email, pilot signup, video playback, real assessment, or school-record mutation occurs. The lesson-publishing form saves local metadata only; it never sends the selected video. The real private-file service remains limited to TXT/PDF/PNG/JPEG. The sample parent progress policy is still exploratory. Additional student caseload profiles contain summaries, while Lina has the complete guidance example.
+Within `/preview`, assistant responses and flashcards are scripted. Feedback uses the kit's fixed example answers. No inference, adviser notification, email, pilot signup, video playback, real assessment, or school-record mutation occurs. The lesson-publishing form saves local metadata only; it never sends the selected video. The real `/files` library supports documents, audio and video; verified materials can become reviewed study transcripts. See MEDIA.md for supported formats and limits. The sample parent progress policy is still exploratory. Additional student caseload profiles contain summaries, while Lina has the complete guidance example.
 
 ## Ownership
 
@@ -60,3 +62,13 @@ Ambient motion uses continuous compositor transforms, pauses outside the viewpor
 and honors reduced motion. The helper icons remain unboxed. The assistant dock,
 recommendations, rich messages, spotlight guidance and persistent sample pins are
 preserved in the preview; these sample school actions are not real AI tools.
+
+
+## Shared motion
+
+Pearl motion uses the assistant dock’s shared `--motion-enter` (360 ms),
+`--motion-exit` (320 ms), and `--motion-fast` (180 ms) tokens with matching entrance
+and exit easing curves. Dialogs, sheets, route content, message arrivals, cards and
+the dock use this vocabulary. Motion describes a state change; ambient glass keeps
+its continuous low-cost transform loop. Reduced-motion preferences remove movement
+without delaying interaction or focus.

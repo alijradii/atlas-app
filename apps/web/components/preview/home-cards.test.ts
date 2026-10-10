@@ -89,19 +89,13 @@ test("only the current reviewer gets a review action and all roles see the same 
   }
 });
 
-test("teacher evidence keeps its meaning while explaining restricted access", () => {
-  const state = initialState();
-  expect(findCard("daher", "class-evidence", state)).toMatchObject({
+test("teacher evidence opens directly without a location gate", () => {
+  expect(findCard("daher", "class-evidence")).toMatchObject({
     kind: "evidence",
-    locked: true,
-    action: "View availability",
-  });
-  state.school = true;
-  expect(findCard("daher", "class-evidence", state)).toMatchObject({
-    kind: "evidence",
-    locked: false,
     action: "Inspect evidence",
+    href: "/preview/daher/analytics",
   });
+  expect(findCard("daher", "class-evidence").locked).toBeFalsy();
 });
 
 test("staff pending count includes student drafts and follows each activity's effective review status", () => {

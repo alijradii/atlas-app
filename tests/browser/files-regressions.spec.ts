@@ -35,6 +35,38 @@ async function auth(page: Page) {
   );
 }
 
+test("slow initial authentication keeps the files route stable", async ({
+  page,
+}) => {
+  const navigations: string[] = [];
+  page.on("framenavigated", (frame) => {
+    if (frame === page.mainFrame())
+      navigations.push(new URL(frame.url()).pathname);
+  });
+  await page.route("**/api/v1/auth/me", async (route) => {
+    // Strict Mode cancels the initial effect. Its completion must not end the
+    // replacement session check early and send an authenticated user to login.
+    await new Promise((resolve) => setTimeout(resolve, 250));
+    await route.fulfill({ json: session }).catch(() => {});
+  });
+  await page.route("**/api/v1/files", (route) =>
+    route.fulfill({ json: [file] }),
+  );
+  await page.goto("/files");
+  await expect(
+    page.getByRole("heading", { name: "Your files", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Download private-notes.txt" }),
+  ).toBeVisible();
+  await page.waitForTimeout(750);
+  await expect(page).toHaveURL(/\/files$/);
+  await expect(
+    page.getByRole("heading", { name: "Your files", exact: true }),
+  ).toBeVisible();
+  expect(navigations).not.toContain("/login");
+});
+
 test("private files stop polling while hidden and refresh immediately on return", async ({
   page,
 }) => {
@@ -90,7 +122,7 @@ test("returning to an expired session clears private files even for a non-JSON 4
   await expect(
     page.getByRole("link", { name: "Download private-notes.txt" }),
   ).toHaveCount(0);
-  await expect(page).toHaveURL(/\/login$/);
+  await expect(page).toHaveURL(/\/login\?next=files$/);
 });
 
 test("a proxy outage shows an actionable error and preserves the current file list", async ({
@@ -187,7 +219,7 @@ test("login waits for the files route before exposing an upload form that would 
     },
   );
   try {
-    await page.goto("/login");
+    await page.goto("/login?next=files");
     await page.getByLabel("Login", { exact: true }).fill("sample");
     await page
       .getByLabel("Password", { exact: true })
@@ -202,4 +234,60 @@ test("login waits for the files route before exposing an upload form that would 
   } finally {
     releaseNavigation();
   }
+});
+
+test("an account switch discards previous files and late private responses", async ({
+  page,
+}) => {
+  let identity = session;
+  let hold = false;
+  let blocked = false;
+  let release = () => {};
+  const gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await page.route("**/api/v1/auth/me", (route) =>
+    route.fulfill({ json: identity }),
+  );
+  await page.route("**/api/v1/files", async (route) => {
+    const previous = identity.account_id === session.account_id;
+    if (hold && previous) {
+      blocked = true;
+      await gate;
+    }
+    await route
+      .fulfill({
+        json: [
+          previous
+            ? file
+            : { ...file, id: "second-file", filename: "second-account.txt" },
+        ],
+      })
+      .catch(() => {});
+  });
+  await page.goto("/files");
+  await expect(
+    page.getByRole("link", { name: "Download private-notes.txt" }),
+  ).toBeVisible();
+  hold = true;
+  await page.evaluate(() => window.dispatchEvent(new Event("focus")));
+  await expect.poll(() => blocked).toBe(true);
+  identity = {
+    ...session,
+    account_id: "second",
+    login: "second",
+    name: "Second",
+    csrf: "second-token",
+  };
+  await page.evaluate(() => window.dispatchEvent(new Event("focus")));
+  await expect(
+    page.getByText("Signed in as Second. Files are private to your account."),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Download second-account.txt" }),
+  ).toBeVisible();
+  release();
+  await expect(
+    page.getByRole("link", { name: "Download private-notes.txt" }),
+  ).toHaveCount(0);
 });

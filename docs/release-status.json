@@ -2,6 +2,6 @@
   "productionApproved": false,
   "reason": "Authenticated transcript study is verified locally. The recorded upcoming Next.js security update, live R2 verification, container scans, production recovery, vendored RAG dependency advisories, RAG retention and deployment acceptance remain unresolved.",
   "source": "https://nextjs.org/blog/upcoming-nextjs-security-update-october-2026",
-  "scope": "login, private files, authenticated transcript library and cited study conversations, plus Atlas Pearl role previews",
-  "ai": "Gemini-backed tutoring over explicitly authorized transcripts through the isolated RAG service; bounded retrieval and generation, no autonomous execution tools"
+  "scope": "login and account/session controls, private document/media uploads, reviewed extraction/transcription, cited study conversations, linked school publishing/assignments/advisor/parent workflows, plus separate Pearl previews",
+  "ai": "Gemini-backed transcription and tutoring over explicitly authorized reviewed transcripts through isolated RAG; no autonomous execution tools"
 }

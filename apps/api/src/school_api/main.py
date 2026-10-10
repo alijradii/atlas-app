@@ -13,8 +13,10 @@ from school2036.identity import check_marker
 from school2036.models import InstallationState
 from sqlalchemy.exc import SQLAlchemyError
 
+from school_api.account_routes import account_router
 from school_api.identity_routes import identity_router
 from school_api.media_routes import media_router
+from school_api.school_routes import school_router
 from school_api.study_routes import study_router
 
 
@@ -54,8 +56,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.sessions = sessions
     app.state.engine = engine
     app.include_router(identity_router(config, sessions))
+    app.include_router(account_router(config, sessions))
     app.include_router(media_router(config, sessions))
     app.include_router(study_router(config, sessions))
+    app.include_router(school_router(config, sessions))
 
     @app.middleware("http")
     async def browser_security(request: Request, call_next):
@@ -63,12 +67,15 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             if request.headers.get("origin") != config.public_origin:
                 return JSONResponse({"detail": "Untrusted request origin"}, status_code=403)
             limit = (
-                10 * 1024 * 1024
+                50 * 1024 * 1024
                 if request.method == "PUT"
                 and request.url.path.startswith("/api/v1/uploads/")
                 and request.url.path.endswith("/bytes")
                 else 262144
-                if request.url.path == "/api/v1/study/lessons"
+                if (
+                    request.url.path == "/api/v1/study/lessons"
+                    or request.url.path.endswith("/approve")
+                )
                 else 65536
             )
             chunks = []

@@ -23,7 +23,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { PageHeading, PearlScene } from "../pearl";
 import { type AccountId, duration, fixture, subjectName } from "./data";
-import { Empty, Notice, Panel, Restricted, Status } from "./shared";
+import { Empty, Notice, Panel, Status } from "./shared";
 import { usePreview } from "./state";
 
 export function Lessons({ accountId }: { accountId: AccountId }) {
@@ -31,13 +31,6 @@ export function Lessons({ accountId }: { accountId: AccountId }) {
   const [subject, setSubject] = useState("all");
   const teacher = accountId === "daher";
   const { state } = usePreview();
-  if (!state.school && !state.settings.recHome && !teacher)
-    return (
-      <>
-        <PageHeading title="Lessons" />
-        <Restricted title="Recordings are available at school" />
-      </>
-    );
   const lessons = fixture.lessons.filter(
     (l) =>
       (teacher ? l.by === "Mr. Elie Daher" : l.grades.includes(10)) &&
@@ -154,8 +147,6 @@ export function Lesson({
   const student =
     accountId === "lina" || accountId === "sami" ? accountId : null;
   const pinned = student ? state.lessonPins[student].includes(id) : false;
-  if (!state.school && !state.settings.recHome && accountId !== "daher")
-    return <Restricted title="Recordings are available at school" />;
   if (!lesson)
     return (
       <Empty
@@ -468,7 +459,7 @@ export function Practice({ accountId }: { accountId: AccountId }) {
 }
 
 export function UploadLesson() {
-  const { state, setState } = usePreview();
+  const { setState } = usePreview();
   const [message, setMessage] = useState("");
   return (
     <>
@@ -546,11 +537,8 @@ export function UploadLesson() {
             <Textarea id="lesson-notes" placeholder="0:00 Introduction" />
           </div>
           <p className="text-sm text-muted-foreground">
-            Home availability:{" "}
-            {state.settings.recHome
-              ? "permitted students"
-              : "school network only"}{" "}
-            in this preview.
+            Available to the selected audience wherever they study. This draft
+            stays in the preview.
           </p>
           <Button type="submit" className="justify-self-start">
             Save preview draft
