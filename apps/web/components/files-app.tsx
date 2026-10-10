@@ -25,6 +25,7 @@ export default function FilesApp() {
   const [session, setSession] = useState<Session | null>(null);
   const [files, setFiles] = useState<FileRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sessionCheckFailed, setSessionCheckFailed] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
@@ -43,40 +44,79 @@ export default function FilesApp() {
     [],
   );
 
-  useEffect(() => {
-    api<Session>("/auth/me")
+  const checkSession = useCallback(() => {
+    setLoading(true);
+    setSessionCheckFailed(false);
+    setError("");
+    return api<Session>("/auth/me")
       .then(setSession)
       .catch((cause) => {
-        if (!(cause instanceof ApiError && cause.status === 401)) report(cause);
+        if (cause instanceof ApiError && cause.status === 401) {
+          setSession(null);
+        } else {
+          setSessionCheckFailed(true);
+          report(cause);
+        }
       })
       .finally(() => setLoading(false));
   }, [report]);
 
   useEffect(() => {
+    void checkSession();
+  }, [checkSession]);
+
+  useEffect(() => {
     if (!session) return;
     let active = true;
-    const update = () =>
-      api<FileRecord[]>("/files")
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let pending: AbortController | undefined;
+    const pause = () => {
+      clearTimeout(timer);
+      pending?.abort();
+      pending = undefined;
+    };
+    const update = () => {
+      pause();
+      if (!active || document.visibilityState === "hidden") return;
+      const controller = new AbortController();
+      pending = controller;
+      void api<FileRecord[]>(
+        "/files",
+        "GET",
+        undefined,
+        undefined,
+        controller.signal,
+      )
         .then((value) => {
-          if (active) setFiles(value);
+          if (active && !controller.signal.aborted) setFiles(value);
         })
         .catch((cause) => {
-          if (active) report(cause);
+          if (active && !controller.signal.aborted) report(cause);
+        })
+        .finally(() => {
+          if (active && pending === controller && !controller.signal.aborted) {
+            pending = undefined;
+            timer = setTimeout(update, 5000);
+          }
         });
-    void update();
-    const interval = setInterval(update, 5000);
+    };
+    // Background polling must not continually renew an unattended session.
+    // Resume immediately on return, letting the API enforce session expiry.
+    document.addEventListener("visibilitychange", update);
+    update();
     return () => {
       active = false;
-      clearInterval(interval);
+      document.removeEventListener("visibilitychange", update);
+      pause();
     };
   }, [session, report]);
 
   useEffect(() => {
-    if (!loading) {
+    if (!loading && !sessionCheckFailed) {
       if (session && pathname === "/login") router.replace("/files");
       if (!session && pathname === "/files") router.replace("/login");
     }
-  }, [session, loading, pathname, router]);
+  }, [session, loading, sessionCheckFailed, pathname, router]);
 
   async function run(action: () => Promise<void>) {
     setBusy(true);
@@ -94,6 +134,20 @@ export default function FilesApp() {
     return (
       <main id="main-content" className="grid min-h-screen place-items-center">
         <p role="status">Loading…</p>
+      </main>
+    );
+
+  if (sessionCheckFailed)
+    return (
+      <main
+        id="main-content"
+        className="grid min-h-screen place-items-center p-6"
+      >
+        <Card className="max-w-md space-y-4 p-7">
+          <h1 className="text-2xl">Unable to load your session</h1>
+          <p role="alert">{error}</p>
+          <Button onClick={() => void checkSession()}>Try again</Button>
+        </Card>
       </main>
     );
 
