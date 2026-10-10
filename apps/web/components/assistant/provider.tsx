@@ -231,6 +231,14 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
           return;
         }
       }
+      if (
+        document.querySelector(
+          `#study-tools[data-collapsed="true"] [data-guide-anchor="${CSS.escape(pendingGuide.anchor)}"]`,
+        )
+      ) {
+        window.dispatchEvent(new Event("atlas:reveal-study-tools"));
+        return;
+      }
       const target = Array.from(
         document.querySelectorAll<HTMLElement>(
           `[data-guide-anchor="${CSS.escape(pendingGuide.anchor)}"]`,
@@ -252,7 +260,7 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
       childList: true,
       subtree: true,
       attributes: true,
-      attributeFilter: ["hidden", "data-state"],
+      attributeFilter: ["hidden", "data-state", "data-collapsed"],
     });
     frame = requestAnimationFrame(find);
     const timeout = window.setTimeout(() => setPendingGuide(null), 8000);

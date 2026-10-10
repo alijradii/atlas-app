@@ -9,15 +9,24 @@ export function PearlChatLayout({
   children,
   tools,
   className = "",
+  toolsHidden = false,
 }: {
   children: ReactNode;
   tools: ReactNode;
   className?: string;
+  toolsHidden?: boolean;
 }) {
   return (
     <div className={`atlas-chat-layout ${className}`}>
       <div className="atlas-chat-conversation">{children}</div>
-      <aside className="atlas-chat-sidebar space-y-6" aria-label="Study tools">
+      <aside
+        id="study-tools"
+        data-collapsed={toolsHidden}
+        aria-hidden={toolsHidden}
+        inert={toolsHidden}
+        className="atlas-chat-sidebar space-y-6"
+        aria-label="Study tools"
+      >
         {tools}
       </aside>
     </div>

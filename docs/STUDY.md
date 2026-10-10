@@ -215,3 +215,24 @@ Ask Atlas switches to the UI-help agent without a second floating input.
 Suggested study questions now send a real request against that conversation's
 selected sources. They are disabled while a request is active. Interface guidance
 uses the separate read-only MCP catalog and cannot retrieve private lesson text.
+
+
+### Study layout and panel controls
+
+On desktop (above 1100px), Study fits the viewport. The conversation and learning
+panel scroll independently, while the existing root assistant dock occupies a
+reserved bottom row in the conversation column. Long history lists cannot push
+the composer off screen. New replies follow the active scroll container only when
+the reader is near the bottom; reading earlier messages does not force a jump.
+Narrow screens retain the stacked layout and mobile navigation drawer.
+
+The learning-space toggle hides the panel without unmounting selected lessons or
+conversation state. AI guidance automatically reveals it before highlighting a
+lesson control. The main navigation can collapse to an accessible icon rail with
+the centered Atlas sphere; its labels remain available to assistive technology and
+as link titles. The floating assistant on other pages follows the rail width.
+The learning panel slides and fades while its grid track closes, using the shared
+Pearl motion tokens. Its content keeps a stable width during motion, avoiding text
+rewrapping. Hidden controls are inert; reduced-motion users get immediate changes.
+Both layouts reuse the existing Pearl components. Empty-state hobby and research
+actions align with the centered upload actions.

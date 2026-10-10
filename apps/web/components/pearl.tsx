@@ -8,15 +8,15 @@ export function Brand({ className = "" }: { className?: string }) {
       href="/"
       aria-label="Atlas home"
       className={cn(
-        "inline-flex items-center gap-3 text-sm font-semibold tracking-[0.22em]",
+        "atlas-brand inline-flex items-center gap-3 text-sm font-semibold tracking-[0.22em]",
         className,
       )}
     >
       <span
-        className="obj blue rim relative! inline-block size-6"
+        className="obj blue rim relative! inline-block size-6 shrink-0"
         aria-hidden="true"
       />
-      ATLAS
+      <span className="atlas-brand-name">ATLAS</span>
     </Link>
   );
 }

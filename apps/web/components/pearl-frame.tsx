@@ -9,7 +9,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@school2036/ui";
-import { Menu } from "lucide-react";
+import { Menu, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { type ReactNode, useState } from "react";
 import { ThemeToggle } from "./theme-toggle";
 import "./preview/workspace.css";
@@ -34,18 +34,35 @@ export function PearlFrame({
   children: ReactNode;
 }) {
   const [menu, setMenu] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
   const nav = navigation(() => setMenu(false));
 
   return (
-    <div className="atlas-workspace min-h-screen" data-section={section}>
+    <div
+      className="atlas-workspace min-h-screen"
+      data-section={section}
+      data-nav-collapsed={collapsed}
+    >
       <aside
-        className="pearl-panel fixed inset-y-0 left-0 z-20 hidden w-64 flex-col overflow-y-auto border-r p-3 lg:flex"
+        id="desktop-navigation"
+        className="atlas-desktop-navigation pearl-panel fixed inset-y-0 left-0 z-20 hidden w-64 flex-col overflow-y-auto border-r p-3 lg:flex"
         aria-label="Main navigation"
       >
         {nav}
       </aside>
-      <div className="lg:ml-64">
+      <div className="atlas-workspace-body lg:ml-64">
         <header className="flex min-h-20 flex-wrap items-center gap-3 px-5 py-4 sm:px-8">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="hidden lg:inline-flex"
+            aria-label={collapsed ? "Expand navigation" : "Collapse navigation"}
+            aria-expanded={!collapsed}
+            aria-controls="desktop-navigation"
+            onClick={() => setCollapsed(!collapsed)}
+          >
+            {collapsed ? <PanelLeftOpen /> : <PanelLeftClose />}
+          </Button>
           <Sheet open={menu} onOpenChange={setMenu}>
             <SheetTrigger asChild>
               <Button

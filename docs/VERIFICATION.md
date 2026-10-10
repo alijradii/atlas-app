@@ -1,5 +1,31 @@
 # Verification — October 10, 2026
 
+## Study viewport, panel collapse and alignment
+
+Study now reserves a bottom row for the shared assistant inside its conversation
+column on desktop. The conversation and learning tools scroll independently;
+long history no longer pushes the input below the viewport. Main navigation can
+collapse to a labeled icon rail with a centered sphere. The learning panel hides
+without discarding lesson selections, and guidance reveals it before highlighting
+sources. Its slide/fade and grid transition use Pearl motion tokens, reverse on
+rapid toggles and respect reduced motion. Empty-state hobby/research actions are
+centered with the upload actions.
+
+- `SCHOOL_TEST_SCANNER=1 make check`: passed (64 Bun and 247 Python tests).
+- Final frontend lint, typecheck, contract checks and 64 Bun tests passed after
+  the animation changes; `make build` and `make audit` passed.
+- 17 compiled Study browser scenarios passed, including 1180×640, 1366×768,
+  1440×900 and 1920×1080 viewport checks, 40-message/25-history stress, draft and
+  source preservation, sphere/action alignment, guidance revealing hidden tools,
+  rapid animation reversal and reduced motion. Existing 390px and landscape
+  regressions passed. The separate four assistant and four role-assistant scenarios
+  also passed during this change.
+- Visually checked the running real student account in Chromium with expanded and
+  collapsed panels. Local screenshots are under `.cache/output/playwright/`.
+
+Browser regression tests use isolated fixtures/provider responses. This UI change
+adds no AI mutation tools and does not change the existing production release gate.
+
 ## Role assistants, peer activities and exploration reports
 
 Students keep Study; teachers, parents and advisors now use Teaching, Family and

@@ -613,3 +613,126 @@
   min-height: 80px;
   max-height: none;
 }
+
+/* Content and learning tools scroll independently; the dock owns its own row. */
+.study-content-scroll {
+  min-width: 0;
+  min-height: 0;
+}
+.study-tools-collapsed {
+  grid-template-columns: minmax(0, 1fr);
+}
+.study-layout .atlas-chat-sidebar[data-collapsed="true"] {
+  display: none;
+}
+@media (min-width: 1101px) {
+  .atlas-workspace[data-section="study"] .atlas-workspace-body {
+    height: 100dvh;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  .atlas-workspace[data-section="study"] .atlas-workspace-main {
+    max-width: none;
+    min-height: 0;
+    padding: 8px clamp(20px, 2.5vw, 48px) 16px;
+  }
+  .study-app-embedded {
+    grid-template-rows: auto minmax(0, 1fr);
+    height: 100%;
+  }
+  .study-layout {
+    min-height: 0;
+    grid-template-columns: minmax(0, 1fr) clamp(300px, 26vw, 360px);
+    align-items: stretch;
+    gap: clamp(24px, 3vw, 64px);
+  }
+  .study-layout.study-tools-collapsed {
+    grid-template-columns: minmax(0, 1fr) 0px;
+    column-gap: 0;
+  }
+  .study-layout .atlas-chat-conversation {
+    display: flex;
+    min-height: 0;
+    padding: 0;
+  }
+  .study-layout .study-main {
+    min-height: 0;
+    width: 100%;
+    max-width: 1040px;
+    margin-inline: auto;
+  }
+  .study-content-scroll {
+    flex: 1;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    padding-right: 8px;
+  }
+  .study-main .study-conversation {
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+  }
+  .study-main .study-messages {
+    overflow: visible;
+    flex: none;
+    min-height: 0;
+  }
+  .study-layout .atlas-chat-sidebar {
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border-radius: 22px;
+    scrollbar-width: thin;
+  }
+  .study-assistant-mount {
+    max-height: 65dvh;
+    overflow-y: auto;
+    padding: 4px;
+  }
+  .study-layout .atlas-chat-suggestions {
+    margin: 16px 0;
+  }
+}
+
+.study-layout [data-guide-anchor="study.explore"] {
+  justify-content: center;
+}
+
+@media (min-width: 1101px) {
+  .study-layout .atlas-chat-sidebar {
+    min-width: 0;
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
+  }
+  .study-layout .study-sidebar {
+    width: clamp(300px, 26vw, 360px);
+  }
+  .study-layout .atlas-chat-sidebar[data-collapsed="true"] {
+    display: block;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(12px);
+    pointer-events: none;
+  }
+}
+@media (min-width: 1101px) and (prefers-reduced-motion: no-preference) {
+  .study-layout {
+    transition:
+      grid-template-columns var(--motion-enter) var(--motion-ease-enter),
+      column-gap var(--motion-enter) var(--motion-ease-enter);
+  }
+  .study-layout .atlas-chat-sidebar {
+    transition:
+      opacity var(--motion-exit) var(--motion-ease-enter),
+      transform var(--motion-enter) var(--motion-ease-enter),
+      visibility 0s;
+  }
+  .study-layout .atlas-chat-sidebar[data-collapsed="true"] {
+    transition:
+      opacity var(--motion-exit) var(--motion-ease-exit),
+      transform var(--motion-enter) var(--motion-ease-exit),
+      visibility 0s var(--motion-enter);
+  }
+}

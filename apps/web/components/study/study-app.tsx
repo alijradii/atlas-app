@@ -9,6 +9,8 @@ import {
   FileText,
   LoaderCircle,
   MessageSquare,
+  PanelRightClose,
+  PanelRightOpen,
   Plus,
   Square,
   Trash2,
@@ -224,6 +226,12 @@ function StudyWorkspace({
   embedded: boolean;
   initialLessonId?: string;
 }) {
+  const [toolsCollapsed, setToolsCollapsed] = useState(false);
+  useEffect(() => {
+    const reveal = () => setToolsCollapsed(false);
+    window.addEventListener("atlas:reveal-study-tools", reveal);
+    return () => window.removeEventListener("atlas:reveal-study-tools", reveal);
+  }, []);
   const [pendingDraft, setPendingDraft] = useState("");
   const [pendingAttempt, setPendingAttempt] = useState<{
     content: string;
@@ -545,149 +553,166 @@ function StudyWorkspace({
       <PageHeading
         title="Study with your agent"
         description="A little direction when you need it. Space to think for yourself."
-      />
-      <PearlChatLayout className="study-layout" tools={tools}>
+      >
+        <Button
+          variant="ghost"
+          size="sm"
+          aria-controls="study-tools"
+          aria-expanded={!toolsCollapsed}
+          onClick={() => setToolsCollapsed(!toolsCollapsed)}
+        >
+          {toolsCollapsed ? <PanelRightOpen /> : <PanelRightClose />}
+          {toolsCollapsed ? "Show learning space" : "Hide learning space"}
+        </Button>
+      </PageHeading>
+      <PearlChatLayout
+        className={`study-layout ${toolsCollapsed ? "study-tools-collapsed" : ""}`}
+        tools={tools}
+        toolsHidden={toolsCollapsed}
+      >
         <section className="study-main" aria-label="Study workspace">
-          {study.error && (
-            <div className="study-error-banner" role="alert">
-              <p>{study.error}</p>
-              <Button size="sm" variant="outline" onClick={study.refresh}>
-                Reload workspace
-              </Button>
-              <button
-                type="button"
-                aria-label="Dismiss error"
-                className="study-icon-button"
-                onClick={() => study.setError("")}
-              >
-                <X />
-              </button>
-            </div>
-          )}
-          {study.status && !configured && (
-            <div className="study-service-notice">
-              <p>
-                <strong>Study responses aren’t connected yet.</strong>{" "}
-                {!study.status.answer_configured
-                  ? "The answer service needs to be configured."
-                  : "The lesson retrieval service needs to be configured for selected sources."}{" "}
-                Your saved lessons and conversations remain available.
-              </p>
-            </div>
-          )}
-          {study.selectedId ? (
-            <ConversationPane
-              key={study.selectedId}
-              study={study}
-              thread={study.thread}
-              initialDraft={pendingDraft}
-              initialAttempt={pendingAttempt}
-              onDraftConsumed={() => {
-                setPendingDraft("");
-                setPendingAttempt(null);
-              }}
-              configured={Boolean(configured)}
-              onCitation={(citation) =>
-                setInspecting({ id: citation.lesson_id, citation })
-              }
-              onLesson={(id) => setInspecting({ id })}
-            />
-          ) : (
-            <PearlChatEmpty description="Ask a question and we’ll start a study session. Choose lessons when you want answers grounded in your own material.">
-              <div className="study-welcome-actions">
-                <Button asChild>
-                  <Link href="/files">
-                    <Upload />
-                    Upload documents or recordings
-                  </Link>
+          <div className="study-content-scroll">
+            {study.error && (
+              <div className="study-error-banner" role="alert">
+                <p>{study.error}</p>
+                <Button size="sm" variant="outline" onClick={study.refresh}>
+                  Reload workspace
                 </Button>
-                <Button variant="outline" onClick={() => setImporting(true)}>
-                  <FileText />
-                  Add a transcript
-                </Button>
-                {selectedReady.length > 0 && (
-                  <Button
-                    variant="outline"
-                    disabled={study.busy}
-                    onClick={() => void start()}
-                  >
-                    Study selected lessons
-                    <ArrowRight />
-                  </Button>
-                )}
+                <button
+                  type="button"
+                  aria-label="Dismiss error"
+                  className="study-icon-button"
+                  onClick={() => study.setError("")}
+                >
+                  <X />
+                </button>
               </div>
-              <fieldset
-                className="atlas-chat-suggestions"
-                data-guide-anchor="study.explore"
-              >
-                <legend className="sr-only">Explore your interests</legend>
-                {[
-                  [
-                    "Explore a hobby",
-                    "Help me explore a hobby I might enjoy. Ask about my interests first, then suggest a small project I can try.",
-                  ],
-                  [
-                    "Shape a research question",
-                    "Help me turn something I am curious about into a research question. Ask what interests me first, then help me plan how to investigate it.",
-                  ],
-                ].map(([label, question]) => (
-                  <Button
-                    key={label}
-                    variant="outline"
-                    size="sm"
-                    disabled={!configured || study.busy}
-                    onClick={() => void startWithMessage(question)}
-                  >
-                    {label}
+            )}
+            {study.status && !configured && (
+              <div className="study-service-notice">
+                <p>
+                  <strong>Study responses aren’t connected yet.</strong>{" "}
+                  {!study.status.answer_configured
+                    ? "The answer service needs to be configured."
+                    : "The lesson retrieval service needs to be configured for selected sources."}{" "}
+                  Your saved lessons and conversations remain available.
+                </p>
+              </div>
+            )}
+            {study.selectedId ? (
+              <ConversationPane
+                key={study.selectedId}
+                study={study}
+                thread={study.thread}
+                initialDraft={pendingDraft}
+                initialAttempt={pendingAttempt}
+                onDraftConsumed={() => {
+                  setPendingDraft("");
+                  setPendingAttempt(null);
+                }}
+                configured={Boolean(configured)}
+                onCitation={(citation) =>
+                  setInspecting({ id: citation.lesson_id, citation })
+                }
+                onLesson={(id) => setInspecting({ id })}
+              />
+            ) : (
+              <PearlChatEmpty description="Ask a question and we’ll start a study session. Choose lessons when you want answers grounded in your own material.">
+                <div className="study-welcome-actions">
+                  <Button asChild>
+                    <Link href="/files">
+                      <Upload />
+                      Upload documents or recordings
+                    </Link>
                   </Button>
-                ))}
-              </fieldset>
-              <StudyAssistantSlot>
-                {(minimize) => (
-                  <Composer
-                    inline
-                    value={pendingDraft}
-                    onChange={setPendingDraft}
-                    onSubmit={(text) => void startWithMessage(text)}
-                    label="Start a study session"
-                    sendLabel="Send study message"
-                    disabled={!configured}
-                    sendDisabled={
-                      study.busy || questionBytes(pendingDraft) > 2000
-                    }
-                    inputInvalid={questionBytes(pendingDraft) > 2000}
-                    placeholder="What would you like to understand?"
-                    hint={
-                      selectedReady.length
-                        ? `Using ${selectedReady.length} selected lesson${selectedReady.length === 1 ? "" : "s"}. Check sources; AI can make mistakes.`
-                        : "Start talking. Add lesson sources whenever you start a new session."
-                    }
-                    onMinimize={minimize}
-                    moreOptions={[
-                      {
-                        label: "Upload documents or recordings",
-                        href: "/files",
-                      },
-                    ]}
-                  />
-                )}
-              </StudyAssistantSlot>
-            </PearlChatEmpty>
-          )}
-          {study.session && study.workspace?.roles.includes("student") && (
-            <StudyReportComposer
-              session={study.session}
-              conversationId={study.selectedId ?? undefined}
-              ready={
-                Boolean(
-                  study.thread?.messages.some(
-                    (message) => message.role === "assistant",
-                  ),
-                ) && !activeRun(study.thread?.run)
-              }
-              people={study.workspace.people}
-            />
-          )}
+                  <Button variant="outline" onClick={() => setImporting(true)}>
+                    <FileText />
+                    Add a transcript
+                  </Button>
+                  {selectedReady.length > 0 && (
+                    <Button
+                      variant="outline"
+                      disabled={study.busy}
+                      onClick={() => void start()}
+                    >
+                      Study selected lessons
+                      <ArrowRight />
+                    </Button>
+                  )}
+                </div>
+                <fieldset
+                  className="atlas-chat-suggestions"
+                  data-guide-anchor="study.explore"
+                >
+                  <legend className="sr-only">Explore your interests</legend>
+                  {[
+                    [
+                      "Explore a hobby",
+                      "Help me explore a hobby I might enjoy. Ask about my interests first, then suggest a small project I can try.",
+                    ],
+                    [
+                      "Shape a research question",
+                      "Help me turn something I am curious about into a research question. Ask what interests me first, then help me plan how to investigate it.",
+                    ],
+                  ].map(([label, question]) => (
+                    <Button
+                      key={label}
+                      variant="outline"
+                      size="sm"
+                      disabled={!configured || study.busy}
+                      onClick={() => void startWithMessage(question)}
+                    >
+                      {label}
+                    </Button>
+                  ))}
+                </fieldset>
+                <StudyAssistantSlot>
+                  {(minimize) => (
+                    <Composer
+                      inline
+                      value={pendingDraft}
+                      onChange={setPendingDraft}
+                      onSubmit={(text) => void startWithMessage(text)}
+                      label="Start a study session"
+                      sendLabel="Send study message"
+                      disabled={!configured}
+                      sendDisabled={
+                        study.busy || questionBytes(pendingDraft) > 2000
+                      }
+                      inputInvalid={questionBytes(pendingDraft) > 2000}
+                      placeholder="What would you like to understand?"
+                      hint={
+                        selectedReady.length
+                          ? `Using ${selectedReady.length} selected lesson${selectedReady.length === 1 ? "" : "s"}. Check sources; AI can make mistakes.`
+                          : "Start talking. Add lesson sources whenever you start a new session."
+                      }
+                      onMinimize={minimize}
+                      moreOptions={[
+                        {
+                          label: "Upload documents or recordings",
+                          href: "/files",
+                        },
+                      ]}
+                    />
+                  )}
+                </StudyAssistantSlot>
+              </PearlChatEmpty>
+            )}
+            {study.session && study.workspace?.roles.includes("student") && (
+              <StudyReportComposer
+                session={study.session}
+                conversationId={study.selectedId ?? undefined}
+                ready={
+                  Boolean(
+                    study.thread?.messages.some(
+                      (message) => message.role === "assistant",
+                    ),
+                  ) && !activeRun(study.thread?.run)
+                }
+                people={study.workspace.people}
+              />
+            )}
+          </div>
           <StudyAssistantMount />
         </section>
       </PearlChatLayout>
@@ -760,8 +785,33 @@ function ConversationPane({
   const running = activeRun(thread?.run);
   const contentVersion = `${thread?.messages.map((message) => message.id).join("-")}-${thread?.run?.state}`;
   useEffect(() => {
-    if (contentVersion && nearEnd.current && scroll.current)
-      scroll.current.scrollTop = scroll.current.scrollHeight;
+    const messages = scroll.current;
+    if (!messages) return;
+    const column = messages.closest<HTMLElement>(".study-content-scroll");
+    const desktop = matchMedia("(min-width: 1101px)");
+    const activeScroller = () =>
+      desktop.matches && column ? column : messages;
+    const follow = () => {
+      if (contentVersion && nearEnd.current) {
+        const element = activeScroller();
+        element.scrollTop = element.scrollHeight;
+      }
+    };
+    const track = (event: Event) => {
+      const element = activeScroller();
+      if (event.currentTarget === element)
+        nearEnd.current =
+          element.scrollHeight - element.scrollTop - element.clientHeight < 90;
+    };
+    messages.addEventListener("scroll", track);
+    column?.addEventListener("scroll", track);
+    desktop.addEventListener("change", follow);
+    follow();
+    return () => {
+      messages.removeEventListener("scroll", track);
+      column?.removeEventListener("scroll", track);
+      desktop.removeEventListener("change", follow);
+    };
   }, [contentVersion]);
   async function send(content: string, retry = false) {
     if (
@@ -820,16 +870,7 @@ function ConversationPane({
           ))}
         </section>
       </header>
-      <div
-        className="study-messages"
-        ref={scroll}
-        onScroll={(event) => {
-          const element = event.currentTarget;
-          nearEnd.current =
-            element.scrollHeight - element.scrollTop - element.clientHeight <
-            90;
-        }}
-      >
+      <div className="study-messages" ref={scroll}>
         {!thread.messages.length && (
           <PearlChatEmpty
             description={

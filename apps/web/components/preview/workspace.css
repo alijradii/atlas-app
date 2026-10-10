@@ -39,3 +39,41 @@
   max-width: 100%;
   height: auto;
 }
+
+@media (min-width: 1024px) {
+  .atlas-workspace[data-nav-collapsed="true"] .atlas-desktop-navigation {
+    width: 76px;
+  }
+  .atlas-workspace[data-nav-collapsed="true"] .atlas-workspace-body {
+    margin-left: 76px;
+  }
+  .atlas-workspace[data-nav-collapsed="true"]
+    .atlas-desktop-navigation
+    .atlas-nav-label,
+  .atlas-workspace[data-nav-collapsed="true"]
+    .atlas-desktop-navigation
+    .atlas-brand-name {
+    display: none;
+  }
+  .atlas-workspace[data-nav-collapsed="true"] .atlas-desktop-navigation > a,
+  .atlas-workspace[data-nav-collapsed="true"] .atlas-desktop-navigation nav a,
+  .atlas-workspace[data-nav-collapsed="true"]
+    .atlas-desktop-navigation
+    > div
+    > a {
+    justify-content: center;
+    padding-inline: 0;
+  }
+  body:has(.atlas-workspace[data-nav-collapsed="true"])
+    .atlas-global-assistant:not(.atlas-assistant-in-study) {
+    left: 76px;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .atlas-desktop-navigation {
+    transition: width var(--motion-enter) var(--motion-ease-enter);
+  }
+  .atlas-workspace-body {
+    transition: margin-left var(--motion-enter) var(--motion-ease-enter);
+  }
+}

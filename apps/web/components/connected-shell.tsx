@@ -250,6 +250,8 @@ export function ConnectedShell({
                 key={id}
                 href={href}
                 className={pearlNavLinkClass}
+                title={label}
+                aria-label={label}
                 aria-current={section === id ? "page" : undefined}
                 onClick={() => {
                   if (id === "assistant") openAtlas();
@@ -257,7 +259,7 @@ export function ConnectedShell({
                 }}
               >
                 <Icon className="size-4 shrink-0" aria-hidden="true" />
-                {label}
+                <span className="atlas-nav-label">{label}</span>
               </Link>
             ))}
           </nav>
@@ -267,6 +269,8 @@ export function ConnectedShell({
             className="mt-7 w-full bg-transparent"
           >
             <Link
+              aria-label="New chat"
+              title="New chat"
               href={
                 assistant.role === "student"
                   ? "/study?new=1"
@@ -279,7 +283,7 @@ export function ConnectedShell({
               }}
             >
               <SquarePen />
-              New chat
+              <span className="atlas-nav-label">New chat</span>
             </Link>
           </Button>
           <div className="mt-auto pt-10">
@@ -292,7 +296,7 @@ export function ConnectedShell({
               <span className="flex size-8 shrink-0 items-center justify-center rounded-full border bg-surface text-xs">
                 {initials(session.name)}
               </span>
-              <span className="min-w-0">
+              <span className="atlas-nav-label min-w-0">
                 <span className="block truncate text-sm">{session.name}</span>
                 <small className="block text-xs text-muted-foreground">
                   {roles.length
@@ -303,11 +307,11 @@ export function ConnectedShell({
                 </small>
               </span>
               <MoreHorizontal
-                className="ml-auto size-4 shrink-0"
+                className="atlas-nav-label ml-auto size-4 shrink-0"
                 aria-hidden="true"
               />
             </Link>
-            <p className="px-3 pt-4 pb-3 text-[11px] leading-relaxed text-muted-foreground">
+            <p className="atlas-nav-label px-3 pt-4 pb-3 text-[11px] leading-relaxed text-muted-foreground">
               Atlas Pearl
               <br />
               Your private workspace

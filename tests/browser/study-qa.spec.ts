@@ -25,7 +25,7 @@ const conversation = {
 };
 async function workspace(
   page: Page,
-  options: { lessons?: number; messages?: number } = {},
+  options: { lessons?: number; messages?: number; conversations?: number } = {},
 ) {
   let posts = 0;
   await page.route("**/api/v1/**", async (route) => {
@@ -62,7 +62,16 @@ async function workspace(
         ),
       });
     if (path.endsWith("/study/conversations"))
-      return route.fulfill({ json: [conversation] });
+      return route.fulfill({
+        json: Array.from(
+          { length: options.conversations ?? 1 },
+          (_, index) => ({
+            ...conversation,
+            id: index ? `history-${index}` : conversation.id,
+            title: index ? `Saved conversation ${index}` : conversation.title,
+          }),
+        ),
+      });
     return route.fulfill({
       json: {
         ...conversation,
@@ -506,3 +515,216 @@ for (const viewport of [
     });
   });
 }
+
+for (const viewport of [
+  { width: 1180, height: 640 },
+  { width: 1366, height: 768 },
+  { width: 1440, height: 900 },
+  { width: 1920, height: 1080 },
+]) {
+  test(`Study prompt stays in view with long history and collapsible panels at ${viewport.width}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize(viewport);
+    await workspace(page, { messages: 40, lessons: 12, conversations: 25 });
+    const expectDockInView = async () => {
+      await expect
+        .poll(async () => {
+          const rect = await page
+            .locator(".study-assistant-mount .atlas-composer-inline form")
+            .boundingBox();
+          return Boolean(
+            rect && rect.y >= 0 && rect.y + rect.height <= viewport.height,
+          );
+        })
+        .toBe(true);
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+      ).toBe(true);
+    };
+    await expectDockInView();
+    const hobby = await page
+      .getByRole("button", { name: "Explore a hobby", exact: true })
+      .boundingBox();
+    const research = await page
+      .getByRole("button", { name: "Shape a research question", exact: true })
+      .boundingBox();
+    const actions = await page.locator(".study-welcome-actions").boundingBox();
+    expect(hobby && research && actions).toBeTruthy();
+    if (hobby && research && actions) {
+      expect(
+        Math.abs(
+          (hobby.x + research.x + research.width) / 2 -
+            (actions.x + actions.width / 2),
+        ),
+      ).toBeLessThan(2);
+    }
+    const source = page.getByRole("checkbox", {
+      name: "Use Lesson 1",
+      exact: true,
+    });
+    await source.check();
+    const starter = page.getByRole("textbox", {
+      name: "Start a study session",
+      exact: true,
+    });
+    await starter.fill("Preserve my question");
+    await page
+      .getByRole("button", { name: "Hide learning space", exact: true })
+      .click();
+    await expect(
+      page.getByRole("complementary", { name: "Study tools" }),
+    ).toBeHidden();
+    await expect(starter).toHaveValue("Preserve my question");
+    await expectDockInView();
+    await page
+      .getByRole("button", { name: "Collapse navigation", exact: true })
+      .click();
+    await expect(
+      page
+        .getByRole("navigation", { name: "Workspace", exact: true })
+        .getByRole("link", { name: "Study with agent", exact: true }),
+    ).toBeVisible();
+    await expectDockInView();
+    const brand = page.locator(".atlas-desktop-navigation .atlas-brand");
+    await expect(brand.locator(".atlas-brand-name")).toBeHidden();
+    await expect(brand.locator(".obj")).toBeVisible();
+    await expect
+      .poll(async () => {
+        const orb = await brand.locator(".obj").boundingBox();
+        const rail = await page
+          .locator(".atlas-desktop-navigation")
+          .boundingBox();
+        return orb && rail
+          ? Math.abs(orb.x + orb.width / 2 - rail.x - rail.width / 2)
+          : 100;
+      })
+      .toBeLessThan(2);
+    await page
+      .getByRole("button", { name: "Expand navigation", exact: true })
+      .click();
+    await page
+      .getByRole("button", { name: "Show learning space", exact: true })
+      .click();
+    await expect(source).toBeChecked();
+    await page
+      .getByRole("button", { name: conversation.title, exact: true })
+      .click();
+    await expect(
+      page.getByRole("textbox", {
+        name: "Ask about your lessons",
+        exact: true,
+      }),
+    ).toBeVisible();
+    await expectDockInView();
+    await expect
+      .poll(() =>
+        page
+          .locator(".study-content-scroll")
+          .evaluate((element) => element.scrollTop),
+      )
+      .toBeGreaterThan(0);
+    await page.locator(".study-content-scroll").evaluate((element) => {
+      element.scrollTop = 0;
+    });
+    await expectDockInView();
+    await page.locator(".atlas-chat-sidebar").evaluate((element) => {
+      element.scrollTop = element.scrollHeight;
+    });
+    await expectDockInView();
+    await page.screenshot({
+      path: `.cache/output/playwright/study-layout-${viewport.width}.png`,
+    });
+  });
+}
+
+test("AI guidance reveals the collapsed learning panel before highlighting sources", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await workspace(page);
+  await page.route("**/api/v1/assistant/messages", (route) =>
+    route.fulfill({
+      json: {
+        answer: "Choose the lessons in your learning space.",
+        guidance: {
+          route: "/study",
+          anchor: "study.sources",
+          title: "Lesson sources",
+          description: "Choose a lesson for your next study conversation.",
+        },
+        suggestions: [],
+      },
+    }),
+  );
+  await page
+    .getByRole("button", { name: "Hide learning space", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Ask Atlas", exact: true }).click();
+  const input = page.getByRole("textbox", {
+    name: "Ask the assistant",
+    exact: true,
+  });
+  await input.fill("Where do I select my lessons?");
+  await input.press("Enter");
+  await expect(
+    page.getByRole("button", { name: "Hide learning space", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Got it", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("complementary", { name: "Study tools" }),
+  ).toBeVisible();
+});
+
+test("learning panel motion reverses cleanly and respects reduced motion", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await workspace(page);
+  await page
+    .getByRole("button", { name: "Hide learning space", exact: true })
+    .click();
+  await expect
+    .poll(() =>
+      page
+        .locator(".study-layout")
+        .evaluate(
+          (element) =>
+            element
+              .getAnimations()
+              .filter((animation) => animation.playState === "running").length,
+        ),
+    )
+    .toBeGreaterThan(0);
+  await page
+    .getByRole("button", { name: "Show learning space", exact: true })
+    .click();
+  await expect(
+    page.getByRole("complementary", { name: "Study tools" }),
+  ).toBeVisible();
+  await expect
+    .poll(() =>
+      page
+        .locator("#study-tools")
+        .evaluate((element) => getComputedStyle(element).opacity),
+    )
+    .toBe("1");
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page
+    .getByRole("button", { name: "Hide learning space", exact: true })
+    .click();
+  await expect(page.locator("#study-tools")).toBeHidden();
+  expect(
+    await page
+      .locator(".study-layout")
+      .evaluate((element) => element.getAnimations({ subtree: true }).length),
+  ).toBe(0);
+  await page
+    .getByRole("button", { name: "Show learning space", exact: true })
+    .click();
+  await expect(page.locator("#study-tools")).toBeVisible();
+});
