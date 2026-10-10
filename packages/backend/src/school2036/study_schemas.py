@@ -7,18 +7,25 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 class StudyInput(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
+    @field_validator("*")
+    @classmethod
+    def database_text(cls, value):
+        # PostgreSQL text cannot store NUL or unpaired Unicode surrogates. Apply
+        # this to string fields only: conversation scopes are lists of UUIDs.
+        if isinstance(value, str):
+            if "\x00" in value:
+                raise ValueError("Text cannot contain a NUL character")
+            try:
+                value.encode("utf-8")
+            except UnicodeError:
+                raise ValueError("Text must contain valid Unicode characters") from None
+        return value
+
 
 class LessonInput(StudyInput):
     title: str = Field(min_length=1, max_length=160)
     subject: str = Field(default="", max_length=80)
     transcript: str = Field(min_length=30, max_length=45000)
-
-    @field_validator("transcript")
-    @classmethod
-    def plain_text(cls, value):
-        if "\x00" in value:
-            raise ValueError("A transcript must contain readable text")
-        return value
 
 
 class LessonView(BaseModel):

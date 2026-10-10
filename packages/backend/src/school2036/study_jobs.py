@@ -66,6 +66,11 @@ def _ingest(sessions, providers, lesson_id, job_attempt, job_id):
         lesson = db.get(StudyLesson, lesson_id)
         if lesson is None or lesson.state == "deleted":
             return
+        # Preparation may have committed before the worker lost its final outbox
+        # acknowledgement. A current lease finishes bookkeeping without a new
+        # upload or downgrading a source that is already durably ready.
+        if lesson.state == "ready" and lesson.source_id:
+            return
         owner = db.get(Account, lesson.owner)
         if owner is None or owner.status != "active":
             raise HTTPException(403, "Account is unavailable")

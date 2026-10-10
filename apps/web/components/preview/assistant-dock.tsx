@@ -27,6 +27,17 @@ export function AssistantDock({
     setCollapsed(true);
   }
   useLayoutEffect(() => {
+    // Short screens need their first task visible. Once someone uses the
+    // assistant, resizing (including an onscreen keyboard) must not close it.
+    const compact = window.matchMedia("(max-height: 600px)");
+    const sync = () => {
+      if (!interacted.current) setCollapsed(compact.matches);
+    };
+    sync();
+    compact.addEventListener("change", sync);
+    return () => compact.removeEventListener("change", sync);
+  }, []);
+  useLayoutEffect(() => {
     const panel = pane.current;
     const button = launcher.current;
     if (!panel || !button || !panel.parentElement) return;
@@ -68,6 +79,9 @@ export function AssistantDock({
         className="atlas-dock-pane"
         inert={collapsed}
         aria-hidden={collapsed}
+        onFocusCapture={() => {
+          interacted.current = true;
+        }}
         onKeyDown={(event) => {
           if (event.key === "Escape" && !event.defaultPrevented) {
             event.preventDefault();

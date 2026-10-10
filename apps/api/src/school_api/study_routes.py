@@ -23,6 +23,7 @@ from school2036.study import (
     conversation_view,
     lesson_for,
     lesson_view,
+    require_study_id,
     run_view,
 )
 from school2036.study_schemas import (
@@ -163,6 +164,7 @@ def study_router(config, sessions):
         with sessions.begin() as db:
             user = actor(db, request)
             lesson_for(db, user.id, lesson_id, owner=True)
+            require_study_id(account_id, "Account not found")
             db.execute(
                 delete(StudyAccess).where(
                     StudyAccess.lesson_id == lesson_id, StudyAccess.account_id == account_id
@@ -348,6 +350,7 @@ def study_router(config, sessions):
         with sessions.begin() as db:
             user = actor(db, request)
             # Owners may delete their conversation even after a lesson was revoked.
+            require_study_id(conversation_id, "Conversation not found")
             c = db.get(StudyConversation, conversation_id)
             if c is None or c.owner != user.id or c.deleted:
                 raise HTTPException(404, "Conversation not found")

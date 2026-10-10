@@ -39,6 +39,11 @@ export function ImportLesson({
   const [subject, setSubject] = useState("");
   const [transcript, setTranscript] = useState("");
   const [fileError, setFileError] = useState("");
+  const transcriptLength = Array.from(transcript.trim()).length;
+  const validTranscript =
+    transcriptLength >= 30 &&
+    transcriptLength <= 45000 &&
+    !transcript.includes("\u0000");
   return (
     <Dialog
       open={open}
@@ -63,7 +68,7 @@ export function ImportLesson({
           className="study-form"
           onSubmit={async (event) => {
             event.preventDefault();
-            if (!title.trim() || !transcript.trim()) return;
+            if (!title.trim() || !validTranscript) return;
             const result = await mutate<Lesson>("/study/lessons", "POST", {
               title: title.trim(),
               subject: subject.trim(),
@@ -119,7 +124,10 @@ export function ImportLesson({
                 }
                 try {
                   const text = await file.text();
-                  if (text.length > 45000 || text.includes("\u0000")) {
+                  if (
+                    Array.from(text.trim()).length > 45000 ||
+                    text.includes("\u0000")
+                  ) {
                     setFileError(
                       "Choose a readable text transcript with at most 45,000 characters.",
                     );
@@ -146,15 +154,25 @@ export function ImportLesson({
             <Textarea
               id="study-transcript"
               required
-              maxLength={45000}
+              maxLength={90000}
+              aria-describedby="study-transcript-length"
               rows={9}
               value={transcript}
               onChange={(event) => setTranscript(event.target.value)}
               placeholder="Paste the lesson transcript here…"
             />
             <small>
-              {transcript.length.toLocaleString()} / 45,000 characters
+              {transcriptLength.toLocaleString()} / 45,000 characters
             </small>
+            <p className="study-input-hint" id="study-transcript-length">
+              {transcriptLength < 30
+                ? "Add at least 30 characters of lesson content."
+                : transcriptLength > 45000
+                  ? "Use at most 45,000 characters of lesson content."
+                  : transcript.includes("\u0000")
+                    ? "Use readable text without null characters."
+                    : "Only this transcript will be added to your library."}
+            </p>
           </div>
           <div className="study-form-actions">
             <Button
@@ -167,7 +185,7 @@ export function ImportLesson({
             </Button>
             <Button
               type="submit"
-              disabled={busy || !title.trim() || !transcript.trim()}
+              disabled={busy || !title.trim() || !validTranscript}
             >
               <FileText />
               {busy ? "Saving…" : "Add transcript"}
@@ -250,7 +268,21 @@ export function LessonDialog({
         if (!controller.signal.aborted) setLoading(false);
       }
     })();
-    return () => controller.abort();
+    const revisit = () => {
+      controller.abort();
+      setLesson(null);
+      setAccess([]);
+      setLoading(true);
+      if (document.visibilityState !== "hidden")
+        setRevision((value) => value + 1);
+    };
+    document.addEventListener("visibilitychange", revisit);
+    window.addEventListener("focus", revisit);
+    return () => {
+      controller.abort();
+      document.removeEventListener("visibilitychange", revisit);
+      window.removeEventListener("focus", revisit);
+    };
   }, [id, revision, onExpired]);
   return (
     <Dialog

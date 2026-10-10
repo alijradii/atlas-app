@@ -38,6 +38,8 @@ create-user:
 	uv run --frozen python -m school2036.operator create-user --login "$(LOGIN)" --name "$(NAME)"
 browser-test:
 	$(BUN) --bun playwright test
+browser-test-production:
+	SCHOOL_E2E_PRODUCTION=1 $(BUN) --bun playwright test
 backup:
 	uv run --frozen python -m school2036.backup backup --key-file "$(KEY_FILE)" --file "$(BACKUP_FILE)" --compose infra/compose.dev.yaml
 restore:

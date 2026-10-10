@@ -1,5 +1,7 @@
 """Study authorization is independent of public preview roles and model output."""
 
+from uuid import UUID
+
 from fastapi import HTTPException
 from sqlalchemy import or_, select
 
@@ -20,7 +22,16 @@ def accessible_lessons(account_id):
     )
 
 
+def require_study_id(value, detail):
+    """Malformed resource paths are absent resources, never database failures."""
+    try:
+        UUID(value)
+    except ValueError, TypeError, AttributeError:
+        raise HTTPException(404, detail) from None
+
+
 def lesson_for(db, account_id, lesson_id, *, owner=False):
+    require_study_id(lesson_id, "Lesson not found or access has changed")
     lesson = db.scalar(accessible_lessons(account_id).where(StudyLesson.id == lesson_id))
     if lesson is None or (owner and lesson.owner != account_id):
         raise HTTPException(404, "Lesson not found or access has changed")
@@ -28,6 +39,7 @@ def lesson_for(db, account_id, lesson_id, *, owner=False):
 
 
 def conversation_for(db, account_id, conversation_id):
+    require_study_id(conversation_id, "Conversation not found")
     conversation = db.get(StudyConversation, conversation_id)
     if conversation is None or conversation.deleted or conversation.owner != account_id:
         raise HTTPException(404, "Conversation not found")

@@ -35,6 +35,9 @@ import { useStudy } from "./use-study";
 import "./study.css";
 
 type Study = ReturnType<typeof useStudy>;
+const maxConversationLessons = 8;
+const questionBytes = (text: string) =>
+  new TextEncoder().encode(text.trim()).length;
 const lessonState = {
   queued: "Waiting to prepare",
   indexing: "Preparing sources",
@@ -106,6 +109,8 @@ function StudyWorkspace({ study }: { study: Study }) {
     setInspecting({ id: lesson.id });
   };
   const start = async () => {
+    if (!selectedReady.length || selectedReady.length > maxConversationLessons)
+      return;
     const result = await study.mutate<Conversation>(
       "/study/conversations",
       "POST",
@@ -181,7 +186,9 @@ function StudyWorkspace({ study }: { study: Study }) {
               ))}
             </fieldset>
             <p className="study-small">
-              Select ready lessons for a new conversation.
+              {selectedReady.length === maxConversationLessons
+                ? "8 of 8 lessons selected. Uncheck one to choose another."
+                : "Select up to 8 ready lessons for a new conversation."}
             </p>
             <div className="study-lesson-list">
               {lessons.map((lesson) => (
@@ -193,12 +200,23 @@ function StudyWorkspace({ study }: { study: Study }) {
                     <input
                       type="checkbox"
                       aria-label={`Use ${lesson.title}`}
-                      disabled={lesson.state !== "ready"}
+                      disabled={
+                        lesson.state !== "ready" ||
+                        (selectedReady.length >= maxConversationLessons &&
+                          !selectedReady.includes(lesson.id))
+                      }
                       checked={selectedReady.includes(lesson.id)}
                       onChange={(event) =>
                         setSelected((ids) =>
                           event.target.checked
-                            ? [...new Set([...ids, lesson.id])]
+                            ? [
+                                ...new Set([
+                                  ...ids.filter((id) =>
+                                    ready.some((item) => item.id === id),
+                                  ),
+                                  lesson.id,
+                                ]),
+                              ].slice(0, maxConversationLessons)
                             : ids.filter((id) => id !== lesson.id),
                         )
                       }
@@ -481,6 +499,7 @@ function ConversationPane({
   onLesson: (id: string) => void;
 }) {
   const [draft, setDraft] = useState("");
+  const questionTooLong = questionBytes(draft) > 2000;
   const attempt = useRef<{ content: string; id: string } | null>(null);
   const scroll = useRef<HTMLDivElement>(null);
   const composer = useRef<HTMLTextAreaElement>(null);
@@ -492,7 +511,14 @@ function ConversationPane({
       scroll.current.scrollTop = scroll.current.scrollHeight;
   }, [contentVersion]);
   async function send(content: string, retry = false) {
-    if (!thread || !content.trim() || running || !configured || study.busy)
+    if (
+      !thread ||
+      !content.trim() ||
+      questionBytes(content) > 2000 ||
+      running ||
+      !configured ||
+      study.busy
+    )
       return;
     if (retry || attempt.current?.content !== content.trim())
       attempt.current = { content: content.trim(), id: crypto.randomUUID() };
@@ -668,6 +694,10 @@ function ConversationPane({
         </label>
         <textarea
           ref={composer}
+          aria-invalid={questionTooLong || undefined}
+          aria-describedby={
+            questionTooLong ? "study-question-length" : undefined
+          }
           id="study-message"
           rows={2}
           maxLength={2000}
@@ -690,6 +720,15 @@ function ConversationPane({
             }
           }}
         />
+        {questionTooLong && (
+          <p
+            className="study-input-hint"
+            id="study-question-length"
+            role="status"
+          >
+            This question is too long. Shorten it before sending.
+          </p>
+        )}
         <div className="study-composer-footer">
           <span>Check the sources. AI explanations can make mistakes.</span>
           {running ? (
@@ -707,7 +746,9 @@ function ConversationPane({
           ) : (
             <Button
               type="submit"
-              disabled={study.busy || !configured || !draft.trim()}
+              disabled={
+                study.busy || !configured || !draft.trim() || questionTooLong
+              }
               aria-label="Send study message"
             >
               <Send />

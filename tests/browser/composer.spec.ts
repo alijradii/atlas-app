@@ -164,3 +164,34 @@ test("mobile docking honors reduced motion and preserves a pending pin", async (
   ).toBeVisible();
   await page.getByRole("button", { name: "Cancel pin" }).click();
 });
+
+test("short screens keep tasks exposed and do not collapse an active draft on resize", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 844, height: 390 });
+  await page.goto("/preview/lina/home");
+  const launcher = page.getByRole("button", { name: "Open Atlas assistant" });
+  await expect(launcher).toBeVisible();
+  await expect(page.locator(".atlas-dock-pane")).toHaveCSS(
+    "visibility",
+    "hidden",
+  );
+  const practice = page.getByRole("link", {
+    name: /Continue practice/,
+  });
+  await practice.click();
+  await expect(page).toHaveURL(/\/practice$/);
+  await page.goto("/preview/lina/home");
+  await launcher.click();
+  const input = page.getByRole("textbox", {
+    name: "Ask the assistant",
+    exact: true,
+  });
+  await input.fill("Keep my question while the screen changes");
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.setViewportSize({ width: 390, height: 420 });
+  await expect(input).toBeVisible();
+  await expect(input).toHaveValue("Keep my question while the screen changes");
+  await input.press("Escape");
+  await expect(launcher).toBeFocused();
+});

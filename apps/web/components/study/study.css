@@ -610,6 +610,12 @@
   font-size: 13px;
   color: var(--destructive);
 }
+.study-input-hint {
+  margin-top: 6px;
+  color: var(--muted-foreground);
+  font-size: 12px;
+  line-height: 1.5;
+}
 .study-error button {
   margin-top: 10px;
 }

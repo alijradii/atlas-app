@@ -1,10 +1,12 @@
 """Real PostgreSQL study boundaries with injected, non-network provider doubles."""
 
+import json
 import time
 from concurrent.futures import ThreadPoolExecutor
 from threading import Barrier
 from uuid import uuid4
 
+import httpx
 import pytest
 from fastapi.testclient import TestClient
 from pydantic import SecretStr
@@ -17,6 +19,7 @@ from school2036.models import (
     StudyRun,
 )
 from school2036.study_jobs import process_study_job
+from school2036.study_providers import NO_EVIDENCE, StudyProviders
 from sqlalchemy import func, select, text
 from test_identity import login
 
@@ -448,3 +451,146 @@ def test_lost_generation_is_not_automatically_replayed_and_unconfigured_send_is_
     assert providers.calls == []
     assert run_state(app, run)[0] == "failed"
     assert run_state(app, run)[2] == 0
+
+
+@pytest.mark.parametrize("field", ["title", "subject", "content", "login"])
+@pytest.mark.parametrize("invalid", ["\x00", "\ud800"], ids=["nul", "unpaired-surrogate"])
+def test_invalid_text_inputs_are_validation_errors_not_database_failures(study, field, invalid):
+    client, app, _ = study
+    lesson = add_lesson(study)
+    cid = conversation(client, lesson)
+    if field in {"title", "subject"}:
+        path = "/lessons"
+        payload = {"title": "Forces", "subject": "Physics", "transcript": TRANSCRIPT}
+    elif field == "content":
+        path = f"/conversations/{cid}/messages"
+        payload = {"content": "What is force?", "request_id": str(uuid4())}
+    else:
+        path = f"/lessons/{lesson}/access"
+        payload = {"login": "bob"}
+    payload[field] = "valid" + invalid + "text"
+    with TestClient(
+        app,
+        headers=dict(client.headers),
+        cookies=client.cookies,
+        raise_server_exceptions=False,
+    ) as browser:
+        response = browser.post(
+            BASE + path, content=json.dumps(payload), headers={"Content-Type": "application/json"}
+        )
+    assert response.status_code == 422, response.text
+
+
+@pytest.mark.parametrize("resource", ["lessons", "conversations"])
+@pytest.mark.parametrize("method", ["GET", "DELETE"])
+def test_invalid_nul_resource_identifiers_do_not_raise_database_errors(study, resource, method):
+    client, app, _ = study
+    with TestClient(
+        app,
+        headers=dict(client.headers),
+        cookies=client.cookies,
+        raise_server_exceptions=False,
+    ) as browser:
+        response = browser.request(method, BASE + f"/{resource}/invalid%00identifier")
+    assert response.status_code in {404, 422}, response.text
+
+
+def test_reclaimed_ingest_after_ready_commit_does_not_invalidate_finished_lesson(study):
+    client, app, config = study
+    lesson_id = add_lesson(study)
+    cid = conversation(client, lesson_id)
+    with app.state.sessions.begin() as db:
+        job = next(
+            job
+            for job in db.scalars(select(OutboxJob).where(OutboxJob.kind == "study.ingest"))
+            if job.payload["lesson_id"] == lesson_id
+        )
+        # Crash window: ready/source_id committed, final outbox success not yet committed.
+        job.state = "running"
+        job.attempts = 2
+        job_id = job.id
+    providers = Providers()
+    process_study_job(app.state.sessions, config, job_id, 2, providers)
+    assert providers.calls == []
+    assert client.get(BASE + f"/lessons/{lesson_id}").json()["state"] == "ready"
+    run = send(client, cid)
+    process(study, "study.answer", run)
+    assert run_state(app, run)[0] == "completed"
+
+
+def test_invalid_share_target_is_not_a_storage_outage(study):
+    client, _, _ = study
+    lesson = add_lesson(study)
+    response = client.delete(BASE + f"/lessons/{lesson}/access/invalid%00account")
+    assert response.status_code == 404
+
+
+@pytest.mark.parametrize("ready", [False, True])
+def test_ingest_recovery_respects_lease_and_never_replays_unfinished_upload(study, ready):
+    _, app, config = study
+    lesson_id = add_lesson(study, ready=ready)
+    with app.state.sessions.begin() as db:
+        job = next(
+            job
+            for job in db.scalars(select(OutboxJob).where(OutboxJob.kind == "study.ingest"))
+            if job.payload["lesson_id"] == lesson_id
+        )
+        job.state, job.attempts = "running", 2
+        job_id = job.id
+        if not ready:
+            lesson = db.get(StudyLesson, lesson_id)
+            lesson.state, lesson.source_id = "indexing", "unfinished-source"
+    providers = Providers()
+    # A stale original worker must not finish a newer lease, even for ready data.
+    process_study_job(app.state.sessions, config, job_id, 1, providers)
+    with app.state.sessions() as db:
+        assert db.get(OutboxJob, job_id).state == "running"
+        assert db.get(StudyLesson, lesson_id).state == ("ready" if ready else "indexing")
+    process_study_job(app.state.sessions, config, job_id, 2, providers)
+    assert providers.calls == []
+    with app.state.sessions() as db:
+        assert db.get(OutboxJob, job_id).state == ("succeeded" if ready else "failed")
+        assert db.get(StudyLesson, lesson_id).state == ("ready" if ready else "failed")
+
+
+def test_followup_without_hits_does_not_treat_old_answer_as_evidence_or_pay_model(study):
+    client, _, config = study
+    cid = conversation(client, add_lesson(study))
+    process(study, "study.answer", send(client, cid))
+    calls = []
+
+    def no_hits(request):
+        calls.append(request.url.path)
+        assert request.url.path == "/v1/rag/naive", "No Gemini call without current evidence"
+        payload = json.loads(request.content)
+        return httpx.Response(
+            200,
+            json={
+                "kind": "retrieval_evidence",
+                "version": 1,
+                "status": "completed",
+                "source_ids": payload["source_ids"],
+                "sources": [],
+                "candidates": [],
+            },
+        )
+
+    response = client.post(
+        BASE + f"/conversations/{cid}/messages",
+        json={
+            "content": "Could you explain that again?",
+            "request_id": str(uuid4()),
+        },
+    )
+    assert response.status_code == 202
+    process(
+        study,
+        "study.answer",
+        response.json()["id"],
+        StudyProviders(config, transport=httpx.MockTransport(no_hits)),
+    )
+    detail = client.get(BASE + f"/conversations/{cid}").json()
+    assert detail["run"]["state"] == "completed"
+    assert detail["messages"][-1]["content"] == NO_EVIDENCE
+    assert detail["messages"][-1]["citations"] == []
+    assert calls == ["/v1/rag/naive"]
