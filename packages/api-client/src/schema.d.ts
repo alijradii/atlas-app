@@ -55,6 +55,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/assistant/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Message */
+        post: operations["message_api_v1_assistant_messages_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/login": {
         parameters: {
             query?: never;
@@ -794,6 +811,36 @@ export interface components {
             /** Title */
             title: string;
         };
+        /** AssistantInput */
+        AssistantInput: {
+            /** History */
+            history?: components["schemas"]["AssistantTurn"][];
+            /** Message */
+            message: string;
+            /**
+             * Screen
+             * @default /workspace
+             */
+            screen: string;
+        };
+        /** AssistantTurn */
+        AssistantTurn: {
+            /** Content */
+            content: string;
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "user" | "assistant";
+        };
+        /** AssistantView */
+        AssistantView: {
+            /** Answer */
+            answer: string;
+            guidance?: components["schemas"]["GuidanceView"] | null;
+            /** Suggestions */
+            suggestions?: string[];
+        };
         /** CitationView */
         CitationView: {
             /** Index */
@@ -870,6 +917,17 @@ export interface components {
              * @default
              */
             subject: string;
+            /** Title */
+            title: string;
+        };
+        /** GuidanceView */
+        GuidanceView: {
+            /** Anchor */
+            anchor: string;
+            /** Description */
+            description: string;
+            /** Route */
+            route: string;
             /** Title */
             title: string;
         };
@@ -1340,6 +1398,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SessionRevokeView"];
+                };
+            };
+        };
+    };
+    message_api_v1_assistant_messages_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssistantInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssistantView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

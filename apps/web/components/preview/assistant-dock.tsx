@@ -11,10 +11,16 @@ import {
 /** Keep the composer mounted so minimizing never discards a draft or pending action. */
 export function AssistantDock({
   children,
+  collapsed: controlled,
+  onCollapsedChange,
 }: {
   children: (minimize: () => void) => ReactNode;
+  collapsed?: boolean;
+  onCollapsedChange?: (collapsed: boolean) => void;
 }) {
-  const [collapsed, setCollapsed] = useState(false);
+  const [localCollapsed, setLocalCollapsed] = useState(false);
+  const collapsed = controlled ?? localCollapsed;
+  const setCollapsed = onCollapsedChange ?? setLocalCollapsed;
   const pane = useRef<HTMLDivElement>(null);
   const launcher = useRef<HTMLButtonElement>(null);
   const interacted = useRef(false);
@@ -29,6 +35,7 @@ export function AssistantDock({
   useLayoutEffect(() => {
     // Short screens need their first task visible. Once someone uses the
     // assistant, resizing (including an onscreen keyboard) must not close it.
+    if (controlled !== undefined) return;
     const compact = window.matchMedia("(max-height: 600px)");
     const sync = () => {
       if (!interacted.current) setCollapsed(compact.matches);
@@ -36,7 +43,7 @@ export function AssistantDock({
     sync();
     compact.addEventListener("change", sync);
     return () => compact.removeEventListener("change", sync);
-  }, []);
+  }, [controlled, setCollapsed]);
   useLayoutEffect(() => {
     const panel = pane.current;
     const button = launcher.current;

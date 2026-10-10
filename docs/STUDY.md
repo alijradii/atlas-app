@@ -168,3 +168,13 @@ interface, with an application limit below the provider's advertised upload limi
 See [Google's audio input documentation](https://ai.google.dev/gemini-api/docs/audio).
 A short synthetic speech check verified this configured path locally; it is not a
 claim of transcription accuracy across accents, languages or noisy classrooms.
+
+
+### Persistent assistant integration
+
+The dock lives above page routes and remains available in Files, Account and school
+screens. In an active source-backed conversation, Selected lessons uses the normal
+study API; Ask Atlas switches to the UI-help agent without a second floating input.
+Suggested study questions now send a real request against that conversation's
+selected sources. They are disabled while a request is active. Interface guidance
+uses the separate read-only MCP catalog and cannot retrieve private lesson text.

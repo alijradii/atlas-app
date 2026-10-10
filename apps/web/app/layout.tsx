@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Script from "next/script";
 import "./styles.css";
+import { AssistantProvider } from "@/components/assistant/provider";
 
 export const metadata: Metadata = {
   title: {
@@ -28,7 +29,7 @@ export default function RootLayout({
         >
           Skip to content
         </a>
-        {children}
+        <AssistantProvider>{children}</AssistantProvider>
       </body>
     </html>
   );

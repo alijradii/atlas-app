@@ -18,6 +18,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { StudyAssistantSlot, useAssistant } from "../assistant/provider";
 import { ConnectedShell } from "../connected-shell";
 import { Brand, PageHeading } from "../pearl";
 import {
@@ -25,7 +26,6 @@ import {
   PearlChatLayout,
   PearlChatMessage,
 } from "../pearl-chat";
-import { AssistantDock } from "../preview/assistant-dock";
 import { Composer } from "../preview/composer";
 import { Panel } from "../preview/shared";
 import { consumeStudyDraft } from "./draft-handoff";
@@ -178,7 +178,11 @@ function StudyWorkspace({
           to its source.
         </p>
       </div>
-      <section className="study-library" aria-labelledby="study-library-title">
+      <section
+        className="study-library"
+        aria-labelledby="study-library-title"
+        data-guide-anchor="study.sources"
+      >
         <div className="study-section-heading">
           <h2 id="study-library-title">Lesson library</h2>
           <Button
@@ -214,7 +218,7 @@ function StudyWorkspace({
             ? "8 of 8 lessons selected. Uncheck one to choose another."
             : "Select up to 8 ready lessons for a new conversation."}
         </p>
-        <div className="study-lesson-list">
+        <div className="study-lesson-list" data-guide-anchor="study.transcript">
           {lessons.map((lesson) => (
             <div
               key={lesson.id}
@@ -537,6 +541,7 @@ function ConversationPane({
   onLesson: (id: string) => void;
 }) {
   const [draft, setDraft] = useState(initialDraft);
+  const { openStudy } = useAssistant();
   useEffect(() => {
     if (initialDraft) onDraftConsumed();
   }, [initialDraft, onDraftConsumed]);
@@ -698,15 +703,10 @@ function ConversationPane({
             key={label}
             variant="outline"
             size="sm"
+            disabled={study.busy || running || !configured}
             onClick={() => {
-              setDraft(question);
-              const launcher =
-                composer.current?.querySelector<HTMLButtonElement>(
-                  ".atlas-dock-launcher",
-                );
-              if (launcher?.getAttribute("aria-expanded") === "false")
-                launcher.click();
-              else composer.current?.querySelector("textarea")?.focus();
+              openStudy();
+              void send(question);
             }}
           >
             {label}
@@ -723,7 +723,7 @@ function ConversationPane({
             This question is too long. Shorten it before sending.
           </p>
         )}
-        <AssistantDock>
+        <StudyAssistantSlot>
           {(minimize) => (
             <Composer
               inline
@@ -766,7 +766,7 @@ function ConversationPane({
               }
             />
           )}
-        </AssistantDock>
+        </StudyAssistantSlot>
       </div>
     </section>
   );

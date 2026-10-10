@@ -48,7 +48,10 @@ export function PearlHome({
   const waiting = cards.filter((card) => card.group === "waiting").length;
   return (
     <div className="pearl-home">
-      <header className="pearl-home-hero pearl-home-greeting">
+      <header
+        className="pearl-home-hero pearl-home-greeting"
+        data-guide-anchor="home.overview"
+      >
         <div className="pearl-home-hero-copy">
           <p className="eyebrow">
             {roleLabel} ·{" "}

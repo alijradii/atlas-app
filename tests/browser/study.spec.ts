@@ -58,7 +58,7 @@ test("real study API saves a transcript, answers with a source, restores history
   await page
     .getByRole("button", { name: "New conversation · 1 lesson", exact: true })
     .click();
-  const question = "How are force, mass and acceleration related?";
+  const question = "Explain the key ideas in these lessons.";
   let messagePosts = 0;
   page.on("request", (request) => {
     if (
@@ -69,20 +69,6 @@ test("real study API saves a transcript, answers with a source, restores history
   });
   await page
     .getByRole("button", { name: "Explain the key ideas", exact: true })
-    .click();
-  await expect(
-    page.getByRole("textbox", { name: "Ask about your lessons", exact: true }),
-  ).toHaveValue("Explain the key ideas in these lessons.");
-  await expect(
-    page.getByRole("textbox", { name: "Ask about your lessons", exact: true }),
-  ).toBeFocused();
-  await expect(page.getByRole("log", { name: "Study messages" })).toBeEmpty();
-  expect(messagePosts).toBe(0);
-  await page
-    .getByRole("textbox", { name: "Ask about your lessons", exact: true })
-    .fill(question);
-  await page
-    .getByRole("button", { name: "Send study message", exact: true })
     .click();
   await expect.poll(() => messagePosts).toBe(1);
   await expect(page.locator(".study-message-assistant")).toBeVisible({

@@ -1,7 +1,8 @@
 import { defineConfig } from "@playwright/test";
 import config from "./playwright.config";
 
-// Public preview checks do not need credentials, PostgreSQL, or the API server.
+// Fixture-only regression checks explicitly enable SCHOOL_E2E via the web server.
+// They do not need credentials, PostgreSQL, or the API server.
 export default defineConfig({
   ...config,
   testMatch: [

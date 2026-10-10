@@ -98,7 +98,7 @@ export function PearlStudents({ students }: { students: PearlStudent[] }) {
       .includes(query.toLowerCase()),
   );
   return (
-    <div className="grid gap-5">
+    <div className="grid gap-5" data-guide-anchor="students.list">
       <PageHeading
         title="My students"
         description="Different interests, different pathways. Keep the next conversation in sight."

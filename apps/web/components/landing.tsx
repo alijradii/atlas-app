@@ -87,27 +87,27 @@ const roles = [
 const questions = [
   [
     "Does the assistant do students’ homework?",
-    "The design separates studying with help from practice done independently. During a practice batch, the preview pauses the study assistant until the whole set is submitted.",
+    "The study assistant explains your selected lesson sources and can offer practice questions. You submit your own schoolwork, and your teacher reviews it. AI guidance does not submit assignments for you.",
   ],
   [
     "Who are the advisors?",
-    "The kit proposes qualified human specialists matched by interests and field. Their background and qualifications are visible to the student and family.",
+    "Your school connects your account to a human advisor. Use My advisor to send questions and discuss subject proposals; the assistant does not make those decisions.",
   ],
   [
     "What can parents see?",
-    "Subject choices, interests and guidance shared with the family. The parent progress screen is an exploration; its final information boundaries are still undecided.",
+    "Parents see schoolwork and subject proposals for students explicitly linked to their account. Parent approval follows advisor review; private study sources are not automatically shared.",
   ],
   [
     "Can students use it from home?",
-    "Yes. Access follows your account and shared resources, wherever you study. The role previews show how lessons, practice, guidance and activities fit together.",
+    "Yes. Sign in from home to upload documents or recordings, review transcripts and study your ready sources. Access follows your account and shared resources, wherever you learn.",
   ],
   [
     "What happens if the AI gets something wrong?",
-    "The proposed experience labels AI material and keeps review and decisions with people. This preview uses scripted examples; it does not contact an AI service.",
+    "Study answers include source passages you can check. Review extracted transcripts before approving them, and verify AI explanations against your lessons. Advice, feedback and approval remain with people.",
   ],
   [
     "Can our school join now?",
-    "Atlas is currently a design preview. Pilot enrollment and pricing are not connected. You can explore every role without creating an account.",
+    "Atlas has a working app for provisioned student, teacher, advisor and parent accounts. Sign in with the account your operator provides. Public enrollment and pilot signup are not connected.",
   ],
 ];
 
@@ -148,7 +148,7 @@ export function Landing() {
           <div className="pearl-panel flex flex-col items-start px-7 py-9 sm:px-12 lg:px-14 lg:py-12">
             <Brand />
             <div className="my-auto py-16">
-              <p className="eyebrow mb-6">Atlas · a preview for high schools</p>
+              <p className="eyebrow mb-6">Atlas · your learning workspace</p>
               <h1 className="max-w-[12ch] text-[clamp(44px,4.3vw,68px)] leading-[1.04] tracking-[-.045em]">
                 Study at home. Choose with people who know you.
               </h1>
@@ -479,8 +479,8 @@ export function Landing() {
                         {role.text}
                       </p>
                       <Button asChild className="mt-7">
-                        <Link href={`/preview/${role.id}/home`}>
-                          Explore {role.name.toLowerCase()} <ArrowRight />
+                        <Link href="/login">
+                          Sign in to your workspace <ArrowRight />
                         </Link>
                       </Button>
                     </div>
@@ -607,8 +607,8 @@ export function Landing() {
               <p className="eyebrow mb-5">Explore the idea</p>
               <h2 className="text-4xl">Bring a new perspective to learning.</h2>
               <p className="mt-5 text-muted-foreground">
-                Try the Atlas design preview. Pilot signup is not connected yet;
-                this form demonstrates the interaction only.
+                The app is available to provisioned accounts. Pilot signup is
+                not connected yet; this form demonstrates the interaction only.
               </p>
               <form
                 className="mt-6 flex flex-wrap gap-3"
@@ -648,7 +648,7 @@ export function Landing() {
       <footer className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-6 border-t px-6 py-10">
         <Brand />
         <p className="text-xs text-muted-foreground">
-          Atlas Pearl · design preview · illustrative data
+          Atlas Pearl · working app · illustrated examples
         </p>
         <Link href="/files" className="text-sm text-cobalt">
           Your private files

@@ -1,8 +1,4 @@
-import { Button, Card } from "@school2036/ui";
-import { ArrowUpRight } from "lucide-react";
-import Link from "next/link";
 import { Brand, PearlScene } from "./pearl";
-import { accounts, initials, type Role, roleNames } from "./preview/data";
 import { ThemeToggle } from "./theme-toggle";
 export function AuthFrame({ children }: { children: React.ReactNode }) {
   return (
@@ -39,47 +35,6 @@ export function AuthFrame({ children }: { children: React.ReactNode }) {
             </div>
           </div>
         </div>
-        <section aria-labelledby="preview-accounts" className="py-10">
-          <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <p className="eyebrow mb-3">Explore Atlas Pearl</p>
-              <h2 id="preview-accounts" className="text-2xl">
-                One school. Different perspectives.
-              </h2>
-              <p className="mt-3 text-sm text-muted-foreground">
-                Open a sample workspace. No login required; all school records
-                are fictional.
-              </p>
-            </div>
-            <Button asChild variant="outline">
-              <Link href="/">
-                Explore the design
-                <ArrowUpRight />
-              </Link>
-            </Button>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {accounts.map((a) => (
-              <Link key={a.id} href={`/preview/${a.id}/home`}>
-                <Card className="h-full flex-row items-center gap-4 p-5 transition-colors hover:bg-surface">
-                  <span className="flex size-11 shrink-0 items-center justify-center rounded-full border bg-accent text-sm text-cobalt">
-                    {initials(a.name)}
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <strong className="block text-sm font-medium">
-                      {a.name}
-                    </strong>
-                    <small className="mt-1 block text-muted-foreground">
-                      {roleNames[a.role as Role]} ·{" "}
-                      {a.id === "sami" ? "New student" : a.meta}
-                    </small>
-                  </span>
-                  <ArrowUpRight className="size-4 shrink-0 text-muted-foreground" />
-                </Card>
-              </Link>
-            ))}
-          </div>
-        </section>
       </main>
     </div>
   );

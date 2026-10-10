@@ -155,15 +155,18 @@ export function useStudy() {
         if (current()) setLoading(false);
       }
     };
+    let resumeTimer: ReturnType<typeof setTimeout> | undefined;
     const visible = () => {
+      clearTimeout(resumeTimer);
       if (document.visibilityState === "hidden") pause();
-      else void tick();
+      else resumeTimer = setTimeout(() => void tick(), 80);
     };
     document.addEventListener("visibilitychange", visible);
     window.addEventListener("focus", visible);
     void tick();
     return () => {
       alive = false;
+      clearTimeout(resumeTimer);
       pause();
       document.removeEventListener("visibilitychange", visible);
       window.removeEventListener("focus", visible);

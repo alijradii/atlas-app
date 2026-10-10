@@ -14,6 +14,7 @@ from school2036.models import InstallationState
 from sqlalchemy.exc import SQLAlchemyError
 
 from school_api.account_routes import account_router
+from school_api.assistant_routes import assistant_router
 from school_api.identity_routes import identity_router
 from school_api.media_routes import media_router
 from school_api.school_routes import school_router
@@ -57,6 +58,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.engine = engine
     app.include_router(identity_router(config, sessions))
     app.include_router(account_router(config, sessions))
+    app.include_router(assistant_router(config, sessions))
     app.include_router(media_router(config, sessions))
     app.include_router(study_router(config, sessions))
     app.include_router(school_router(config, sessions))

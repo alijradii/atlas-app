@@ -35,10 +35,15 @@ export default function AccountApp() {
   const report = useCallback(
     (cause: unknown) => {
       if (cause instanceof ApiError && cause.status === 401) {
+        accountId.current = null;
         setSession(null);
         setSessions([]);
         clearPasswords();
         router.replace("/login?next=account");
+      }
+      if (cause instanceof ApiError && cause.status === 403) {
+        setSessions([]);
+        clearPasswords();
       }
       setError(
         cause instanceof Error
@@ -53,9 +58,7 @@ export default function AccountApp() {
     pending.current?.abort();
     const controller = new AbortController();
     pending.current = controller;
-    setLoading(true);
-    setSession(null);
-    setSessions([]);
+    if (!accountId.current) setLoading(true);
     setError("");
     try {
       const identity = await api<Session>(
@@ -65,6 +68,14 @@ export default function AccountApp() {
         undefined,
         controller.signal,
       );
+      if (version !== generation.current || controller.signal.aborted) return;
+      if (accountId.current !== identity.account_id) {
+        clearPasswords();
+        setSessions([]);
+        setNotice("");
+      }
+      accountId.current = identity.account_id;
+      setSession(identity);
       const list = await api<AccountSession[]>(
         "/account/sessions",
         "GET",
@@ -73,12 +84,6 @@ export default function AccountApp() {
         controller.signal,
       );
       if (version !== generation.current) return;
-      if (accountId.current !== identity.account_id) {
-        clearPasswords();
-        setNotice("");
-      }
-      accountId.current = identity.account_id;
-      setSession(identity);
       setSessions(list);
     } catch (cause) {
       if (version === generation.current && !controller.signal.aborted)
@@ -89,14 +94,17 @@ export default function AccountApp() {
   }, [report, clearPasswords]);
   useEffect(() => {
     void refresh();
+    let resumeTimer: ReturnType<typeof setTimeout> | undefined;
     const resume = () => {
+      clearTimeout(resumeTimer);
       if (document.visibilityState === "visible" && !mutating.current)
-        void refresh();
+        resumeTimer = setTimeout(() => void refresh(), 80);
     };
     document.addEventListener("visibilitychange", resume);
     window.addEventListener("focus", resume);
     return () => {
       ++generation.current;
+      clearTimeout(resumeTimer);
       pending.current?.abort();
       document.removeEventListener("visibilitychange", resume);
       window.removeEventListener("focus", resume);
@@ -195,7 +203,11 @@ export default function AccountApp() {
           <p className="account-identity">
             Signed in as <strong>{session.name}</strong> · {session.login}
           </p>
-          <section className="account-panel" aria-labelledby="password-heading">
+          <section
+            className="account-panel"
+            aria-labelledby="password-heading"
+            data-guide-anchor="account.security"
+          >
             <div className="account-section-heading">
               <KeyRound aria-hidden="true" />
               <div>

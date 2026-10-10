@@ -1,5 +1,22 @@
 # Security and release status
 
+## Persistent assistant and local demo accounts — October 10, 2026
+
+The interface assistant uses an authenticated, CSRF-protected endpoint and a
+role-scoped read-only MCP catalog. Model guidance can only select registered UI
+anchors loaded through the tool; it cannot execute mutations or retrieve private
+records. Session/role checks run again after generation. Attempt limits include
+failures, and audit records omit prompt/history text. See [UI_ASSISTANT.md](UI_ASSISTANT.md).
+
+Public fictional persona buttons are removed; fixture routes return 404 outside
+the explicit browser-test harness. The four local demo accounts remain ordinary
+DB accounts, with scrypt hashes and normal session checks. At the user's request,
+a guarded operator migration assigned simple role logins and the shared password
+`password` to exactly these accounts, preserving their synthetic data and revoking
+old sessions. This is not a runtime authentication bypass or a changed general
+password policy. These known local demo credentials do not clear public deployment
+approval; do not put sensitive records in these accounts.
+
 ## Connected hackathon workflows — October 10, 2026
 
 The authenticated application now includes `/workspace` school workflows and

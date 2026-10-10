@@ -1,5 +1,44 @@
 # Verification — October 10, 2026
 
+## Persistent assistant and database demo sign-in
+
+The root account-bound assistant now survives authenticated navigation, including
+its draft, recent replies and minimized state. Suggested questions make real model
+requests; selected-lesson suggestions use the cited study API. The read-only MCP
+catalog supplies role-scoped workflow context on demand, and validated targets
+navigate to the original dim/border/tooltip treatment without executing actions.
+Focus/visibility refreshes retain authorized content and unsaved edits. Shared
+textareas auto-grow to a cap instead of exposing a manual resize handle.
+
+The fake persona entry points are gone and `/preview/*` returns 404 outside the
+explicit test harness. The four existing local demo accounts were migrated to
+`student`, `teacher`, `advisor` and `parent`, with the requested password. All four
+real API logins and roles were verified. IDs, relationships, example work and ready
+sources were preserved; old sessions were revoked. The migration is guarded,
+repeatable and covered for collisions and unrelated-account isolation.
+
+`make check` passed lint/types/contracts, **64 Bun tests and 192 Python tests**.
+`make build` and application `make audit` passed, including the pinned MCP SDK.
+A final focused backend run passed all **20 assistant tests** after correcting the
+catalog's document/media upload limits. The frontend checks passed again after
+updating old browser expectations from draft-fill to real suggestion requests.
+The complete compiled Chrome suite then passed **86/86 scenarios**, including
+actual school-role flows, persistent assistant/error/revocation behavior, focus
+refreshes, automatic textarea sizing and the test-only legacy UI fixtures.
+
+A real local Chrome → Next → API → Gemini/MCP upload question completed in **2.86
+seconds**, navigated to Files and showed the upload spotlight. Navigation retained
+a private draft and minimized state. Mobile (390px) account checks found no overflow,
+page errors or Axe violations. The separate backend live provider check took 1.68
+seconds; these samples are not latency guarantees. Browser regression providers
+are deterministic, with the live checks recorded separately. Evidence is ignored
+under `.cache/assistant-*` and `.cache/output/playwright/assistant-live-*`.
+
+The existing Starlette test-client warning and public deployment gates remain
+open. Known local demo credentials are for synthetic examples. Next steps before
+public launch remain the security/deployment/retention checks in SECURITY.md and
+release-status.json; this implementation does not clear that gate.
+
 ## Shared original Pearl screens and populated demos
 
 Authenticated accounts now render the original Pearl components for the frame,

@@ -26,7 +26,10 @@ test("Pearl landing works on mobile, keyboard, and dark theme", async ({
     .getByRole("button", { name: "Does the assistant do students’ homework?" })
     .click();
   await expect(
-    page.getByText("The design separates studying with help", { exact: false }),
+    page.getByText(
+      "The study assistant explains your selected lesson sources",
+      { exact: false },
+    ),
   ).toBeVisible();
   expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
   await page.screenshot({
@@ -222,4 +225,23 @@ test("teacher evidence and staff activity review are interactive", async ({
   await expect(
     page.getByText("Campus composting project", { exact: true }),
   ).toBeVisible();
+});
+
+test("public landing and sign-in only offer real account access", async ({
+  page,
+}) => {
+  await page.goto("/login");
+  await expect(
+    page.getByRole("textbox", { name: "Login", exact: true }),
+  ).toBeVisible();
+  await expect(page.locator('a[href^="/preview/"]')).toHaveCount(0);
+  await expect(
+    page.getByText("Open a sample workspace", { exact: false }),
+  ).toHaveCount(0);
+  await page.goto("/");
+  await expect(page.locator('a[href^="/preview/"]')).toHaveCount(0);
+  await page.getByRole("tab", { name: "Teachers", exact: true }).click();
+  await expect(
+    page.getByRole("link", { name: "Sign in to your workspace", exact: true }),
+  ).toHaveAttribute("href", "/login");
 });

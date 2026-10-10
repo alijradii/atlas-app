@@ -146,6 +146,7 @@ export function WorkspaceAdvisor({
       </div>
       <form
         className="grid gap-3"
+        data-guide-anchor="advisor.ask"
         onSubmit={async (event) => {
           event.preventDefault();
           if (

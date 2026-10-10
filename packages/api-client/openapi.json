@@ -283,6 +283,91 @@
         "title": "AssignmentView",
         "type": "object"
       },
+      "AssistantInput": {
+        "additionalProperties": false,
+        "properties": {
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/AssistantTurn"
+            },
+            "maxItems": 8,
+            "title": "History",
+            "type": "array"
+          },
+          "message": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Message",
+            "type": "string"
+          },
+          "screen": {
+            "default": "/workspace",
+            "maxLength": 100,
+            "title": "Screen",
+            "type": "string"
+          }
+        },
+        "required": [
+          "message"
+        ],
+        "title": "AssistantInput",
+        "type": "object"
+      },
+      "AssistantTurn": {
+        "additionalProperties": false,
+        "properties": {
+          "content": {
+            "maxLength": 4000,
+            "minLength": 1,
+            "title": "Content",
+            "type": "string"
+          },
+          "role": {
+            "enum": [
+              "user",
+              "assistant"
+            ],
+            "title": "Role",
+            "type": "string"
+          }
+        },
+        "required": [
+          "role",
+          "content"
+        ],
+        "title": "AssistantTurn",
+        "type": "object"
+      },
+      "AssistantView": {
+        "properties": {
+          "answer": {
+            "title": "Answer",
+            "type": "string"
+          },
+          "guidance": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GuidanceView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "suggestions": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Suggestions",
+            "type": "array"
+          }
+        },
+        "required": [
+          "answer"
+        ],
+        "title": "AssistantView",
+        "type": "object"
+      },
       "CitationView": {
         "properties": {
           "index": {
@@ -497,6 +582,34 @@
           "title"
         ],
         "title": "FileLessonInput",
+        "type": "object"
+      },
+      "GuidanceView": {
+        "properties": {
+          "anchor": {
+            "title": "Anchor",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "route": {
+            "title": "Route",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "route",
+          "anchor",
+          "title",
+          "description"
+        ],
+        "title": "GuidanceView",
         "type": "object"
       },
       "HTTPValidationError": {
@@ -1564,6 +1677,47 @@
         "summary": "Revoke Others",
         "tags": [
           "account"
+        ]
+      }
+    },
+    "/api/v1/assistant/messages": {
+      "post": {
+        "operationId": "message_api_v1_assistant_messages_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssistantInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Message",
+        "tags": [
+          "assistant"
         ]
       }
     },

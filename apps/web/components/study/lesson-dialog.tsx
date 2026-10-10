@@ -256,8 +256,8 @@ export function LessonDialog({
 }) {
   const [lesson, setLesson] = useState<LessonDetail | null>(null);
   const [draft, setDraft] = useState("");
-  // Keep unsaved corrections in memory only while rechecking access. Never show
-  // them again until the same owned review source has been reauthorized.
+  // Keep same-account corrections during a background check; clear them as
+  // soon as the source, account or source permissions change.
   const reviewDraft = useRef<{ id: string; text: string } | null>(null);
   const [access, setAccess] = useState<Access[]>([]);
   const [loading, setLoading] = useState(true);
@@ -266,14 +266,20 @@ export function LessonDialog({
   const [revision, setRevision] = useState(0);
   const [deleting, setDeleting] = useState(false);
   const [showTranscript, setShowTranscript] = useState(!citation);
+  const loadedSource = useRef("");
   // biome-ignore lint/correctness/useExhaustiveDependencies: revision deliberately reloads access after a share/revoke or retry.
   useEffect(() => {
     const controller = new AbortController();
-    setLoading(true);
+    const sourceKey = `${session.account_id}:${id}`;
+    if (loadedSource.current !== sourceKey) {
+      loadedSource.current = sourceKey;
+      reviewDraft.current = null;
+      setLoading(true);
+      setLesson(null);
+      setDraft("");
+      setAccess([]);
+    }
     setError("");
-    setLesson(null);
-    setDraft("");
-    setAccess([]);
     void (async () => {
       try {
         const detail = await api<LessonDetail>(
@@ -305,8 +311,15 @@ export function LessonDialog({
         }
       } catch (cause) {
         if (controller.signal.aborted) return;
-        if (cause instanceof ApiError && [401, 403, 404].includes(cause.status))
+        if (
+          cause instanceof ApiError &&
+          [401, 403, 404].includes(cause.status)
+        ) {
           reviewDraft.current = null;
+          setLesson(null);
+          setDraft("");
+          setAccess([]);
+        }
         if (cause instanceof ApiError && cause.status === 401) onExpired();
         else
           setError(
@@ -318,23 +331,21 @@ export function LessonDialog({
         if (!controller.signal.aborted) setLoading(false);
       }
     })();
+    let resumeTimer: ReturnType<typeof setTimeout> | undefined;
     const revisit = () => {
-      controller.abort();
-      setLesson(null);
-      setDraft("");
-      setAccess([]);
-      setLoading(true);
+      clearTimeout(resumeTimer);
       if (document.visibilityState !== "hidden")
-        setRevision((value) => value + 1);
+        resumeTimer = setTimeout(() => setRevision((value) => value + 1), 80);
     };
     document.addEventListener("visibilitychange", revisit);
     window.addEventListener("focus", revisit);
     return () => {
       controller.abort();
+      clearTimeout(resumeTimer);
       document.removeEventListener("visibilitychange", revisit);
       window.removeEventListener("focus", revisit);
     };
-  }, [id, revision, onExpired]);
+  }, [id, session.account_id, revision, onExpired]);
   return (
     <Dialog
       open

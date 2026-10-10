@@ -37,13 +37,11 @@ export function useWorkspace(section = "home") {
   useEffect(() => {
     if (signedOut) return;
     let alive = true;
+    let resumeTimer: ReturnType<typeof setTimeout> | undefined;
     const read = async () => {
+      if (document.visibilityState === "hidden") return;
       reads.current?.abort();
       setChecking(true);
-      if (document.visibilityState === "hidden") {
-        setChecking(true);
-        return;
-      }
       const controller = new AbortController();
       reads.current = controller;
       const current = () => alive && !controller.signal.aborted;
@@ -102,14 +100,15 @@ export function useWorkspace(section = "home") {
         setLessons(availableLessons);
       } catch (cause) {
         if (!current()) return;
-        clear();
         if (cause instanceof ApiError && cause.status === 401) expire();
-        else
+        else {
+          if (cause instanceof ApiError && cause.status === 403) clear();
           setError(
             cause instanceof Error
               ? cause.message
               : "Unable to open your workspace.",
           );
+        }
       } finally {
         if (current()) {
           setLoading(false);
@@ -117,14 +116,22 @@ export function useWorkspace(section = "home") {
         }
       }
     };
+    // Desktop workspace switches emit both events. Coalesce the pair without
+    // erasing already authorized content. A later focus still cancels stale reads.
+    const resume = () => {
+      clearTimeout(resumeTimer);
+      if (document.visibilityState === "hidden") return;
+      resumeTimer = setTimeout(() => void read(), 80);
+    };
     void read();
-    document.addEventListener("visibilitychange", read);
-    window.addEventListener("focus", read);
+    document.addEventListener("visibilitychange", resume);
+    window.addEventListener("focus", resume);
     return () => {
       alive = false;
       reads.current?.abort();
-      document.removeEventListener("visibilitychange", read);
-      window.removeEventListener("focus", read);
+      clearTimeout(resumeTimer);
+      document.removeEventListener("visibilitychange", resume);
+      window.removeEventListener("focus", resume);
     };
   }, [revision, section, signedOut, clear, expire]);
   useEffect(

@@ -50,6 +50,10 @@ export default function FilesApp({
         setSession(null);
         setFiles([]);
       }
+      if (cause instanceof ApiError && cause.status === 403) {
+        lastFiles.current = null;
+        setFiles([]);
+      }
       setError(
         cause instanceof Error
           ? cause.message
@@ -148,11 +152,12 @@ export default function FilesApp({
       if (!mutation.current) await refresh().catch(report);
       if (active) timer = setTimeout(update, 5000);
     };
+    let resumeTimer: ReturnType<typeof setTimeout> | undefined;
     const revisit = () => {
       clearTimeout(timer);
-      invalidateReads();
-      setFiles([]);
-      if (document.visibilityState !== "hidden") void update();
+      clearTimeout(resumeTimer);
+      if (document.visibilityState !== "hidden")
+        resumeTimer = setTimeout(() => void update(), 80);
     };
     document.addEventListener("visibilitychange", revisit);
     window.addEventListener("focus", revisit);
@@ -160,10 +165,11 @@ export default function FilesApp({
     return () => {
       active = false;
       clearTimeout(timer);
+      clearTimeout(resumeTimer);
       document.removeEventListener("visibilitychange", revisit);
       window.removeEventListener("focus", revisit);
     };
-  }, [session, refresh, report, invalidateReads]);
+  }, [session, refresh, report]);
 
   useEffect(() => {
     if (!loading && !sessionCheckFailed) {

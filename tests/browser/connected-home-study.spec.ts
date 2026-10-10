@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-test("Pearl home carries a private question into source-backed study without sending it early", async ({
+test("selected-source Study sends only after explicit submission and keeps the Pearl composer", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
@@ -51,19 +51,10 @@ test("Pearl home carries a private question into source-backed study without sen
   });
   const question = "What does this lesson say about force and acceleration?";
   await page
-    .getByRole("textbox", { name: "Ask the assistant", exact: true })
-    .fill(question);
-  await page.getByRole("button", { name: "Minimize assistant" }).click();
-  await page.getByRole("button", { name: "Open Atlas assistant" }).click();
-  await expect(
-    page.getByRole("textbox", { name: "Ask the assistant", exact: true }),
-  ).toHaveValue(question);
-  await page.getByRole("button", { name: "Send message", exact: true }).click();
+    .getByRole("complementary", { name: "Main navigation" })
+    .getByRole("link", { name: "Study with agent", exact: true })
+    .click();
   await expect(page).toHaveURL(/\/study$/);
-  await expect(
-    page.locator(".atlas-workspace[data-section=study]"),
-  ).toBeVisible();
-  await expect(page.getByText(question, { exact: true })).toBeVisible();
   expect(sends).toBe(0);
   expect(page.url()).not.toContain("force");
   await page
@@ -72,9 +63,14 @@ test("Pearl home carries a private question into source-backed study without sen
   await page
     .getByRole("button", { name: "New conversation · 1 lesson", exact: true })
     .click();
-  await expect(
-    page.getByRole("textbox", { name: "Ask about your lessons", exact: true }),
-  ).toHaveValue(question);
+  const composer = page.getByRole("textbox", {
+    name: "Ask about your lessons",
+    exact: true,
+  });
+  await composer.fill(question);
+  await page.getByRole("button", { name: "Minimize assistant" }).click();
+  await page.getByRole("button", { name: "Open Atlas assistant" }).click();
+  await expect(composer).toHaveValue(question);
   expect(sends).toBe(0);
   await page
     .getByRole("button", { name: "Send study message", exact: true })

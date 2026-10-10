@@ -1,9 +1,9 @@
 # Populated local demo accounts
 
-The four local `demo.student`, `demo.teacher`, `demo.advisor` and `demo.parent`
-accounts are real authenticated accounts using the same Pearl interface and Python
+The four local `student`, `teacher`, `advisor` and `parent` accounts
+(originally `demo.student`, `demo.teacher`, `demo.advisor`, `demo.parent`) are real authenticated accounts using the same Pearl interface and Python
 services as other accounts. Their example records are fictional and persist across
-sign-ins. They are separate from the fixture-only `/preview/*` examples.
+sign-ins. They use ordinary database authentication; they are not fixture personas.
 
 Existing passwords are kept in the ignored private `.data/hackathon-accounts.json`
 receipt. Do not publish that file or put its contents in a screenshot. The seed tool
@@ -20,7 +20,7 @@ UV_CACHE_DIR="$PWD/.cache/uv" uv run --frozen python -m school2036.demo_seed
 
 The command requires `development`, a loopback PostgreSQL hostname, a regular
 private receipt (mode `0600`), matching credentials for exactly those four logins,
-and their existing teacher/advisor/parent relationships to `demo.student`. It
+and their existing teacher/advisor/parent relationships to the same demo student. It
 validates all of these before writing. Other accounts and relationships are not
 modified.
 
@@ -88,3 +88,27 @@ left for ordinary cleanup rather than receiving a new expiry or bypassing limits
 The school examples and each staging transaction commit independently, so storage
 failure can leave earlier examples saved; rerunning resumes the remaining steps.
 No signed R2 uploads or remote storage writes are performed by this helper.
+
+## Explicit hackathon login simplification
+
+The requested local hackathon logins are `student`, `teacher`, `advisor` and `parent`.
+Run the guarded one-time operator command to rename the original four accounts:
+
+```sh
+UV_CACHE_DIR="$PWD/.cache/uv" uv run --frozen python -m school2036.demo_seed --simple-logins
+```
+
+This explicit development-only operation sets the user-requested simple hackathon
+password on those four accounts, preserves account IDs and all related work, and
+revokes their existing sessions. It does not create identities, grant roles, change
+other accounts or weaken the normal 15-character password policy. Simple shared
+hackathon credentials are unsuitable for a public deployment.
+
+The command verifies all four original credentials and relationships before any
+write and refuses a login collision. The private receipt is refreshed with the same
+account IDs. Renamed receipts require a matching per-account operator audit event;
+the seed cannot repurpose an arbitrary account that happens to use a role name.
+Repeated simplification is a no-op when already applied. Default seeding remains
+additive and preserves the current password. If receipt replacement fails after the
+database commit, retain the generated private `.pending-*` receipt for operator
+recovery; do not repeat credential changes blindly.

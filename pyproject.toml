@@ -15,6 +15,7 @@ dependencies = [
   "boto3==1.43.110",
   "cryptography==50.0.2",
   "httpx==0.28.1",
+  "mcp==1.30.0",
 ]
 
 [dependency-groups]

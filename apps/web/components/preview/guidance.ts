@@ -2,6 +2,15 @@ import { type AccountId, fixture } from "./data";
 import type { PreviewState } from "./state";
 
 export type GuideAnchor =
+  | "files.upload"
+  | "study.sources"
+  | "study.transcript"
+  | "study.composer"
+  | "schoolwork.assignments"
+  | "proposals.list"
+  | "students.list"
+  | "account.security"
+  | "home.overview"
   | "screen.heading"
   | "batch.submit"
   | "batch.start"

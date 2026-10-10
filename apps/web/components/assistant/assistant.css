@@ -1,0 +1,90 @@
+.atlas-global-assistant {
+  position: fixed;
+  inset-inline: 0;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  margin: 0;
+}
+@media (min-width: 1024px) {
+  .atlas-global-assistant {
+    left: 256px;
+  }
+}
+.atlas-assistant-replies {
+  pointer-events: auto;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: var(--surface);
+  box-shadow: var(--shadow-pearl);
+  padding: 12px 18px;
+  margin-bottom: 10px;
+  animation: atlas-message-in var(--motion-enter) var(--motion-ease-enter) both;
+}
+.atlas-assistant-reply-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+}
+.atlas-assistant-history {
+  max-height: min(340px, 38dvh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  overflow-wrap: anywhere;
+}
+.atlas-assistant-reply {
+  padding: 12px 0;
+  font-size: 14px;
+}
+.atlas-assistant-reply-user {
+  color: var(--muted-foreground);
+}
+.atlas-assistant-reply .atlas-rich-message {
+  font-size: 14px;
+}
+.atlas-assistant-reply > button {
+  margin-top: 10px;
+}
+.atlas-assistant-working {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 0;
+  font-size: 13px;
+  color: var(--muted-foreground);
+}
+.atlas-assistant-working > span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--cobalt);
+  animation: atlas-assistant-pulse 1.3s ease-in-out infinite alternate;
+}
+.atlas-assistant-modes {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+  pointer-events: auto;
+}
+.atlas-assistant-modes button {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 7px 13px;
+  font-size: 12px;
+}
+.atlas-assistant-modes button[aria-pressed="true"] {
+  color: var(--cobalt);
+  border-color: var(--cobalt);
+}
+@keyframes atlas-assistant-pulse {
+  to {
+    opacity: 0.35;
+    transform: scale(0.75);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .atlas-assistant-replies,
+  .atlas-assistant-working > span {
+    animation: none;
+  }
+}

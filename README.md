@@ -1,6 +1,6 @@
 # Atlas Pearl · study workspace
 
-Atlas is a Bun/Next.js frontend with a Python/FastAPI backend, using the supplied Pearl design. The working app includes private study, files, account controls and connected teacher/student/advisor/parent workflows. Sign in to `/workspace`, open `/files` to upload materials, or `/study` to learn from approved transcripts with cited Gemini answers. The fixture-backed `/preview/*` screens remain explicitly fictional design examples; they do not grant permissions or write real school records.
+Atlas is a Bun/Next.js frontend with a Python/FastAPI backend, using the supplied Pearl design. The working app includes private study, files, account controls and connected teacher/student/advisor/parent workflows. Sign in to `/workspace`, open `/files` to upload materials, or `/study` to learn from approved transcripts with cited Gemini answers. Fixture-backed `/preview/*` routes are disabled in normal builds and available only to the explicit browser test harness.
 
 See [school workflows and provisioning](docs/SCHOOL.md), [study and imports](docs/STUDY.md), [private files](docs/MEDIA.md), and [account controls](docs/ACCOUNT.md). Access depends on accounts, roles and explicit sharing, never being on a school network.
 
@@ -11,6 +11,23 @@ cited conversations. Examples use fixtures; authenticated screens use permitted 
 records. Lesson cards, chat and advisor screens also reuse the original screen
 components. Local demo accounts can be populated with persisted examples using
 [the guarded demo tool](docs/DEMO_ACCOUNTS.md).
+
+## Assistant and demo access
+
+The assistant stays available across authenticated screens, keeping its draft and
+minimized state during navigation. Questions and suggestion buttons call Gemini;
+UI help loads role-aware instructions through the real read-only MCP server and
+highlights the relevant control. See [UI_ASSISTANT.md](docs/UI_ASSISTANT.md).
+Source-backed Study uses the same dock with a Selected lessons mode and citations.
+Window/workspace switches refresh authorization in the background without blanking
+same-account content. All text areas grow automatically to a capped height.
+
+The four local database-backed demonstration accounts use `student`, `teacher`,
+`advisor`, and `parent` after the guarded operator migration. They retain their saved
+work and normal session/role authorization; they are not runtime hardcoded users.
+[DEMO_ACCOUNTS.md](docs/DEMO_ACCOUNTS.md) describes population and login migration.
+Public fake-account buttons have been removed. The release gates in
+[SECURITY.md](docs/SECURITY.md) still apply before public deployment.
 
 ## Retained infrastructure
 
@@ -41,7 +58,7 @@ In another terminal, create an account (password is prompted, never passed on th
 make create-user LOGIN=you@example.com NAME="Your Name"
 ```
 
-Open http://localhost:3000 for the landing page, `/login` for sign-in, or `/preview/lina/home` for a sample student workspace. `/workspace`, `/files`, `/study` and `/account` require a real session. Sign-in opens Workspace; explicit `next=files`, `next=study`, `next=account` redirects are supported. Assign school roles and student relationships with the commands in [SCHOOL.md](docs/SCHOOL.md); unassigned accounts can still use private files and Study. Existing active accounts still work after migration. New installations require the local account command; there is no public signup, default password, setup wizard or demo login. To reset a password and revoke all sessions:
+Open http://localhost:3000 for the landing page, `/login` for sign-in, to access your saved workspace. `/workspace`, `/files`, `/study` and `/account` require a real session. Sign-in opens Workspace; explicit `next=files`, `next=study`, `next=account` redirects are supported. Assign school roles and student relationships with the commands in [SCHOOL.md](docs/SCHOOL.md); unassigned accounts can still use private files and Study. Existing active accounts still work after migration. New installations require the local account command; there is no public signup, automatic default account, setup wizard or persona-login shortcut. The explicitly provisioned local demo accounts use the same sign-in form. To reset a password and revoke all sessions:
 
 ```sh
 uv run --frozen python -m school2036.operator reset-password --login you@example.com

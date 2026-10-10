@@ -279,28 +279,61 @@ test("the shared New chat navigation resets an open conversation repeatedly with
   expect(requests.posts()).toBe(0);
 });
 
-test("a suggested study question reopens the minimized Pearl dock without sending", async ({
+test("a suggested study question reopens the dock and explicitly sends one request", async ({
   page,
 }) => {
   const requests = await workspace(page);
+  let release = () => {};
+  const pending = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  const submissions: { content: string; request_id: string }[] = [];
+  await page.route(
+    "**/api/v1/study/conversations/conversation-qa/messages",
+    async (route) => {
+      submissions.push(route.request().postDataJSON());
+      await pending;
+      await route.fulfill({ json: {} });
+    },
+  );
   await page
     .getByRole("button", { name: conversation.title, exact: true })
     .click();
+  // Opening a conversation switches the persistent dock from Atlas to its
+  // selected-source composer. Wait for that visible mode before minimizing;
+  // otherwise Playwright can retain the now-hidden Atlas minimize button.
+  await expect(
+    page.getByRole("textbox", { name: "Ask about your lessons", exact: true }),
+  ).toBeVisible();
   await page
     .getByRole("button", { name: "Minimize assistant", exact: true })
     .click();
   await expect(
     page.getByRole("button", { name: "Open Atlas assistant", exact: true }),
   ).toBeVisible();
-  await page
-    .getByRole("button", { name: "Explain the key ideas", exact: true })
-    .click();
-  const input = page.getByRole("textbox", {
-    name: "Ask about your lessons",
+  const suggestion = page.getByRole("button", {
+    name: "Explain the key ideas",
     exact: true,
   });
-  await expect(input).toHaveValue("Explain the key ideas in these lessons.");
-  await expect(input).toBeFocused();
+  try {
+    await suggestion.click();
+    await expect.poll(() => submissions.length).toBe(1);
+    await expect(suggestion).toBeDisabled();
+    await expect(
+      page.getByRole("textbox", {
+        name: "Ask about your lessons",
+        exact: true,
+      }),
+    ).toBeVisible();
+    expect(submissions[0].content).toBe(
+      "Explain the key ideas in these lessons.",
+    );
+    expect(submissions[0].request_id).toMatch(/^[a-f0-9-]{36}$/);
+  } finally {
+    release();
+  }
+  await expect(suggestion).toBeEnabled();
+  expect(submissions).toHaveLength(1);
   expect(requests.posts()).toBe(0);
 });
 

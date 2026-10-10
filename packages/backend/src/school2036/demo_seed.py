@@ -8,14 +8,15 @@ import hashlib
 import json
 import time
 from pathlib import Path
-from uuid import NAMESPACE_URL, uuid5
+from uuid import NAMESPACE_URL, uuid4, uuid5
 
 from sqlalchemy import select
 from sqlalchemy.engine import make_url
 
+from school2036.backup import secure_write
 from school2036.config import get_settings
 from school2036.database import create_session_factory
-from school2036.identity import audit, check_marker, locked_state
+from school2036.identity import audit, check_marker, locked_state, revoke
 from school2036.jobs import enqueue
 from school2036.media import new_upload
 from school2036.models import (
@@ -31,7 +32,7 @@ from school2036.models import (
     StudyLesson,
 )
 from school2036.schemas import UploadInput
-from school2036.security import verify_password
+from school2036.security import password_hash, verify_password
 from school2036.storage import create_storage
 
 NAMES = {
@@ -66,8 +67,8 @@ def seed_id(label):
     return str(uuid5(NAMESPACE_URL, "https://atlas.local/hackathon-demo/v1/" + label))
 
 
-def seed_demo(config, sessions, receipt: Path, *, queue_study=False, with_files=False):
-    """Add missing examples; never reset passwords, existing work or indexed sources."""
+def _demo_receipt(config, receipt: Path):
+    """Require local development and a private operator credential receipt."""
     if config.environment != "development":
         raise ValueError("Demo examples require the development environment")
     if make_url(config.database_url.get_secret_value()).host not in {"127.0.0.1", "localhost"}:
@@ -80,37 +81,107 @@ def seed_demo(config, sessions, receipt: Path, *, queue_study=False, with_files=
         raise ValueError("The local demo-account receipt is unavailable") from None
     if not isinstance(credentials, dict) or set(credentials) != set(NAMES):
         raise ValueError("The receipt must identify exactly the four demo accounts")
+    return credentials
+
+
+def _demo_accounts(db, credentials):
+    accounts = {}
+    for role in NAMES:
+        record = credentials[role]
+        if (
+            not isinstance(record, dict)
+            or record.get("login") not in {f"demo.{role}", role}
+            or not isinstance(record.get("password"), str)
+        ):
+            raise ValueError("The receipt may only contain the designated demo logins")
+        account = db.scalar(select(Account).where(Account.login == record["login"]))
+        if (
+            account is None
+            or account.status != "active"
+            or role not in account.roles
+            or not verify_password(record["password"], account.password_hash)
+        ):
+            raise ValueError("All four active demo accounts and matching credentials are required")
+        if record["login"] == role and (
+            record.get("account_id") != account.id
+            or not db.scalar(
+                select(AuditEvent.id)
+                .where(
+                    AuditEvent.action == "operator.demo_login_simplified",
+                    AuditEvent.target == account.id,
+                )
+                .limit(1)
+            )
+        ):
+            raise ValueError("Simple demo logins require the original operator rename receipt")
+        accounts[role] = account.id
+    for role in ("teacher", "advisor", "parent"):
+        if not db.get(SchoolRelationship, (accounts[role], accounts["student"], role)):
+            raise ValueError("Existing demo student relationships are required")
+    return accounts
+
+
+def simplify_demo_logins(config, sessions, receipt: Path):
+    """Explicit hackathon-only rename, never a public password-policy exception.
+
+    The user requested these four local accounts with the shared password `password`.
+    No new identities or roles are created; IDs and all persisted data survive.
+    """
+    credentials = _demo_receipt(config, receipt)
+    pending = receipt.with_name(receipt.name + ".pending-" + uuid4().hex)
+    prepared = False
+    committed = False
+    changed = 0
+    try:
+        with sessions.begin() as db:
+            check_marker(config, locked_state(db))
+            accounts = _demo_accounts(db, credentials)
+            for role, account_id in accounts.items():
+                occupied = db.scalar(select(Account).where(Account.login == role))
+                if occupied and occupied.id != account_id:
+                    raise ValueError(
+                        "A requested simple login is already in use; no changes applied"
+                    )
+            updated = {}
+            for role, account_id in accounts.items():
+                account = db.get(Account, account_id)
+                if account.login != role or not verify_password("password", account.password_hash):
+                    account.login = role
+                    account.password_hash = password_hash("password")
+                    account.activation_hash = None
+                    account.activation_expires = 0
+                    revoke(db, account.id)
+                    audit(db, "operator.demo_login_simplified", target=account.id)
+                    changed += 1
+                updated[role] = {
+                    "login": role,
+                    "password": "password",
+                    "account_id": account.id,
+                }
+            secure_write(pending, json.dumps(updated, indent=2).encode())
+            prepared = True
+        committed = True
+        pending.replace(receipt)
+    finally:
+        # A failed DB transaction leaves the old receipt intact. If replacing the
+        # receipt fails after commit, retain the private pending receipt for recovery.
+        if prepared and not committed:
+            pending.unlink(missing_ok=True)
+    return changed
+
+
+def seed_demo(config, sessions, receipt: Path, *, queue_study=False, with_files=False):
+    """Add missing examples; never reset passwords, existing work or indexed sources."""
+    credentials = _demo_receipt(config, receipt)
     if with_files and config.storage_backend != "local":
         raise ValueError("Demo file examples require local development storage")
     now = time.time()
     added = 0
     with sessions.begin() as db:
         check_marker(config, locked_state(db))
-        accounts = {}
         # Validate the entire receipt and responsibility graph before any write.
-        for role in NAMES:
-            record = credentials[role]
-            if (
-                not isinstance(record, dict)
-                or record.get("login") != f"demo.{role}"
-                or not isinstance(record.get("password"), str)
-            ):
-                raise ValueError("The receipt may only contain the designated demo logins")
-            account = db.scalar(select(Account).where(Account.login == f"demo.{role}"))
-            if (
-                account is None
-                or account.status != "active"
-                or role not in account.roles
-                or not verify_password(record["password"], account.password_hash)
-            ):
-                raise ValueError(
-                    "All four active demo accounts and matching credentials are required"
-                )
-            accounts[role] = account.id
+        accounts = _demo_accounts(db, credentials)
         student, teacher, advisor, parent = (accounts[role] for role in NAMES)
-        for role in ("teacher", "advisor", "parent"):
-            if not db.get(SchoolRelationship, (accounts[role], student, role)):
-                raise ValueError("Existing demo student relationships are required")
         for role, name in NAMES.items():
             person = db.get(Person, accounts[role])
             # A later operator/user rename is meaningful and must survive reruns.
@@ -353,7 +424,11 @@ def _seed_demo_files(config, sessions, accounts):
         with sessions.begin() as db:
             check_marker(config, locked_state(db))
             actor = db.get(Account, owner)
-            if actor.status != "active" or actor.login != f"demo.{role}" or role not in actor.roles:
+            if (
+                actor.status != "active"
+                or actor.login not in {f"demo.{role}", role}
+                or role not in actor.roles
+            ):
                 raise ValueError("Demo account authorization changed; no file uploaded")
             receipt = db.scalar(
                 select(AuditEvent)
@@ -394,7 +469,11 @@ def _seed_demo_files(config, sessions, accounts):
             check_marker(config, locked_state(db))
             value = db.scalar(select(FileObject).where(FileObject.id == file_id).with_for_update())
             actor = db.get(Account, owner)
-            if actor.status != "active" or actor.login != f"demo.{role}" or role not in actor.roles:
+            if (
+                actor.status != "active"
+                or actor.login not in {f"demo.{role}", role}
+                or role not in actor.roles
+            ):
                 raise ValueError("Demo account authorization changed; no file uploaded")
             if value.state == "pending" and value.expires > time.time():
                 storage.put(value.staging_key, content, value.media_type)
@@ -426,10 +505,21 @@ def main():
         action="store_true",
         help="Upload one small synthetic TXT file per demo account through normal verification",
     )
+    parser.add_argument(
+        "--simple-logins",
+        action="store_true",
+        help="Explicitly rename the four receipt-bound local demo accounts for hackathon sign-in",
+    )
     args = parser.parse_args()
+    if args.simple_logins and (args.queue_study or args.with_files):
+        parser.error("Run --simple-logins separately from demo seeding")
     config = get_settings()
     engine, sessions = create_session_factory(config)
     try:
+        if args.simple_logins:
+            count = simplify_demo_logins(config, sessions, args.receipt)
+            print(f"Updated {count} local demo accounts; private receipt refreshed.")
+            return
         result = seed_demo(
             config, sessions, args.receipt, queue_study=args.queue_study, with_files=args.with_files
         )

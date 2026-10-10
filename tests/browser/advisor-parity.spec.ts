@@ -111,7 +111,10 @@ test("real advisor pages use the original profile panels and caseload grid with 
   await page
     .getByLabel("Message to Real Advisor")
     .fill("Can we discuss engineering?");
-  await page.getByRole("button", { name: "Send message", exact: true }).click();
+  await page
+    .locator('[data-guide-anchor="advisor.ask"]')
+    .getByRole("button", { name: "Send message", exact: true })
+    .click();
   await expect(
     page.getByRole("log", { name: "Advisor messages" }),
   ).toContainText("Can we discuss engineering?");

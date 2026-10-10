@@ -166,6 +166,7 @@ test("school roles share a lesson, submit work, exchange feedback and messages, 
       .getByLabel("Message to School Advisor")
       .fill("Can we discuss my engineering project?");
     await student
+      .locator('[data-guide-anchor="advisor.ask"]')
       .getByRole("button", { name: "Send message", exact: true })
       .click();
     await expect(
@@ -178,6 +179,7 @@ test("school roles share a lesson, submit work, exchange feedback and messages, 
       .getByLabel("Message to School Student")
       .fill("Yes. Send me a proposal and we can review the plan.");
     await advisor
+      .locator('[data-guide-anchor="advisor.ask"]')
       .getByRole("button", { name: "Send message", exact: true })
       .click();
     await expect(advisor.getByRole("log")).toContainText("review the plan");
@@ -364,10 +366,11 @@ test("real and preview accounts share the Pearl home and keep uploads in the mai
     page.getByRole("heading", { name: "Welcome back, School", exact: true }),
   ).toBeVisible();
   await page
-    .getByRole("button", {
-      name: "Upload a document or recording",
-      exact: true,
-    })
+    .getByRole("button", { name: "Open navigation", exact: true })
+    .click();
+  await page
+    .getByRole("dialog")
+    .getByRole("link", { name: "Files & recordings", exact: true })
     .click();
   await expect(
     page.getByRole("heading", { name: "Your files", exact: true }),

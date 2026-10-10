@@ -99,7 +99,7 @@
   outline: none;
 }
 .school-form textarea {
-  resize: vertical;
+  resize: none;
   min-height: 80px;
 }
 .school-form > button {

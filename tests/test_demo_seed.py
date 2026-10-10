@@ -228,3 +228,71 @@ def test_demo_file_seed_refuses_remote_storage_before_changing_records(demo):
     with app.state.sessions() as db:
         assert db.scalar(select(func.count()).select_from(FileObject)) == 0
         assert db.scalar(select(func.count()).select_from(SchoolAssignment)) == 0
+
+
+def test_simple_logins_preserve_ids_records_and_normal_password_policy(demo):
+    from school2036.demo_seed import simplify_demo_logins
+    from school2036.models import AuthSession
+    from school2036.operator import reset_password
+
+    (client, app, _), config, receipt = demo
+    seed_demo(config, app.state.sessions, receipt)
+    login(client, "demo.student")
+    with app.state.sessions() as db:
+        ids = {
+            role: db.scalar(select(Account.id).where(Account.login == f"demo.{role}"))
+            for role in NAMES
+        }
+        outsider = db.scalar(select(Account).where(Account.login == "alice"))
+        outsider_hash = outsider.password_hash
+    assert simplify_demo_logins(config, app.state.sessions, receipt) == 4
+    assert receipt.stat().st_mode & 0o077 == 0
+    stored = json.loads(receipt.read_text())
+    assert all(stored[role]["account_id"] == ids[role] for role in NAMES)
+    assert client.get("/api/v1/auth/me").status_code == 401
+    for role in NAMES:
+        assert login(client, role, "password")["account_id"] == ids[role]
+    with app.state.sessions() as db:
+        assert db.get(Account, outsider.id).password_hash == outsider_hash
+        assert db.get(SchoolAssignment, seed_id("force-practice")).student_id == ids["student"]
+        assert db.scalar(select(func.count()).select_from(AuthSession)) == 1
+    assert simplify_demo_logins(config, app.state.sessions, receipt) == 0
+    assert seed_demo(config, app.state.sessions, receipt)["added"] == 0
+    with pytest.raises(ValueError, match="15"):
+        reset_password(config, app.state.sessions, "student", "password")
+
+
+def test_simple_logins_refuse_collisions_without_any_credential_changes(demo):
+    from school2036.demo_seed import simplify_demo_logins
+
+    (_, app, _), config, receipt = demo
+    before_receipt = receipt.read_bytes()
+    create_user(config, app.state.sessions, "teacher", "An unrelated teacher", PASSWORD)
+    with app.state.sessions() as db:
+        before = {
+            account.id: (account.login, account.password_hash)
+            for account in db.scalars(select(Account))
+        }
+    with pytest.raises(ValueError, match="already in use"):
+        simplify_demo_logins(config, app.state.sessions, receipt)
+    assert receipt.read_bytes() == before_receipt
+    with app.state.sessions() as db:
+        assert {
+            account.id: (account.login, account.password_hash)
+            for account in db.scalars(select(Account))
+        } == before
+
+
+def test_simple_logins_remain_development_only_and_alias_receipts_are_id_bound(demo):
+    from school2036.demo_seed import simplify_demo_logins
+
+    (_, app, _), config, receipt = demo
+    production = config.model_copy(update={"environment": "production"})
+    with pytest.raises(ValueError, match="development"):
+        simplify_demo_logins(production, app.state.sessions, receipt)
+    simplify_demo_logins(config, app.state.sessions, receipt)
+    records = json.loads(receipt.read_text())
+    records["student"]["account_id"] = records["teacher"]["account_id"]
+    receipt.write_text(json.dumps(records))
+    with pytest.raises(ValueError, match="original operator rename receipt"):
+        seed_demo(config, app.state.sessions, receipt)

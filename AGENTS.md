@@ -19,6 +19,8 @@ The user requested an infrastructure reset on October 10, 2026, followed by auth
 
 Real accounts and fictional previews must use the same established Pearl interface. Reuse `PearlFrame`, `PearlHome`, `PearlHomeHelpers`, `LessonLibrary`, `PearlChatLayout`, `PearlAdvisor`, `PearlStudents`, task artwork and `Composer`; do not create a second authenticated dashboard or substitute a generic app design. Preview fixtures never grant real account access. Connect supported uploads and study actions through the shared interface with existing session and source authorization.
 
+The authenticated assistant lives in the root `AssistantProvider`; reuse its dock across screens rather than mounting page-specific duplicates. Keep MCP guidance catalog entries and rendered `data-guide-anchor` targets aligned. Suggestions make real assistant/study requests. Fictional persona routes are test-only, never a sign-in alternative.
+
 Frontend: `apps/web`; owned UI: `packages/ui`; generated contracts: `packages/api-client`. Python domain code: `packages/backend`; service entry points: `apps/api`, `apps/worker`, `apps/ai`. Keep the API authoritative for authorization. Use the custom design tokens; avoid generic dashboard templates.
 
 Never infer first installation from an empty users query or database failure. Do not expose setup mutations or file-signing endpoints until authentication, authorization, and bootstrap protection are implemented. R2 buckets are private. Never commit credentials, personal data, `.env`, `.data`, or downloaded binaries.

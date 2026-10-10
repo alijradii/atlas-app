@@ -208,6 +208,7 @@ export function FileLibrary({
         </div>
         <label
           className="pearl-dropzone"
+          data-guide-anchor="files.upload"
           data-dragging={dragging}
           onDragOver={(event) => {
             event.preventDefault();

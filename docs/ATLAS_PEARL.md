@@ -7,17 +7,17 @@ The supplied `../atlas-pearl-kit/atlas-pearl` landing and workspace prototypes h
 | Route | Purpose |
 | --- | --- |
 | `/` | Pearl landing page, interactive assistant examples, flashcards, role tabs, FAQ and explicitly local pilot-form preview |
-| `/login` | Real backend sign-in and links to six fictional preview accounts |
+| `/login` | Real backend sign-in; no fictional persona chooser |
 | `/files` | Authenticated personal upload, verification, download and deletion |
 | `/study` | Authenticated transcript library, imported-material review and Gemini-backed conversations with source passages |
 | `/workspace` | Real linked school roles: publishing, assignments, feedback, messages and proposals |
 | `/account` | Real password changes and active-session controls |
-| `/preview/lina/home` | Returning student: subjects, lessons/chapters, study, practice, human adviser, activities |
-| `/preview/sami/home` | New student onboarding, interests, adviser-matching empty state, independent practice |
-| `/preview/daher/home` | Teacher lessons, publishing form preview, class evidence, misconceptions, teaching flags and follow-ups |
-| `/preview/nassar/home` | Adviser caseload, student details, question replies and subject proposals |
-| `/preview/karim/home` | Parent choices, shared guidance and illustrative progress |
-| `/preview/hajj/home` | School activity review, proposed access matrix, local policy switches and final subject confirmation |
+| Test-only `/preview/lina/home` | Returning student: subjects, lessons/chapters, study, practice, human adviser, activities |
+| Test-only `/preview/sami/home` | New student onboarding, interests, adviser-matching empty state, independent practice |
+| Test-only `/preview/daher/home` | Teacher lessons, publishing form preview, class evidence, misconceptions, teaching flags and follow-ups |
+| Test-only `/preview/nassar/home` | Adviser caseload, student details, question replies and subject proposals |
+| Test-only `/preview/karim/home` | Parent choices, shared guidance and illustrative progress |
+| Test-only `/preview/hajj/home` | School activity review, proposed access matrix, local policy switches and final subject confirmation |
 
 Invalid accounts, sections and detail IDs render the framework not-found screen. The mobile navigation uses an accessible shadcn Sheet; dialogs, tabs, dropdowns, accordions and switches use Radix-backed shadcn primitives. Light/dark themes, keyboard focus and reduced-motion preferences are supported.
 
@@ -54,7 +54,7 @@ the real upload entry requests a real session rather than impersonating a person
 
 Login, sessions, private files, `/study`, `/workspace` and `/account` connect to the Python API. Preview accounts do not create sessions or grant access to files or transcripts. See [Study workspace](STUDY.md) for the real inference path and authorization boundaries.
 
-School records under `/preview/*` come from the kit's fictional fixtures. Preview actions persist in **sessionStorage for the current tab**, so a proposal can move from student/adviser to parent to staff by switching sample accounts. Practice answers, working and completion survive navigation. Help is paused during an active sample batch. Teacher analytics, recorded lessons and advisor requests do not depend on a school/home scenario. Access follows the account and resource sharing, not the user’s network. Preview controls simulate service availability and reset sample data; they never grant real API access. Older saved previews discard location flags while keeping answers, proposals and pins.
+The `/preview/*` routes return 404 in normal development and production. Only the isolated browser-test server with `SCHOOL_E2E=1` enables these regression fixtures; landing and sign-in expose no links to them. School records in this test harness come from the kit's fictional fixtures. Preview actions persist in **sessionStorage for the current tab**, so a proposal can move from student/adviser to parent to staff by switching sample accounts. Practice answers, working and completion survive navigation. Help is paused during an active sample batch. Teacher analytics, recorded lessons and advisor requests do not depend on a school/home scenario. Access follows the account and resource sharing, not the user’s network. Preview controls simulate service availability and reset sample data; they never grant real API access. Older saved previews discard location flags while keeping answers, proposals and pins.
 
 Within `/preview`, assistant responses and flashcards are scripted. Feedback uses the kit's fixed example answers. No inference, adviser notification, email, pilot signup, video playback, real assessment, or school-record mutation occurs. Teacher upload actions open the real Files screen and require a real session. The old guided preview upload route now explains that handoff; it no longer presents a fake file picker or save-success flow. The real `/files` library supports documents, audio and video; verified materials can become reviewed study transcripts. See MEDIA.md for supported formats and limits. The sample parent progress policy is still exploratory. Additional student caseload profiles contain summaries, while Lina has the complete guidance example.
 
@@ -90,7 +90,9 @@ remain material highlights.
 Ambient motion uses continuous compositor transforms, pauses outside the viewport
 and honors reduced motion. The helper icons remain unboxed. The assistant dock,
 recommendations, rich messages, spotlight guidance and persistent sample pins are
-preserved in the preview; these sample school actions are not real AI tools.
+preserved in the test-only fixtures; sample school actions are not real AI tools.
+Authenticated screens share a persistent dock, real model requests and read-only
+MCP guidance with the same dim/outline/tooltip treatment. See UI_ASSISTANT.md.
 
 
 ## Shared motion

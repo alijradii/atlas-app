@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@school2036/ui";
+import { Button, Textarea } from "@school2036/ui";
 import {
   ArrowRight,
   BookOpen,
@@ -138,8 +138,7 @@ function Workspace({ store, section }: { store: Store; section: string }) {
         </Button>
       }
     >
-      {store.checking && <p role="status">Refreshing your workspace…</p>}
-      <div hidden={store.checking}>
+      <div>
         {section === "home" && (
           <WorkspaceHome
             session={store.session}
@@ -187,6 +186,13 @@ function Workspace({ store, section }: { store: Store; section: string }) {
             key={tab}
             className="school-content"
             aria-label="School workflow"
+            data-guide-anchor={
+              tab === "work"
+                ? "schoolwork.assignments"
+                : tab === "choices"
+                  ? "proposals.list"
+                  : undefined
+            }
           >
             {tab === "work" && (
               <>
@@ -429,9 +435,10 @@ function CreateAssignment({ store }: { store: Store }) {
             />
           </label>
         </div>
-        <label>
+        <label htmlFor="assignment-instructions">
           Instructions
-          <textarea
+          <Textarea
+            id="assignment-instructions"
             required
             rows={3}
             maxLength={8000}
@@ -538,9 +545,10 @@ function AssignmentCard({
             });
           }}
         >
-          <label>
+          <label htmlFor={`answer-${item.id}`}>
             Your answer
-            <textarea
+            <Textarea
+              id={`answer-${item.id}`}
               rows={4}
               required
               maxLength={8000}
@@ -573,9 +581,10 @@ function AssignmentCard({
               setFeedback("");
           }}
         >
-          <label>
+          <label htmlFor={`feedback-${item.id}`}>
             Feedback
-            <textarea
+            <Textarea
+              id={`feedback-${item.id}`}
               rows={3}
               required
               maxLength={8000}
@@ -758,9 +767,10 @@ function CreateProposal({ store }: { store: Store }) {
             onChange={(event) => setTitle(event.target.value)}
           />
         </label>
-        <label>
+        <label htmlFor="proposal-idea">
           Your idea
-          <textarea
+          <Textarea
+            id="proposal-idea"
             required
             rows={4}
             maxLength={8000}
@@ -862,9 +872,10 @@ function ProposalCard({
                 <option value="decline">Decline</option>
               </select>
             </label>
-            <label>
+            <label htmlFor={`decision-${item.id}`}>
               Decision note
-              <textarea
+              <Textarea
+                id={`decision-${item.id}`}
                 required
                 rows={2}
                 maxLength={4000}
@@ -900,9 +911,10 @@ function ProposalCard({
               onChange={(event) => setTitle(event.target.value)}
             />
           </label>
-          <label>
+          <label htmlFor={`revision-${item.id}`}>
             Revised idea
-            <textarea
+            <Textarea
+              id={`revision-${item.id}`}
               required
               rows={3}
               maxLength={8000}
